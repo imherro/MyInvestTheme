@@ -68,6 +68,11 @@ def test_reports_and_score_series():
     series = series_response.json()
     assert series["report_count"] >= 1
     assert any(item["points"] for item in series["themes"])
+    first_point = next(item["points"][0] for item in series["themes"] if item["points"])
+    assert "theme_score" in first_point
+    assert "etf_score" in first_point
+    assert "resonance_score" in first_point
+    assert "triple_confirmation" in first_point
 
 
 def test_pages_render():

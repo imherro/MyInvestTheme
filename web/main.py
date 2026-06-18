@@ -66,6 +66,25 @@ def _parse_generated_at(value: str | None) -> str:
     return value.replace(" CST", "")
 
 
+def _float_or_none(value: Any) -> float | None:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _resonance_score(item: dict[str, Any]) -> float | None:
+    scores = [
+        _float_or_none(item.get("evidence_score")),
+        _float_or_none(item.get("ths_score")),
+        _float_or_none(item.get("etf_score")),
+    ]
+    valid_scores = [score for score in scores if score is not None]
+    if not valid_scores:
+        return None
+    return sum(valid_scores) / len(valid_scores)
+
+
 def _report_summary(path: Path) -> dict[str, Any]:
     payload = _load_json(path)
     themes = payload.get("theme_ranking") or []
@@ -120,6 +139,15 @@ def build_score_series() -> dict[str, Any]:
                     "basis_date": payload.get("basis_date", ""),
                     "generated_at": payload.get("generated_at", ""),
                     "score": item.get("evidence_score"),
+                    "evidence_score": item.get("evidence_score"),
+                    "theme_score": item.get("ths_score"),
+                    "etf_score": item.get("etf_score"),
+                    "industry_score": item.get("sw_score"),
+                    "resonance_score": _resonance_score(item),
+                    "triple_confirmation": all(
+                        (_float_or_none(item.get(key)) or 0) >= 75
+                        for key in ("evidence_score", "ths_score", "etf_score")
+                    ),
                     "stage": item.get("stage", ""),
                     "rank": rank,
                     "report_id": summary["report_id"],
