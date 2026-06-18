@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}最新研究 - A股主线研究台{% endblock %}
+{% block content %}
+<section class="summary-grid">
+  <div class="metric">
+    <span>基准日</span>
+    <strong>{{ report.basis_date }}</strong>
+  </div>
+  <div class="metric">
+    <span>生成时间</span>
+    <strong>{{ report.generated_at }}</strong>
+  </div>
+  <div class="metric">
+    <span>最新报告</span>
+    <strong>{{ report_id }}</strong>
+  </div>
+  <div class="metric">
+    <span>全市场上涨比例</span>
+    <strong>{{ "%.2f"|format(report.breadth.up_ratio) }}%</strong>
+  </div>
+</section>
+
+<section class="section-band">
+  <div class="section-head">
+    <h1>主线分层</h1>
+    <div class="actions">
+      <a class="button" href="/api/latest">读取最新API</a>
+      <a class="button secondary" href="/reports/{{ report_id }}">完整报告</a>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>排序</th>
+          <th>主题</th>
+          <th>阶段</th>
+          <th>证据分</th>
+          <th>证据项</th>
+          <th>ETF代理</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in report.theme_ranking %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td class="strong">{{ item.theme }}</td>
+          <td><span class="stage">{{ item.stage }}</span></td>
+          <td>{{ "%.2f"|format(item.evidence_score) }}</td>
+          <td>{{ item.evidence_count }}</td>
+          <td class="muted">{{ item.top_etf }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section-band">
+  <div class="section-head">
+    <h2>主线分数曲线</h2>
+    <span class="hint">历史报告增加后会自动形成连续曲线</span>
+  </div>
+  <div id="score-chart" class="chart" data-source="/api/score-series"></div>
+</section>
+
+<section class="section-band">
+  <div class="section-head">
+    <h2>最新报告原文</h2>
+    <span class="hint">完整 Markdown 内容</span>
+  </div>
+  <pre class="markdown-view">{{ markdown }}</pre>
+</section>
+{% endblock %}

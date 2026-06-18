@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ report_id }} - A股主线研究台{% endblock %}
+{% block content %}
+<section class="summary-grid">
+  <div class="metric">
+    <span>基准日</span>
+    <strong>{{ report.basis_date }}</strong>
+  </div>
+  <div class="metric">
+    <span>生成时间</span>
+    <strong>{{ report.generated_at }}</strong>
+  </div>
+  <div class="metric">
+    <span>报告ID</span>
+    <strong>{{ report_id }}</strong>
+  </div>
+  <div class="metric">
+    <span>主题数</span>
+    <strong>{{ report.theme_ranking|length }}</strong>
+  </div>
+</section>
+
+<section class="section-band">
+  <div class="section-head">
+    <h1>完整研究结果</h1>
+    <div class="actions">
+      <a class="button" href="/api/reports/{{ report_id }}">JSON</a>
+      <a class="button secondary" href="/api/reports/{{ report_id }}/markdown">Markdown</a>
+    </div>
+  </div>
+  <pre class="markdown-view">{{ markdown }}</pre>
+</section>
+{% endblock %}

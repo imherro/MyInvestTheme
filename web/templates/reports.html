@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}历史研究 - A股主线研究台{% endblock %}
+{% block content %}
+<section class="section-band">
+  <div class="section-head">
+    <h1>历次研究结果</h1>
+    <span class="hint">每份报告都可读取完整 Markdown 和 JSON</span>
+  </div>
+  <div class="report-list">
+    {% for report in reports %}
+    <article class="report-row">
+      <div>
+        <h2>{{ report.basis_date }} · {{ report.top_theme }}</h2>
+        <p>{{ report.report_id }} · {{ report.generated_at }} · {{ report.top_stage }} · {{ "%.2f"|format(report.top_score) if report.top_score is not none else "" }}</p>
+      </div>
+      <div class="actions">
+        <a class="button" href="/reports/{{ report.report_id }}">打开</a>
+        <a class="button secondary" href="/api/reports/{{ report.report_id }}">JSON</a>
+        <a class="button secondary" href="/api/reports/{{ report.report_id }}/markdown">Markdown</a>
+      </div>
+    </article>
+    {% else %}
+    <p>还没有研究结果。</p>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section-band">
+  <div class="section-head">
+    <h2>主线分数曲线</h2>
+    <span class="hint">按基准日聚合</span>
+  </div>
+  <div id="score-chart" class="chart" data-source="/api/score-series"></div>
+</section>
+{% endblock %}

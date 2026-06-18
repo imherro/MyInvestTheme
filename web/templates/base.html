@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}A股主线研究台{% endblock %}</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <div class="app-title">A股主线研究台</div>
+        <div class="app-subtitle">只读展示 · 历史回看 · 分数曲线 · 影子账户输入</div>
+      </div>
+      <nav class="nav">
+        <a class="{{ 'active' if page == 'latest' else '' }}" href="/">最新研究</a>
+        <a class="{{ 'active' if page == 'reports' else '' }}" href="/reports">历史研究</a>
+        <a href="/api/shadow-account/latest">最新API</a>
+      </nav>
+    </header>
+    <main class="page">
+      {% block content %}{% endblock %}
+    </main>
+    <script src="/static/app.js"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>
