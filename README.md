@@ -16,17 +16,14 @@ Open:
 
 - Latest research: http://127.0.0.1:8012/
 - Historical research: http://127.0.0.1:8012/reports
-- Latest shadow-account API: http://127.0.0.1:8012/api/shadow-account/latest
+- Latest report API: http://127.0.0.1:8012/api/latest
 
 ## API Contract
 
-The latest shadow-account endpoint returns:
+The latest report endpoint returns the newest research report artifact:
 
-- `read_only=true`
-- `ratio_only=true`
-- `contains_trade_orders=false`
-- `theme_signals` with theme rank, stage, score, evidence count, top index/ETF proxies, and score-weight ratio
-- `latest_result` with the full latest research JSON
+- `report_id`
+- `result`, containing the full latest research JSON from `research/mainline/`
 
 ## Development Sync Rule
 

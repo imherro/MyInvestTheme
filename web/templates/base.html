@@ -10,12 +10,12 @@
     <header class="topbar">
       <div>
         <div class="app-title">A股主线研究台</div>
-        <div class="app-subtitle">只读展示 · 历史回看 · 分数曲线 · 影子账户输入</div>
+        <div class="app-subtitle">只读展示 · 历史回看 · 分数曲线 · 最新报告API</div>
       </div>
       <nav class="nav">
         <a class="{{ 'active' if page == 'latest' else '' }}" href="/">最新研究</a>
         <a class="{{ 'active' if page == 'reports' else '' }}" href="/reports">历史研究</a>
-        <a href="/api/shadow-account/latest">最新API</a>
+        <a href="/api/latest">最新API</a>
       </nav>
     </header>
     <main class="page">

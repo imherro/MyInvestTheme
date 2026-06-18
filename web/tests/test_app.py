@@ -24,16 +24,13 @@ def test_health_reports_latest_available():
     assert body["latest_report_id"]
 
 
-def test_latest_shadow_payload_contract():
-    response = get("/api/shadow-account/latest")
+def test_latest_report_contract():
+    response = get("/api/latest")
     assert response.status_code == 200
     body = response.json()
-    assert body["schema_version"] == "mainline_latest_for_shadow_account.v1"
-    assert body["constraints"]["read_only"] is True
-    assert body["constraints"]["ratio_only"] is True
-    assert body["constraints"]["contains_trade_orders"] is False
-    assert body["theme_signals"]
-    assert "latest_result" in body
+    assert set(body) == {"report_id", "result"}
+    assert body["report_id"].startswith("mainline_review_")
+    assert body["result"]["theme_ranking"]
 
 
 def test_reports_and_score_series():

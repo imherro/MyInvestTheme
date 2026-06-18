@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Response
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.requests import Request
@@ -64,16 +64,6 @@ def _parse_generated_at(value: str | None) -> str:
     if not value:
         return ""
     return value.replace(" CST", "")
-
-
-def _stage_weight(stage: str) -> float:
-    if stage == "主线确认":
-        return 1.0
-    if stage == "次主线/强修复":
-        return 0.75
-    if stage == "观察线":
-        return 0.35
-    return 0.0
 
 
 def _report_summary(path: Path) -> dict[str, Any]:
@@ -138,52 +128,6 @@ def build_score_series() -> dict[str, Any]:
     return {
         "themes": [{"theme": theme, "points": points} for theme, points in sorted(points_by_theme.items())],
         "report_count": len(reports),
-    }
-
-
-def build_shadow_payload(report_id: str, payload: dict[str, Any]) -> dict[str, Any]:
-    themes = payload.get("theme_ranking") or []
-    weighted_rows: list[dict[str, Any]] = []
-    total_weight = 0.0
-    for rank, item in enumerate(themes, start=1):
-        score = float(item.get("evidence_score") or 0)
-        raw_weight = score * _stage_weight(str(item.get("stage", "")))
-        total_weight += raw_weight
-        weighted_rows.append(
-            {
-                "rank": rank,
-                "theme": item.get("theme", ""),
-                "stage": item.get("stage", ""),
-                "evidence_score": score,
-                "evidence_count": item.get("evidence_count"),
-                "top_indices": item.get("top_ths", ""),
-                "top_etf": item.get("top_etf", ""),
-                "simulation_weight_base": raw_weight,
-            }
-        )
-    for row in weighted_rows:
-        row["score_weight_ratio"] = round(row["simulation_weight_base"] / total_weight * 100, 4) if total_weight else 0.0
-        del row["simulation_weight_base"]
-
-    return {
-        "schema_version": "mainline_latest_for_shadow_account.v1",
-        "mode": "simulation_input",
-        "report_id": report_id,
-        "basis_date": payload.get("basis_date", ""),
-        "generated_at": payload.get("generated_at", ""),
-        "constraints": {
-            "read_only": True,
-            "ratio_only": True,
-            "contains_trade_orders": False,
-            "contains_cash_amounts": False,
-            "source": "research/mainline JSON artifact",
-        },
-        "market_context": {
-            "breadth": payload.get("breadth", {}),
-            "broad_indexes": payload.get("broad_indexes", []),
-        },
-        "theme_signals": weighted_rows,
-        "latest_result": payload,
     }
 
 
@@ -254,7 +198,6 @@ def api_score_series() -> dict[str, Any]:
 
 @app.get("/api/latest")
 @app.get("/api/mainline/latest")
-@app.get("/api/shadow-account/latest")
-def api_latest() -> JSONResponse:
+def api_latest() -> dict[str, Any]:
     report_id, payload, _ = load_latest_report()
-    return JSONResponse(build_shadow_payload(report_id, payload))
+    return {"report_id": report_id, "result": payload}
