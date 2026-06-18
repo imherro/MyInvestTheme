@@ -131,6 +131,33 @@ def build_score_series() -> dict[str, Any]:
     }
 
 
+def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) -> dict[str, Any]:
+    themes = payload.get("theme_ranking") or []
+    top_theme = themes[0] if themes else {}
+    breadth = payload.get("breadth") or {}
+    return {
+        "page": "index",
+        "latest_report": {
+            "report_id": report_id,
+            "basis_date": payload.get("basis_date", ""),
+            "generated_at": payload.get("generated_at", ""),
+            "theme_count": len(themes),
+            "top_theme": top_theme.get("theme", ""),
+            "top_stage": top_theme.get("stage", ""),
+            "top_score": top_theme.get("evidence_score"),
+            "up_ratio": breadth.get("up_ratio"),
+        },
+        "theme_ranking": themes,
+        "market": {
+            "breadth": breadth,
+            "broad_indexes": payload.get("broad_indexes") or [],
+        },
+        "score_series": build_score_series(),
+        "reports": list_reports(),
+        "markdown": markdown,
+    }
+
+
 @app.get("/", response_class=HTMLResponse)
 def latest_page(request: Request) -> HTMLResponse:
     report_id, payload, markdown = load_latest_report()
@@ -194,6 +221,12 @@ def api_report_markdown(report_id: str) -> Response:
 @app.get("/api/score-series")
 def api_score_series() -> dict[str, Any]:
     return build_score_series()
+
+
+@app.get("/api/index")
+def api_index() -> dict[str, Any]:
+    report_id, payload, markdown = load_latest_report()
+    return build_index_payload(report_id, payload, markdown)
 
 
 @app.get("/api/latest")

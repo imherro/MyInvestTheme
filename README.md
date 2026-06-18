@@ -16,9 +16,19 @@ Open:
 
 - Latest research: http://127.0.0.1:8012/
 - Historical research: http://127.0.0.1:8012/reports
+- Homepage content API: http://127.0.0.1:8012/api/index
 - Latest report API: http://127.0.0.1:8012/api/latest
 
 ## API Contract
+
+The homepage endpoint returns the main content used by `/`:
+
+- `latest_report`
+- `theme_ranking`
+- `market`
+- `score_series`
+- `reports`
+- `markdown`
 
 The latest report endpoint returns the newest research report artifact:
 

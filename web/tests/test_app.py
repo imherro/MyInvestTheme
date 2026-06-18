@@ -33,6 +33,21 @@ def test_latest_report_contract():
     assert body["result"]["theme_ranking"]
 
 
+def test_index_api_returns_homepage_content():
+    response = get("/api/index")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["page"] == "index"
+    assert body["latest_report"]["report_id"].startswith("mainline_review_")
+    assert body["latest_report"]["basis_date"]
+    assert body["theme_ranking"]
+    assert body["market"]["breadth"]
+    assert body["market"]["broad_indexes"]
+    assert body["score_series"]["report_count"] >= 1
+    assert body["reports"]
+    assert "A股主线研究报告" in body["markdown"]
+
+
 def test_reports_and_score_series():
     reports_response = get("/api/reports")
     assert reports_response.status_code == 200
