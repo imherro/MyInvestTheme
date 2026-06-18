@@ -48,7 +48,7 @@
           <td><span class="stage">{{ item.stage }}</span></td>
           <td>{{ "%.2f"|format(item.evidence_score) }}</td>
           <td>{{ item.evidence_count }}</td>
-          <td class="muted">{{ item.top_etf }}</td>
+          <td class="muted etf-cell">{{ item.top_etf }}</td>
         </tr>
         {% endfor %}
       </tbody>

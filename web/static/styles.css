@@ -153,6 +153,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   min-width: 980px;
+  table-layout: fixed;
 }
 
 th,
@@ -181,6 +182,14 @@ th {
   border-radius: 999px;
   padding: 3px 8px;
   white-space: nowrap;
+}
+
+.etf-cell {
+  max-width: 360px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.45;
+  font-size: 13px;
 }
 
 .chart {
@@ -256,6 +265,21 @@ th {
   .page {
     padding: 16px;
   }
+
+  table {
+    min-width: 720px;
+  }
+
+  th,
+  td {
+    padding: 8px 6px;
+  }
+
+  .etf-cell {
+    max-width: 220px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
 }
 
 @media (max-width: 560px) {
@@ -265,5 +289,15 @@ th {
 
   .topbar {
     padding: 14px 16px;
+  }
+
+  table {
+    min-width: 640px;
+  }
+
+  .etf-cell {
+    max-width: 180px;
+    font-size: 11px;
+    line-height: 1.35;
   }
 }
