@@ -132,6 +132,10 @@ def test_reports_and_score_series():
     assert "default_score" in first_point
     assert "default_score_field" in first_point
     assert "legacy_evidence_score" in first_point
+    assert "legacy_market_score" in first_point
+    assert "legacy_policy_score" in first_point
+    assert first_point["default_score_field"] == "mainline_score_v6"
+    assert first_point["score"] == first_point["mainline_score_v6"]
     assert "mainline_score_v6" in first_point
     assert "theme_score_v5" in first_point
     assert "theme_score_v4_stance_adjusted" in first_point

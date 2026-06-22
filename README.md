@@ -62,6 +62,7 @@ The homepage endpoint returns the main content used by `/`:
 - `markdown`
 
 `mainline_ranking` is the canonical default mainline list. `theme_ranking` and `legacy_theme_ranking` are compatibility market-context lists and are not the default mainline ranking.
+In `score_series`, `score` and `default_score` both use `mainline_score_v6`; old market-context values are exposed only as `legacy_*` fields.
 
 The latest report endpoint returns the newest research report artifact:
 

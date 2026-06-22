@@ -466,3 +466,12 @@ legacy_theme_ranking = market-context comparison ranking
 ```
 
 `legacy_evidence_score`, `evidence_score`, and `market_score` are market-context comparison fields only. They are not the canonical mainline ranking score and must not be used for the default one-line conclusion, homepage top mainline, or API default score.
+
+API score-series contract:
+
+```text
+point.score = point.mainline_score_v6
+point.default_score = point.mainline_score_v6
+point.default_score_field = mainline_score_v6
+legacy_evidence_score / legacy_market_score / legacy_policy_score = comparison fields only
+```

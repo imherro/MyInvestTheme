@@ -247,6 +247,9 @@ def _report_summary(path: Path) -> dict[str, Any]:
         "top_theme": top_mainline.get("theme_name") or legacy_top.get("theme", ""),
         "top_stage": top_mainline.get("lifecycle_state") or legacy_top.get("stage", ""),
         "top_score": top_mainline.get("mainline_score_v6", legacy_top.get("evidence_score")),
+        "top_mainline_theme": top_mainline.get("theme_name", ""),
+        "top_mainline_score": top_mainline.get("mainline_score_v6"),
+        "top_mainline_lifecycle_state": top_mainline.get("lifecycle_state", ""),
         "default_score_field": DEFAULT_SCORE_FIELD if mainline_rows else "legacy_evidence_score",
         "canonical_mainline_version": canonical_mainline_summary.get("scoring_version", "") if mainline_rows else "",
         "legacy_top_theme": legacy_top.get("theme", ""),
@@ -360,11 +363,9 @@ def build_score_series() -> dict[str, Any]:
             )
             mainline_score = _float_or_none(item.get("mainline_score_v6"))
             if mainline_score is None:
-                default_score = _float_or_none(legacy.get("evidence_score") if legacy else item.get("evidence_score"))
-                default_score_field = "legacy_evidence_score"
-            else:
-                default_score = mainline_score
-                default_score_field = DEFAULT_SCORE_FIELD
+                continue
+            default_score = mainline_score
+            default_score_field = DEFAULT_SCORE_FIELD
             points_by_theme.setdefault(theme, []).append(
                 {
                     "x": x,
@@ -375,6 +376,8 @@ def build_score_series() -> dict[str, Any]:
                     "default_score_field": default_score_field,
                     "score_field": default_score_field,
                     "legacy_evidence_score": legacy.get("evidence_score") if legacy else item.get("evidence_score"),
+                    "legacy_market_score": legacy.get("market_score") if legacy else item.get("market_score"),
+                    "legacy_policy_score": legacy.get("policy_score") if legacy else item.get("policy_score"),
                     "evidence_score": legacy.get("evidence_score") if legacy else item.get("evidence_score"),
                     "theme_score": legacy.get("ths_score") if legacy else item.get("ths_score"),
                     "etf_score": legacy.get("etf_score") if legacy else item.get("etf_score"),

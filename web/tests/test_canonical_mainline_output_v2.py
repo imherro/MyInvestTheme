@@ -199,13 +199,24 @@ def test_api_index_default_top_mainline_uses_v6():
 
 def test_score_series_uses_mainline_score_as_default_score():
     payload = get("/api/score-series").json()
-    latest_points = [theme["points"][-1] for theme in payload["themes"] if theme["points"]]
-    assert latest_points
-    assert all(point["default_score_field"] == "mainline_score_v6" for point in latest_points if point["mainline_score_v6"] is not None)
-    for point in latest_points:
-        if point["mainline_score_v6"] is not None:
-            assert point["default_score"] == point["mainline_score_v6"]
-            assert "legacy_evidence_score" in point
+    points = [point for theme in payload["themes"] for point in theme["points"]]
+    assert points
+    for point in points:
+        assert point["default_score_field"] == "mainline_score_v6"
+        assert point["score"] == point["mainline_score_v6"]
+        assert point["default_score"] == point["mainline_score_v6"]
+        assert "legacy_evidence_score" in point
+        assert "legacy_market_score" in point
+        assert "legacy_policy_score" in point
+
+
+def test_api_reports_summary_uses_canonical_top():
+    reports = get("/api/reports").json()["reports"]
+    latest = reports[0]
+    assert latest["top_theme"] == latest["top_mainline_theme"]
+    assert latest["top_score"] == latest["top_mainline_score"]
+    assert latest["default_score_field"] == "mainline_score_v6"
+    assert latest["canonical_mainline_version"] == "canonical_mainline_output_v2"
 
 
 def test_readme_uses_canonical_mainline_wording():
