@@ -181,6 +181,30 @@ Read-only APIs:
 /api/compare?report_id=<report_id>
 ```
 
+## Explainability Trace Graph V2
+
+`explainability_trace_graph_v2` is deterministic and read-only. It does not call an LLM, embeddings, external search, market data, or web scraping. It only restructures fields that already exist in a formal report.
+
+It exposes:
+
+- policy nodes from verified policy ids and titles
+- event nodes from `event_cluster_id`
+- theme nodes from `theme_summary.themes`
+- a `mainline_score_v6` root node
+- policy -> event -> theme -> mainline edges
+- event contribution breakdowns for `theme_score_v5`
+- lifecycle-adjusted contribution and formula checks for `mainline_score_v6`
+
+The explanation layer does not change policy scoring, event allocation, lifecycle rules, canonical ranking, contract validation, drift control, golden snapshots, report hashes, or reproducibility manifests.
+
+Read-only API and CLI:
+
+```text
+/api/explain/theme/<theme_id>
+/api/explain/theme/<theme_id>?report_id=<report_id>
+python scripts/explainability_trace.py --latest --theme <theme_id>
+```
+
 ## Signal Schema
 
 Each signal in `data/policy_signals.json` must include:

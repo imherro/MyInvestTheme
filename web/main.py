@@ -22,6 +22,7 @@ from scripts.canonical_mainline import (
 from scripts.mainline_contract_validator import validate_mainline_report_contract
 from scripts.golden_snapshot_builder import GOLDEN_PATH
 from scripts.system_drift_detector import build_drift_report, load_golden_snapshot
+from scripts.theme_explanation_engine import ThemeExplanationNotFound, build_theme_explanation
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
@@ -751,6 +752,20 @@ def api_index() -> dict[str, Any]:
 def api_latest() -> dict[str, Any]:
     report_id, payload, _ = load_latest_report()
     return {"report_id": report_id, "result": _with_canonical_fields(payload)}
+
+
+@app.get("/api/explain/theme/{theme_id}")
+def api_explain_theme(theme_id: str, report_id: str | None = None) -> dict[str, Any]:
+    if report_id:
+        payload = load_report(report_id)
+        effective_report_id = report_id
+    else:
+        effective_report_id, payload, _ = load_latest_report()
+    try:
+        explanation = build_theme_explanation(_with_canonical_fields(payload), theme_id)
+    except ThemeExplanationNotFound as exc:
+        raise HTTPException(status_code=404, detail="主题解释不存在") from exc
+    return {"report_id": effective_report_id, "result": explanation}
 
 
 @app.get("/api/golden-snapshot")
