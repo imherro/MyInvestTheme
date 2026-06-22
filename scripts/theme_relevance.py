@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from policy_scoring import policy_score_components
+from policy_event_clustering import compute_cluster_policy_score_v2
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -61,6 +62,20 @@ def load_theme_config(path: Path = THEME_CONFIG_PATH) -> list[dict[str, Any]]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     themes = payload.get("themes", [])
     return themes if isinstance(themes, list) else []
+
+
+def theme_keywords(themes: list[dict[str, Any]]) -> list[str]:
+    fields = ("core_keywords", "industry_keywords", "beneficiary_keywords", "policy_objectives")
+    keywords: list[str] = []
+    seen: set[str] = set()
+    for theme in themes:
+        for field in fields:
+            for keyword in theme.get(field, []) or []:
+                normalized = normalize_text(keyword)
+                if normalized and normalized not in seen:
+                    seen.add(normalized)
+                    keywords.append(keyword)
+    return keywords
 
 
 def _keyword_hit(text: str, keyword: str) -> bool:
@@ -143,6 +158,19 @@ def sort_theme_summary_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             -row["theme_score_v2"],
             -row["matched_policy_count"],
             -row["avg_relevance_score_v2"],
+            row["theme_id"],
+        ),
+    )
+
+
+def sort_theme_summary_v3_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return sorted(
+        rows,
+        key=lambda row: (
+            -row["theme_score_v3"],
+            -row["matched_event_cluster_count"],
+            -row["avg_cluster_relevance_score_v2"],
+            -row["avg_cluster_policy_score_v2"],
             row["theme_id"],
         ),
     )
@@ -299,4 +327,130 @@ def build_theme_summary(
         "scoring_version": "theme_relevance_v2",
         "min_relevance_threshold": min_threshold,
         "themes": rows,
+    }
+
+
+def build_deduped_theme_summary(
+    signals: list[dict[str, Any]],
+    themes: list[dict[str, Any]],
+    clusters: list[dict[str, Any]],
+    basis: date,
+    *,
+    min_threshold: float = MIN_RELEVANCE_THRESHOLD,
+) -> dict[str, Any]:
+    policies_by_id = {
+        str(policy.get("id") or policy.get("policy_id") or f"policy_{index:04d}"): policy
+        for index, policy in enumerate(signals)
+    }
+    cluster_by_policy: dict[str, dict[str, Any]] = {}
+    for cluster in clusters:
+        for policy_id in cluster.get("member_policy_ids", []) or []:
+            cluster_by_policy[str(policy_id)] = cluster
+
+    rows: list[dict[str, Any]] = []
+    for theme in themes:
+        raw_contributors: list[dict[str, Any]] = []
+        for policy_id, policy in policies_by_id.items():
+            relevance = compute_theme_relevance_v2(policy, theme)
+            relevance_score = float(relevance["relevance_score_v2"])
+            if relevance_score < min_threshold:
+                continue
+            policy_components = policy_score_components(policy, basis)
+            policy_score = round(policy_components["policy_score_v2"], 4)
+            raw_contributors.append(
+                {
+                    "policy_id": policy_id,
+                    "title": policy.get("title", ""),
+                    "source": policy.get("source", ""),
+                    "published_date": policy.get("published_date", ""),
+                    "url": policy.get("url", ""),
+                    "policy_score_v2": policy_score,
+                    "relevance_score_v2": relevance_score,
+                    "contribution": compute_theme_contribution(policy_score, relevance_score),
+                    "keyword_score": relevance["keyword_score"],
+                    "beneficiary_score": relevance["beneficiary_score"],
+                    "policy_objective_score": relevance["policy_objective_score"],
+                    "negative_filter_score": relevance["negative_filter_score"],
+                    "base_relevance": relevance["base_relevance"],
+                    "matched_evidence": relevance["matched_evidence"],
+                    **policy_components,
+                    "policy_score_v2": policy_score,
+                }
+            )
+
+        raw_by_cluster: dict[str, list[dict[str, Any]]] = {}
+        for contributor in raw_contributors:
+            cluster = cluster_by_policy.get(contributor["policy_id"])
+            if not cluster:
+                continue
+            raw_by_cluster.setdefault(cluster["event_cluster_id"], []).append(contributor)
+
+        event_contributors: list[dict[str, Any]] = []
+        for cluster in clusters:
+            cluster_id = cluster["event_cluster_id"]
+            members = raw_by_cluster.get(cluster_id, [])
+            if not members:
+                continue
+            primary_policy = policies_by_id.get(str(cluster.get("primary_policy_id", "")), {})
+            cluster_policy_score = compute_cluster_policy_score_v2(cluster, policies_by_id)
+            selected = sorted(members, key=lambda row: (-row["relevance_score_v2"], row["policy_id"]))[0]
+            cluster_relevance = selected["relevance_score_v2"]
+            event_contributors.append(
+                {
+                    "event_cluster_id": cluster_id,
+                    "theme_id": theme.get("theme_id", ""),
+                    "theme_name": theme.get("theme_name", ""),
+                    "primary_policy_id": cluster.get("primary_policy_id", ""),
+                    "primary_policy_title": cluster.get("primary_policy_title", ""),
+                    "source": primary_policy.get("source", ""),
+                    "published_date": primary_policy.get("published_date", primary_policy.get("publish_date", "")),
+                    "url": primary_policy.get("url", primary_policy.get("source_url", primary_policy.get("official_url", ""))),
+                    "member_policy_ids": cluster.get("member_policy_ids", []),
+                    "cluster_size": cluster.get("cluster_size", 0),
+                    "cluster_policy_score_v2": cluster_policy_score,
+                    "cluster_relevance_score_v2": cluster_relevance,
+                    "cluster_contribution": compute_theme_contribution(cluster_policy_score, cluster_relevance),
+                    "selected_relevance_policy_id": selected["policy_id"],
+                    "cluster_reason": cluster.get("cluster_reason", []),
+                    "metrics": cluster.get("metrics", {}),
+                    "top_matched_evidence": selected.get("matched_evidence", []),
+                }
+            )
+
+        event_contributors.sort(key=lambda row: (-row["cluster_contribution"], row["event_cluster_id"]))
+        theme_score_v2_raw = round(sum(row["contribution"] for row in raw_contributors), 4)
+        theme_score_v3 = round(sum(row["cluster_contribution"] for row in event_contributors), 4)
+        deduplication_effect = round(max(theme_score_v2_raw - theme_score_v3, 0.0), 4)
+        event_count = len(event_contributors)
+        avg_cluster_relevance = (
+            round(sum(row["cluster_relevance_score_v2"] for row in event_contributors) / event_count, 4)
+            if event_count
+            else 0.0
+        )
+        avg_cluster_policy = (
+            round(sum(row["cluster_policy_score_v2"] for row in event_contributors) / event_count, 4)
+            if event_count
+            else 0.0
+        )
+        rows.append(
+            {
+                "theme_id": theme.get("theme_id", ""),
+                "theme_name": theme.get("theme_name", ""),
+                "theme_score_v3": theme_score_v3,
+                "theme_score_v2_raw": theme_score_v2_raw,
+                "matched_event_cluster_count": event_count,
+                "matched_policy_count_raw": len(raw_contributors),
+                "deduplication_effect": deduplication_effect,
+                "avg_cluster_relevance_score_v2": avg_cluster_relevance,
+                "avg_cluster_policy_score_v2": avg_cluster_policy,
+                "top_event_contributors": event_contributors[:3],
+            }
+        )
+
+    return {
+        "scoring_version": "theme_score_v3_event_dedup",
+        "base_relevance_version": "theme_relevance_v2",
+        "event_clustering_version": "policy_event_clustering_v2",
+        "min_relevance_threshold": min_threshold,
+        "themes": sort_theme_summary_v3_rows(rows),
     }

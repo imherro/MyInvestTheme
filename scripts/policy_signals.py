@@ -6,7 +6,14 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
-from theme_relevance import MIN_RELEVANCE_THRESHOLD, build_theme_summary, load_theme_config
+from policy_event_clustering import build_event_cluster_summary, build_policy_event_clusters
+from policy_scoring import policy_score_components
+from theme_relevance import (
+    MIN_RELEVANCE_THRESHOLD,
+    build_deduped_theme_summary,
+    load_theme_config,
+    theme_keywords,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -44,7 +51,30 @@ def policy_theme_summary(basis_date: str, theme_names: list[str], path: Path = P
     store = load_policy_store(path)
     allowed = set(theme_names)
     themes = [theme for theme in load_theme_config() if theme.get("theme_name") in allowed]
-    return build_theme_summary(store.get("signals", []), themes, basis, min_threshold=MIN_RELEVANCE_THRESHOLD)
+    signals = scored_policy_signals(store.get("signals", []), basis)
+    clusters = build_policy_event_clusters(signals, theme_keywords(themes))
+    return build_deduped_theme_summary(signals, themes, clusters, basis, min_threshold=MIN_RELEVANCE_THRESHOLD)
+
+
+def policy_event_summary(basis_date: str, theme_names: list[str], path: Path = POLICY_PATH) -> dict[str, Any]:
+    basis = parse_date(basis_date)
+    if basis is None:
+        raise ValueError(f"Invalid basis_date: {basis_date}")
+    store = load_policy_store(path)
+    allowed = set(theme_names)
+    themes = [theme for theme in load_theme_config() if theme.get("theme_name") in allowed]
+    signals = scored_policy_signals(store.get("signals", []), basis)
+    clusters = build_policy_event_clusters(signals, theme_keywords(themes))
+    return build_event_cluster_summary(signals, clusters)
+
+
+def scored_policy_signals(signals: list[dict[str, Any]], basis: date) -> list[dict[str, Any]]:
+    scored = []
+    for signal in signals:
+        item = dict(signal)
+        item.update(policy_score_components(item, basis))
+        scored.append(item)
+    return scored
 
 
 def score_policy_by_theme(basis_date: str, theme_names: list[str], path: Path = POLICY_PATH) -> dict[str, dict[str, Any]]:
@@ -54,10 +84,13 @@ def score_policy_by_theme(basis_date: str, theme_names: list[str], path: Path = 
             "score": 0.0,
             "evidence_count": 0,
             "top_policies": [],
-            "theme_score_v2": 0.0,
-            "matched_policy_count": 0,
-            "avg_relevance_score_v2": 0.0,
-            "avg_policy_score_v2": 0.0,
+            "theme_score_v3": 0.0,
+            "theme_score_v2_raw": 0.0,
+            "matched_event_cluster_count": 0,
+            "matched_policy_count_raw": 0,
+            "deduplication_effect": 0.0,
+            "avg_cluster_relevance_score_v2": 0.0,
+            "avg_cluster_policy_score_v2": 0.0,
         }
         for theme in theme_names
     }
@@ -67,37 +100,49 @@ def score_policy_by_theme(basis_date: str, theme_names: list[str], path: Path = 
         if theme not in result:
             continue
         contributors = theme_item.get("top_policy_contributors") or []
+        event_contributors = theme_item.get("top_event_contributors") or contributors
         result[theme].update(
             {
-                "score": min(100.0, float(theme_item.get("theme_score_v2") or 0.0) * 100),
-                "evidence_count": int(theme_item.get("matched_policy_count") or 0),
-                "theme_score_v2": theme_item.get("theme_score_v2", 0.0),
-                "matched_policy_count": int(theme_item.get("matched_policy_count") or 0),
-                "avg_relevance_score_v2": theme_item.get("avg_relevance_score_v2", 0.0),
-                "avg_policy_score_v2": theme_item.get("avg_policy_score_v2", 0.0),
+                "score": min(100.0, float(theme_item.get("theme_score_v3") or 0.0) * 100),
+                "evidence_count": int(theme_item.get("matched_event_cluster_count") or 0),
+                "theme_score_v3": theme_item.get("theme_score_v3", 0.0),
+                "theme_score_v2_raw": theme_item.get("theme_score_v2_raw", 0.0),
+                "matched_event_cluster_count": int(theme_item.get("matched_event_cluster_count") or 0),
+                "matched_policy_count_raw": int(theme_item.get("matched_policy_count_raw") or 0),
+                "deduplication_effect": theme_item.get("deduplication_effect", 0.0),
+                "avg_cluster_relevance_score_v2": theme_item.get("avg_cluster_relevance_score_v2", 0.0),
+                "avg_cluster_policy_score_v2": theme_item.get("avg_cluster_policy_score_v2", 0.0),
                 "top_policies": [
                     {
-                        "id": row.get("policy_id", ""),
-                        "title": row.get("title", ""),
+                        "id": row.get("primary_policy_id", row.get("policy_id", "")),
+                        "event_cluster_id": row.get("event_cluster_id", ""),
+                        "title": row.get("primary_policy_title", row.get("title", "")),
                         "source": row.get("source", ""),
                         "published_date": row.get("published_date", ""),
                         "url": row.get("url", ""),
-                        "score": float(row.get("contribution") or 0.0) * 100,
-                        "base_score": float(row.get("policy_score_v2") or 0.0) * 100,
-                        "relevance_score_v2": row.get("relevance_score_v2", 0.0),
-                        "contribution": row.get("contribution", 0.0),
+                        "score": float(row.get("cluster_contribution", row.get("contribution", 0.0)) or 0.0) * 100,
+                        "base_score": float(row.get("cluster_policy_score_v2", row.get("policy_score_v2", 0.0)) or 0.0) * 100,
+                        "relevance_score_v2": row.get("cluster_relevance_score_v2", row.get("relevance_score_v2", 0.0)),
+                        "contribution": row.get("cluster_contribution", row.get("contribution", 0.0)),
                         "keyword_score": row.get("keyword_score", 0.0),
                         "beneficiary_score": row.get("beneficiary_score", 0.0),
                         "policy_objective_score": row.get("policy_objective_score", 0.0),
                         "negative_filter_score": row.get("negative_filter_score", 1.0),
-                        "matched_evidence": row.get("matched_evidence", []),
-                        "policy_score_v2": row.get("policy_score_v2", 0.0),
+                        "matched_evidence": row.get("top_matched_evidence", row.get("matched_evidence", [])),
+                        "policy_score_v2": row.get("cluster_policy_score_v2", row.get("policy_score_v2", 0.0)),
+                        "cluster_policy_score_v2": row.get("cluster_policy_score_v2", 0.0),
+                        "cluster_relevance_score_v2": row.get("cluster_relevance_score_v2", 0.0),
+                        "cluster_contribution": row.get("cluster_contribution", 0.0),
+                        "cluster_size": row.get("cluster_size", 1),
+                        "member_policy_ids": row.get("member_policy_ids", []),
+                        "cluster_reason": row.get("cluster_reason", []),
+                        "metrics": row.get("metrics", {}),
                         "authority_score": row.get("authority_score", 0.0),
                         "actionability_score": row.get("actionability_score", 0.0),
                         "economic_scope_score": row.get("economic_scope_score", 0.0),
                         "time_decay_score": row.get("time_decay_score", 0.0),
                     }
-                    for row in contributors
+                    for row in event_contributors
                 ],
             }
         )

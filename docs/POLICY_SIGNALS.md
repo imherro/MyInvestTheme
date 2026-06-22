@@ -8,7 +8,8 @@ The daily automation keeps policy research separate from market scoring.
 2. Codex updates `data/policy_signals.json` only when there is a relevant new or corrected official signal.
 3. `scripts/generate_mainline_report.py` reads the policy store and recalculates `policy_score_v2` deterministically for the report basis date.
 4. `scripts/theme_relevance.py` maps policy signals to mainline themes through deterministic `theme_relevance_v2` rules from `config/themes.json`.
-5. `scripts/daily_mainline_update.py` commits the policy store together with any new report.
+5. `scripts/policy_event_clustering.py` clusters duplicate policy signals into deterministic policy events.
+6. `scripts/daily_mainline_update.py` commits the policy store together with any new report.
 
 ## Official Sources
 
@@ -117,7 +118,49 @@ Theme contribution:
 
 ```text
 contribution = policy_score_v2 * relevance_score_v2
-theme_score_v2 = sum(contribution)
+theme_score_v2_raw = sum(contribution)
 ```
 
-The report writes `theme_summary.scoring_version = theme_relevance_v2` and includes matched evidence for each top policy contributor.
+`theme_score_v2_raw` is retained only as an undeduplicated comparison field. It is not the default mainline policy ranking score.
+
+## Policy Event Clustering V2
+
+Policy event clustering is deterministic and does not delete raw policy signals. It only prevents repeated policy signals from being counted multiple times in theme contribution.
+
+`scripts/policy_event_clustering.py` clusters policies through:
+
+- direct matches: same `policy_id`, `source_url`/`url`, or `official_url`
+- standard match: same normalized official source, publish dates within 7 days, and title similarity >= 0.65 or keyword overlap >= 0.45
+- weak-source match: dates within 7 days, title similarity >= 0.75, and keyword overlap >= 0.55
+- missing-date match: same normalized source, title similarity >= 0.80, and keyword overlap >= 0.60
+
+The cluster policy strength is:
+
+```text
+cluster_policy_score_v2 = max(member.policy_score_v2)
+```
+
+For each theme:
+
+```text
+cluster_relevance_score_v2 =
+  max(relevance_score_v2 of member policies for this theme)
+
+cluster_contribution =
+  cluster_policy_score_v2 * cluster_relevance_score_v2
+
+theme_score_v3 =
+  sum(cluster_contribution for matched event clusters)
+
+deduplication_effect =
+  max(theme_score_v2_raw - theme_score_v3, 0.0)
+```
+
+`theme_score_v3` is the default deduplicated policy-theme score used by new reports. `theme_score_v2_raw` remains as a comparison field.
+
+The report writes:
+
+- `event_cluster_summary.scoring_version = policy_event_clustering_v2`
+- `theme_summary.scoring_version = theme_score_v3_event_dedup`
+- `theme_summary.base_relevance_version = theme_relevance_v2`
+- `theme_summary.event_clustering_version = policy_event_clustering_v2`

@@ -31,6 +31,7 @@ Policy scoring:
 - Codex reviews official policy sources and maintains `data/policy_signals.json`.
 - The report generator calculates `policy_score` from `policy_score_v2`, a deterministic rule score.
 - Policy-to-theme mapping uses deterministic `theme_relevance_v2` rules from `config/themes.json`; old manual relevance values do not participate.
+- Policy event clustering uses deterministic `policy_event_clustering_v2`; `theme_score_v3` is the default deduplicated policy-theme score, while `theme_score_v2_raw` is retained only for comparison.
 - Mainline score is `market_score * 85% + policy_score * 15%`.
 - See `docs/POLICY_SIGNALS.md` for the extraction schema and scoring rules.
 

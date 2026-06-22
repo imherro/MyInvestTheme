@@ -168,6 +168,8 @@ def _report_summary(path: Path) -> dict[str, Any]:
     themes = payload.get("theme_ranking") or []
     top_theme = themes[0] if themes else {}
     md_path = path.with_suffix(".md")
+    event_cluster_summary = payload.get("event_cluster_summary") or {}
+    theme_summary = payload.get("theme_summary") or {}
     return {
         "report_id": _report_id(path),
         "generated_at": payload.get("generated_at", ""),
@@ -177,6 +179,25 @@ def _report_summary(path: Path) -> dict[str, Any]:
         "top_stage": top_theme.get("stage", ""),
         "top_score": top_theme.get("evidence_score"),
         "has_markdown": md_path.exists(),
+        "event_cluster_summary": {
+            "raw_policy_count": event_cluster_summary.get("raw_policy_count", 0),
+            "cluster_count": event_cluster_summary.get("cluster_count", 0),
+            "deduplication_ratio": event_cluster_summary.get("deduplication_ratio", 0.0),
+        },
+        "theme_summary": {
+            "scoring_version": theme_summary.get("scoring_version", ""),
+        },
+        "top_themes": [
+            {
+                "theme": item.get("theme", ""),
+                "theme_score_v3": item.get("theme_score_v3"),
+                "theme_score_v2_raw": item.get("theme_score_v2_raw"),
+                "matched_event_cluster_count": item.get("matched_event_cluster_count"),
+                "matched_policy_count_raw": item.get("matched_policy_count_raw"),
+                "deduplication_effect": item.get("deduplication_effect"),
+            }
+            for item in themes[:3]
+        ],
     }
 
 
@@ -223,9 +244,12 @@ def build_score_series() -> dict[str, Any]:
                     "industry_score": item.get("sw_score"),
                     "market_score": item.get("market_score"),
                     "policy_score": item.get("policy_score"),
-                    "theme_score_v2": item.get("theme_score_v2"),
-                    "matched_policy_count": item.get("matched_policy_count"),
-                    "avg_relevance_score_v2": item.get("avg_relevance_score_v2"),
+                    "theme_score_v3": item.get("theme_score_v3"),
+                    "theme_score_v2_raw": item.get("theme_score_v2_raw"),
+                    "matched_event_cluster_count": item.get("matched_event_cluster_count"),
+                    "matched_policy_count_raw": item.get("matched_policy_count_raw"),
+                    "deduplication_effect": item.get("deduplication_effect"),
+                    "avg_cluster_relevance_score_v2": item.get("avg_cluster_relevance_score_v2"),
                     "resonance_score": _resonance_score(item),
                     "triple_confirmation": all(
                         (_float_or_none(item.get(key)) or 0) >= 75
@@ -259,6 +283,7 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
             "up_ratio": breadth.get("up_ratio"),
         },
         "theme_ranking": themes,
+        "event_cluster_summary": payload.get("event_cluster_summary") or {},
         "theme_summary": payload.get("theme_summary") or {},
         "market": {
             "breadth": breadth,
