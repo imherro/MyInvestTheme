@@ -1,6 +1,6 @@
 {
   "updated_at": "2026-06-22T11:30:00+08:00",
-  "method": "Codex/LLM extracts structured policy signals from official sources; Python scoring is deterministic.",
+  "method": "Codex/LLM extracts official-source facts; Python policy_score_v2 scoring is deterministic.",
   "signals": [
     {
       "id": "ndrc-2026-06-03-intelligent-economy",
@@ -8,10 +8,13 @@
       "source": "国家发展改革委",
       "published_date": "2026-06-03",
       "authority_level": "national_ministry",
+      "economic_scope": "cross_industry",
       "url": "https://www.ndrc.gov.cn/wsdwhfz/202606/t20260603_1405684.html",
-      "specificity": 0.62,
-      "implementation_path": 0.56,
-      "confidence": 0.86,
+      "authority_score": 0.85,
+      "actionability_score": 0.0,
+      "economic_scope_score": 0.8,
+      "time_decay_score": 0.530819,
+      "policy_score_v2": 0.563664,
       "evidence": "强调智能经济以人工智能为底层驱动，数据为关键生产要素，算力为基础支撑，并推动智能技术与实体经济融合。",
       "themes": [
         {
@@ -37,10 +40,13 @@
       "source": "国家能源局",
       "published_date": "2026-05-09",
       "authority_level": "multi_ministry",
+      "economic_scope": "cross_industry",
       "url": "https://www.nea.gov.cn/20260509/45e5721670704d4e8555d2212211db45/c.html",
-      "specificity": 0.92,
-      "implementation_path": 0.88,
-      "confidence": 0.92,
+      "authority_score": 0.8,
+      "actionability_score": 0.0,
+      "economic_scope_score": 0.8,
+      "time_decay_score": 0.230693,
+      "policy_score_v2": 0.486139,
       "evidence": "行动方案聚焦保障算力设施能源供给、推动绿色低碳转型、促进算力电力协同，并部署29项重点任务。",
       "themes": [
         {
@@ -61,10 +67,13 @@
       "source": "中国证监会",
       "published_date": "2026-04-10",
       "authority_level": "national_regulator",
+      "economic_scope": "cross_industry",
       "url": "https://www.csrc.gov.cn/csrc/c100028/c7625370/content.shtml",
-      "specificity": 0.82,
-      "implementation_path": 0.78,
-      "confidence": 0.88,
+      "authority_score": 0.85,
+      "actionability_score": 0.0,
+      "economic_scope_score": 0.8,
+      "time_decay_score": 0.087744,
+      "policy_score_v2": 0.475049,
       "evidence": "政策强调创业板更好服务成长型创新创业企业和新质生产力，覆盖信息技术、新能源、高端装备等战略性新兴产业。",
       "themes": [
         {
@@ -95,10 +104,13 @@
       "source": "国家发展改革委",
       "published_date": "2026-06-01",
       "authority_level": "national_ministry",
+      "economic_scope": "national",
       "url": "https://www.ndrc.gov.cn/wsdwhfz/202606/t20260601_1405600.html",
-      "specificity": 0.70,
-      "implementation_path": 0.72,
-      "confidence": 0.82,
+      "authority_score": 0.85,
+      "actionability_score": 0.3,
+      "economic_scope_score": 1.0,
+      "time_decay_score": 0.496585,
+      "policy_score_v2": 0.671817,
       "evidence": "围绕十五五规划109项重大工程，强调新质生产力、现代化基础设施、绿色低碳转型和产业基础能力。",
       "themes": [
         {

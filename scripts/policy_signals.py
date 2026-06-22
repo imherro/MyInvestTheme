@@ -6,19 +6,11 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
+from policy_scoring import compute_policy_score_v2, policy_score_components
+
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY_PATH = ROOT / "data" / "policy_signals.json"
-
-AUTHORITY_SCORES = {
-    "state_council": 100,
-    "multi_ministry": 95,
-    "national_ministry": 90,
-    "national_regulator": 88,
-    "exchange": 75,
-    "provincial": 70,
-    "industry_association": 55,
-}
 
 
 def load_policy_store(path: Path = POLICY_PATH) -> dict[str, Any]:
@@ -36,25 +28,6 @@ def parse_date(value: str | None) -> date | None:
         return None
 
 
-def freshness_score(published: date | None, basis: date) -> float:
-    if published is None:
-        return 0.0
-    age = (basis - published).days
-    if age < 0:
-        return 0.0
-    if age <= 7:
-        return 100.0
-    if age <= 30:
-        return 85.0
-    if age <= 90:
-        return 65.0
-    if age <= 180:
-        return 45.0
-    if age <= 365:
-        return 25.0
-    return 0.0
-
-
 def clamp_score(value: Any, default: float = 0.0) -> float:
     try:
         number = float(value)
@@ -70,19 +43,16 @@ def normalized_factor(value: Any) -> float:
     return number * 100 if number <= 1 else number
 
 
+def is_unit_number(value: Any) -> bool:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return False
+    return not (math.isnan(number) or math.isinf(number)) and 0.0 <= number <= 1.0
+
+
 def signal_base_score(signal: dict[str, Any], basis: date) -> float:
-    authority = AUTHORITY_SCORES.get(str(signal.get("authority_level") or ""), 50)
-    freshness = freshness_score(parse_date(signal.get("published_date")), basis)
-    specificity = normalized_factor(signal.get("specificity"))
-    implementation = normalized_factor(signal.get("implementation_path"))
-    confidence = normalized_factor(signal.get("confidence", 0.7))
-    return (
-        0.30 * authority
-        + 0.20 * freshness
-        + 0.20 * specificity
-        + 0.20 * implementation
-        + 0.10 * confidence
-    )
+    return compute_policy_score_v2(signal, basis) * 100
 
 
 def score_policy_by_theme(basis_date: str, theme_names: list[str], path: Path = POLICY_PATH) -> dict[str, dict[str, Any]]:
@@ -98,6 +68,7 @@ def score_policy_by_theme(basis_date: str, theme_names: list[str], path: Path = 
 
     for signal in store.get("signals", []):
         base_score = signal_base_score(signal, basis)
+        components = policy_score_components(signal, basis)
         for mapping in signal.get("themes", []):
             theme = mapping.get("theme")
             if theme not in result:
@@ -113,9 +84,12 @@ def score_policy_by_theme(basis_date: str, theme_names: list[str], path: Path = 
                     "source": signal.get("source", ""),
                     "published_date": signal.get("published_date", ""),
                     "url": signal.get("url", ""),
+                    "authority_level": signal.get("authority_level", ""),
+                    "economic_scope": signal.get("economic_scope", ""),
                     "score": score,
                     "base_score": base_score,
                     "relevance": relevance,
+                    **components,
                     "evidence": signal.get("evidence", ""),
                     "beneficiary_chain": mapping.get("beneficiary_chain", []),
                 }
@@ -154,4 +128,12 @@ def validate_policy_store(path: Path = POLICY_PATH) -> list[str]:
             errors.append(f"signal {signal_id or index}: invalid published_date")
         if not isinstance(signal.get("themes"), list):
             errors.append(f"signal {signal_id or index}: themes must be a list")
+        for deprecated in ("specificity", "implementation_path", "confidence"):
+            if deprecated in signal:
+                errors.append(f"signal {signal_id or index}: deprecated field {deprecated} must not be used")
+        for field in ("authority_score", "actionability_score", "economic_scope_score", "time_decay_score", "policy_score_v2"):
+            if field not in signal:
+                errors.append(f"signal {signal_id or index}: missing {field}")
+            elif not is_unit_number(signal.get(field)):
+                errors.append(f"signal {signal_id or index}: {field} must be 0-1")
     return errors

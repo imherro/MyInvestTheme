@@ -29,7 +29,7 @@ The daily updater is idempotent: if the latest complete Tushare trading date alr
 Policy scoring:
 
 - Codex reviews official policy sources and maintains `data/policy_signals.json`.
-- The report generator calculates `policy_score` from the policy store with deterministic rules.
+- The report generator calculates `policy_score` from `policy_score_v2`, a deterministic rule score.
 - Mainline score is `market_score * 85% + policy_score * 15%`.
 - See `docs/POLICY_SIGNALS.md` for the extraction schema and scoring rules.
 
