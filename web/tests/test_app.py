@@ -34,7 +34,8 @@ def test_latest_report_contract():
     assert body["result"].get("event_cluster_summary", {}).get("scoring_version") == "policy_event_clustering_v2"
     assert body["result"].get("policy_stance_summary", {}).get("scoring_version") == "policy_theme_stance_v2"
     assert body["result"].get("event_theme_allocation_summary", {}).get("scoring_version") == "event_theme_allocation_v2"
-    assert body["result"].get("theme_summary", {}).get("scoring_version") == "theme_score_v5_allocated"
+    assert body["result"].get("mainline_lifecycle_summary", {}).get("scoring_version") == "mainline_lifecycle_v2"
+    assert body["result"].get("theme_summary", {}).get("scoring_version") == "mainline_score_v6_lifecycle_adjusted"
 
 
 def test_index_api_returns_homepage_content():
@@ -44,11 +45,18 @@ def test_index_api_returns_homepage_content():
     assert body["page"] == "index"
     assert body["latest_report"]["report_id"].startswith("mainline_review_")
     assert body["latest_report"]["basis_date"]
+    assert body["latest_report"]["theme_scoring_version"] == "mainline_score_v6_lifecycle_adjusted"
+    assert body["latest_report"]["mainline_lifecycle_version"] == "mainline_lifecycle_v2"
+    assert body["latest_report"]["top_mainline_theme_v6"]
+    assert body["latest_report"]["top_mainline_score_v6"] is not None
+    assert body["latest_report"]["top_mainline_lifecycle_state"]
     assert body["theme_ranking"]
     assert body["event_cluster_summary"]["scoring_version"] == "policy_event_clustering_v2"
     assert body["policy_stance_summary"]["scoring_version"] == "policy_theme_stance_v2"
     assert body["event_theme_allocation_summary"]["scoring_version"] == "event_theme_allocation_v2"
-    assert body["theme_summary"]["scoring_version"] == "theme_score_v5_allocated"
+    assert body["mainline_lifecycle_summary"]["scoring_version"] == "mainline_lifecycle_v2"
+    assert body["theme_summary"]["scoring_version"] == "mainline_score_v6_lifecycle_adjusted"
+    assert "mainline_score_v6" in body["reports"][0]["top_themes"][0]
     assert "theme_score_v5" in body["reports"][0]["top_themes"][0]
     assert "theme_score_v4_stance_adjusted" in body["reports"][0]["top_themes"][0]
     assert "theme_score_v4" in body["reports"][0]["top_themes"][0]
@@ -60,6 +68,10 @@ def test_index_api_returns_homepage_content():
     assert "matched_allocated_event_count" in body["reports"][0]["top_themes"][0]
     assert "deduplication_effect" in body["reports"][0]["top_themes"][0]
     assert "stance_adjustment_effect" in body["reports"][0]["top_themes"][0]
+    assert "lifecycle_state" in body["reports"][0]["top_themes"][0]
+    assert "lifecycle_quality_multiplier" in body["reports"][0]["top_themes"][0]
+    assert "score_30d" in body["reports"][0]["top_themes"][0]
+    assert "score_90d" in body["reports"][0]["top_themes"][0]
     first_theme = body["theme_ranking"][0]
     assert "evidence_breakdown" in first_theme
     labels = {item["label"] for item in first_theme["evidence_breakdown"]}
@@ -104,6 +116,7 @@ def test_reports_and_score_series():
     assert "theme_score" in first_point
     assert "etf_score" in first_point
     assert "policy_score" in first_point
+    assert "mainline_score_v6" in first_point
     assert "theme_score_v5" in first_point
     assert "theme_score_v4_stance_adjusted" in first_point
     assert "theme_score_v4" in first_point
@@ -113,6 +126,10 @@ def test_reports_and_score_series():
     assert "allocation_adjustment_effect" in first_point
     assert "deduplication_effect" in first_point
     assert "stance_adjustment_effect" in first_point
+    assert "lifecycle_state" in first_point
+    assert "lifecycle_quality_multiplier" in first_point
+    assert "score_30d" in first_point
+    assert "score_90d" in first_point
     assert "resonance_score" in first_point
     assert "triple_confirmation" in first_point
 

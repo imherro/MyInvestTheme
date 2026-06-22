@@ -1,0 +1,35 @@
+{
+  "version": "mainline_lifecycle_v2",
+  "windows_days": {
+    "recent_7d": 7,
+    "recent_30d": 30,
+    "prior_30d_start": 31,
+    "prior_30d_end": 60,
+    "prior_60_90d_start": 61,
+    "prior_60_90d_end": 90
+  },
+  "active_window_score_threshold": 0.05,
+  "acceleration_ratio_threshold": 0.25,
+  "cooling_ratio_threshold": -0.40,
+  "min_accelerating_event_count_30d": 2,
+  "min_sustained_active_window_count": 2,
+  "min_sustained_event_count_90d": 2,
+  "breadth_targets": {
+    "event_count_90d_target": 3,
+    "source_org_count_90d_target": 3
+  },
+  "state_multipliers": {
+    "accelerating": 1.0,
+    "sustained": 0.95,
+    "emerging": 0.85,
+    "single_event_emerging": 0.70,
+    "cooling": 0.55,
+    "legacy_tail": 0.35,
+    "undated_unknown": 0.40,
+    "dormant": 0.0
+  },
+  "quality_multiplier_weights": {
+    "state_multiplier": 0.75,
+    "breadth_score": 0.25
+  }
+}

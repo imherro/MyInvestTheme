@@ -11,7 +11,8 @@ The daily automation keeps policy research separate from market scoring.
 5. `scripts/policy_event_clustering.py` clusters duplicate policy signals into deterministic policy events.
 6. `scripts/policy_stance.py` identifies whether each policy supports, mildly supports, neutrally mixes, mildly restricts, or restricts each matched theme.
 7. `scripts/theme_allocation.py` allocates one event's finite contribution budget across matched themes through deterministic `event_theme_allocation_v2`.
-8. `scripts/daily_mainline_update.py` commits the policy store together with any new report.
+8. `scripts/mainline_lifecycle.py` classifies each theme's current lifecycle through deterministic `mainline_lifecycle_v2`.
+9. `scripts/daily_mainline_update.py` commits the policy store together with any new report.
 
 ## Official Sources
 
@@ -163,11 +164,12 @@ deduplication_effect =
 The report writes:
 
 - `event_cluster_summary.scoring_version = policy_event_clustering_v2`
-- `theme_summary.scoring_version = theme_score_v5_allocated`
+- `theme_summary.scoring_version = mainline_score_v6_lifecycle_adjusted`
 - `theme_summary.base_relevance_version = theme_relevance_v2`
 - `theme_summary.event_clustering_version = policy_event_clustering_v2`
 - `theme_summary.policy_stance_version = policy_theme_stance_v2`
 - `theme_summary.event_theme_allocation_version = event_theme_allocation_v2`
+- `theme_summary.mainline_lifecycle_version = mainline_lifecycle_v2`
 
 ## Policy Theme Stance V2
 
@@ -328,6 +330,101 @@ allocation_adjustment_effect =
   max(theme_score_v4_stance_adjusted - theme_score_v5, 0.0)
 ```
 
-`theme_score_v5` is the default policy-theme score used by new reports. `theme_score_v4_stance_adjusted`, `theme_score_v3_dedup`, and `theme_score_v2_raw` remain comparison fields.
+`theme_score_v5` is the event-theme allocated comparison score before lifecycle adjustment. `theme_score_v4_stance_adjusted`, `theme_score_v3_dedup`, and `theme_score_v2_raw` remain comparison fields.
 
 The allocation layer is only a mainline research input. It does not generate trading, position, account, order, backtest or execution advice.
+
+## Mainline Lifecycle V2
+
+Mainline lifecycle scoring is deterministic and does not use LLM scoring, embeddings, market prices, funds flow, trading data, returns, historical report files or manual lifecycle scores. It only consumes the current report's allocated event-theme contributors and their policy dates.
+
+Configuration lives in `config/mainline_lifecycle_rules.json`. The default state multipliers are:
+
+- `accelerating = 1.00`
+- `sustained = 0.95`
+- `emerging = 0.85`
+- `single_event_emerging = 0.70`
+- `cooling = 0.55`
+- `legacy_tail = 0.35`
+- `undated_unknown = 0.40`
+- `dormant = 0.00`
+
+Event activity date is selected from the first available field:
+
+```text
+publish_date_max
+event_publish_date_max
+publish_date
+published_date
+primary_policy_publish_date
+publish_date_min
+event_publish_date_min
+```
+
+Future dates are clamped to `age_days = 0`; missing dates are counted as `undated`.
+
+Age buckets:
+
+```text
+age_days <= 7   -> recent_7d
+age_days <= 30  -> recent_30d
+age_days <= 60  -> prior_31_60d
+age_days <= 90  -> prior_61_90d
+otherwise       -> older
+missing date    -> undated
+```
+
+Lifecycle metrics:
+
+```text
+score_30d = score_7d + recent_30d score
+score_90d = score_30d + score_31_60d + score_61_90d
+active_window_count =
+  count(score_30d >= threshold) +
+  count(score_31_60d >= threshold) +
+  count(score_61_90d >= threshold)
+persistence_score = active_window_count / 3
+acceleration_delta_30d = score_30d - score_31_60d
+acceleration_ratio_30d =
+  clamp(acceleration_delta_30d / max(score_31_60d, threshold), -1.0, 5.0)
+```
+
+Lifecycle state is classified in this order:
+
+```text
+dormant
+undated_unknown
+legacy_tail
+cooling
+accelerating
+sustained
+single_event_emerging
+emerging
+legacy_tail fallback
+```
+
+Breadth score:
+
+```text
+event_breadth_score =
+  min(event_count_90d / event_count_90d_target, 1.0)
+source_breadth_score =
+  min(source_org_count_90d / source_org_count_90d_target, 1.0)
+breadth_score =
+  0.6 * event_breadth_score + 0.4 * source_breadth_score
+```
+
+Lifecycle multiplier and final score:
+
+```text
+lifecycle_quality_multiplier =
+  0.75 * state_multiplier +
+  0.25 * breadth_score
+
+mainline_score_v6 =
+  theme_score_v5 * lifecycle_quality_multiplier
+```
+
+`mainline_score_v6` is the default policy-theme score used by new reports. It is capped so it cannot exceed `theme_score_v5`. `theme_score_v5`, `theme_score_v4_stance_adjusted`, `theme_score_v3_dedup`, and `theme_score_v2_raw` remain comparison fields.
+
+The lifecycle layer is only a mainline research input. It does not generate trading, position, account, order, backtest or execution advice.

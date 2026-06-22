@@ -172,6 +172,7 @@ def _report_summary(path: Path) -> dict[str, Any]:
     theme_summary = payload.get("theme_summary") or {}
     policy_stance_summary = payload.get("policy_stance_summary") or {}
     event_theme_allocation_summary = payload.get("event_theme_allocation_summary") or {}
+    mainline_lifecycle_summary = payload.get("mainline_lifecycle_summary") or {}
     return {
         "report_id": _report_id(path),
         "generated_at": payload.get("generated_at", ""),
@@ -200,16 +201,25 @@ def _report_summary(path: Path) -> dict[str, Any]:
             "capped_event_count": event_theme_allocation_summary.get("capped_event_count", 0),
             "allocation_reduction_effect": event_theme_allocation_summary.get("allocation_reduction_effect", 0.0),
         },
+        "mainline_lifecycle_summary": {
+            "scoring_version": mainline_lifecycle_summary.get("scoring_version", ""),
+            "accelerating_count": mainline_lifecycle_summary.get("accelerating_count", 0),
+            "sustained_count": mainline_lifecycle_summary.get("sustained_count", 0),
+            "emerging_count": mainline_lifecycle_summary.get("emerging_count", 0),
+            "cooling_count": mainline_lifecycle_summary.get("cooling_count", 0),
+        },
         "theme_summary": {
             "scoring_version": theme_summary.get("scoring_version", ""),
             "policy_stance_version": theme_summary.get("policy_stance_version", ""),
             "event_theme_allocation_version": theme_summary.get("event_theme_allocation_version", ""),
+            "mainline_lifecycle_version": theme_summary.get("mainline_lifecycle_version", ""),
         },
         "top_themes": [
             {
                 "theme_id": item.get("theme_id", ""),
                 "theme_name": item.get("theme", ""),
                 "theme": item.get("theme", ""),
+                "mainline_score_v6": item.get("mainline_score_v6"),
                 "theme_score_v5": item.get("theme_score_v5"),
                 "theme_score_v4_stance_adjusted": item.get("theme_score_v4_stance_adjusted"),
                 "theme_score_v4": item.get("theme_score_v4"),
@@ -223,6 +233,13 @@ def _report_summary(path: Path) -> dict[str, Any]:
                 "deduplication_effect": item.get("deduplication_effect"),
                 "stance_adjustment_effect": item.get("stance_adjustment_effect"),
                 "primary_event_count": item.get("primary_event_count"),
+                "lifecycle_state": item.get("lifecycle_state"),
+                "lifecycle_quality_multiplier": item.get("lifecycle_quality_multiplier"),
+                "score_30d": item.get("score_30d"),
+                "score_90d": item.get("score_90d"),
+                "event_count_30d": item.get("event_count_30d"),
+                "event_count_90d": item.get("event_count_90d"),
+                "source_org_count_90d": item.get("source_org_count_90d"),
                 "supportive_cluster_count": item.get("supportive_cluster_count"),
                 "restrictive_cluster_count": item.get("restrictive_cluster_count"),
             }
@@ -274,6 +291,7 @@ def build_score_series() -> dict[str, Any]:
                     "industry_score": item.get("sw_score"),
                     "market_score": item.get("market_score"),
                     "policy_score": item.get("policy_score"),
+                    "mainline_score_v6": item.get("mainline_score_v6"),
                     "theme_score_v5": item.get("theme_score_v5"),
                     "theme_score_v4_stance_adjusted": item.get("theme_score_v4_stance_adjusted"),
                     "theme_score_v4": item.get("theme_score_v4"),
@@ -288,6 +306,10 @@ def build_score_series() -> dict[str, Any]:
                     "stance_adjustment_effect": item.get("stance_adjustment_effect"),
                     "primary_event_count": item.get("primary_event_count"),
                     "avg_allocation_share": item.get("avg_allocation_share"),
+                    "lifecycle_state": item.get("lifecycle_state"),
+                    "lifecycle_quality_multiplier": item.get("lifecycle_quality_multiplier"),
+                    "score_30d": item.get("score_30d"),
+                    "score_90d": item.get("score_90d"),
                     "supportive_cluster_count": item.get("supportive_cluster_count"),
                     "restrictive_cluster_count": item.get("restrictive_cluster_count"),
                     "avg_cluster_stance_score_v2": item.get("avg_cluster_stance_score_v2"),
@@ -311,6 +333,8 @@ def build_score_series() -> dict[str, Any]:
 def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) -> dict[str, Any]:
     themes = enrich_theme_ranking(payload.get("theme_ranking") or [])
     top_theme = themes[0] if themes else {}
+    theme_summary = payload.get("theme_summary") or {}
+    top_mainline = (theme_summary.get("top_themes") or theme_summary.get("themes") or [{}])[0]
     breadth = payload.get("breadth") or {}
     return {
         "page": "index",
@@ -322,13 +346,19 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
             "top_theme": top_theme.get("theme", ""),
             "top_stage": top_theme.get("stage", ""),
             "top_score": top_theme.get("evidence_score"),
+            "theme_scoring_version": theme_summary.get("scoring_version", ""),
+            "mainline_lifecycle_version": theme_summary.get("mainline_lifecycle_version", ""),
+            "top_mainline_theme_v6": top_mainline.get("theme_name") or top_mainline.get("theme", ""),
+            "top_mainline_score_v6": top_mainline.get("mainline_score_v6"),
+            "top_mainline_lifecycle_state": top_mainline.get("lifecycle_state", ""),
             "up_ratio": breadth.get("up_ratio"),
         },
         "theme_ranking": themes,
         "event_cluster_summary": payload.get("event_cluster_summary") or {},
         "policy_stance_summary": payload.get("policy_stance_summary") or {},
         "event_theme_allocation_summary": payload.get("event_theme_allocation_summary") or {},
-        "theme_summary": payload.get("theme_summary") or {},
+        "mainline_lifecycle_summary": payload.get("mainline_lifecycle_summary") or {},
+        "theme_summary": theme_summary,
         "market": {
             "breadth": breadth,
             "broad_indexes": payload.get("broad_indexes") or [],

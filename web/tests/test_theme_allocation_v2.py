@@ -250,4 +250,4 @@ def test_api_latest_exposes_allocation_versions():
     result = response.json()["result"]
 
     assert result["event_theme_allocation_summary"]["scoring_version"] == "event_theme_allocation_v2"
-    assert result["theme_summary"]["scoring_version"] == "theme_score_v5_allocated"
+    assert result["theme_summary"]["event_theme_allocation_version"] == "event_theme_allocation_v2"

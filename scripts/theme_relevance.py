@@ -13,6 +13,7 @@ from theme_allocation import (
     build_allocated_theme_summary,
     build_event_theme_claim_rows,
 )
+from mainline_lifecycle import build_lifecycle_adjusted_theme_summary, build_mainline_lifecycle_summary
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -539,4 +540,6 @@ def build_deduped_theme_summary(
         "themes": sort_theme_summary_v4_rows(rows),
     }
     allocation_summary = allocate_event_theme_contributions(build_event_theme_claim_rows(v4_summary))
-    return build_allocated_theme_summary(v4_summary, allocation_summary)
+    allocated_summary = build_allocated_theme_summary(v4_summary, allocation_summary)
+    lifecycle_summary = build_mainline_lifecycle_summary(allocated_summary, basis)
+    return build_lifecycle_adjusted_theme_summary(allocated_summary, lifecycle_summary)
