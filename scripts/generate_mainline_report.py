@@ -31,6 +31,8 @@ from data_quality_guard import (
     run_optional_stage,
 )
 from mainline_contract_validator import validate_mainline_report_contract
+from policy_provenance import SCORING_VERSION as POLICY_PROVENANCE_VERSION
+from policy_provenance import build_policy_provenance_summary
 from policy_signals import load_policy_store, policy_event_summary, policy_theme_summary, score_policy_by_theme
 
 
@@ -743,6 +745,10 @@ def _replace_data_quality_stage(payload: dict[str, Any], stage_status: dict[str,
 
 
 def attach_contract_validation(payload: dict[str, Any]) -> dict[str, Any]:
+    _replace_data_quality_stage(
+        payload,
+        build_stage_status("contract_validation", "pass", True, 1, [], None),
+    )
     summary = validate_mainline_report_contract(payload)
     if summary["error_count"]:
         _replace_data_quality_stage(
@@ -772,6 +778,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
     policy_stance_summary = payload.get("policy_stance_summary") or {}
     event_theme_allocation_summary = payload.get("event_theme_allocation_summary") or {}
     mainline_lifecycle_summary = payload.get("mainline_lifecycle_summary") or {}
+    policy_provenance_summary = payload.get("policy_provenance_summary") or {}
     canonical_summary = payload.get("canonical_mainline_summary") or {}
     data_quality_summary = payload.get("data_quality_summary") or {}
     contract_summary = payload.get("contract_validation_summary") or {}
@@ -822,6 +829,26 @@ def render_markdown(payload: dict[str, Any]) -> str:
         ]
     lines += [
         "",
+        "## 政策来源溯源摘要",
+        "",
+        f"- 溯源版本：{policy_provenance_summary.get('scoring_version', POLICY_PROVENANCE_VERSION)}",
+        f"- 状态：{policy_provenance_summary.get('status', 'not_run')}",
+        f"- 原始政策数：{policy_provenance_summary.get('raw_policy_count', 0)}",
+        f"- 纳入主线政策数：{policy_provenance_summary.get('included_policy_count', 0)}",
+        f"- 排除政策数：{policy_provenance_summary.get('excluded_policy_count', 0)}",
+        f"- verified/degraded/rejected：{policy_provenance_summary.get('verified_count', 0)}/{policy_provenance_summary.get('degraded_count', 0)}/{policy_provenance_summary.get('rejected_count', 0)}",
+        f"- 官方域名命中数：{policy_provenance_summary.get('official_domain_match_count', 0)}；来源机构-域名严格匹配数：{policy_provenance_summary.get('source_org_domain_match_count', 0)}",
+        f"- 必填字段缺失政策数：{policy_provenance_summary.get('missing_required_field_count', 0)}；日期不可解析政策数：{policy_provenance_summary.get('unparseable_date_count', 0)}",
+    ]
+    excluded_policies = policy_provenance_summary.get("excluded_policies") or []
+    if excluded_policies:
+        lines += ["", "排除样本："]
+        for item in excluded_policies[:5]:
+            lines.append(
+                f"- {item.get('policy_id', '')}：{item.get('exclusion_reason', '')}；domain={item.get('source_domain', '')}"
+            )
+    lines += [
+        "",
         "## 报告合约校验",
         "",
         f"- 校验版本：{contract_summary.get('scoring_version', 'mainline_contract_validator_v2')}",
@@ -859,7 +886,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "- 默认主线分：mainline_score_v6 = theme_score_v5 × lifecycle_quality_multiplier。",
         f"- 旧证据分兼容口径：旧市场证据分{(1 - policy_summary.get('policy_weight', POLICY_WEIGHT)) * 100:.0f}% + 政策分{policy_summary.get('policy_weight', POLICY_WEIGHT) * 100:.0f}%，不参与默认主线排序。",
         "- 旧阶段：85分以上为主线确认，72-85为次主线/强修复，50-72为观察线，50以下为弱势/退潮，仅用于旧市场证据观察。",
-        f"- 政策库更新时间：{policy_summary.get('updated_at') or '无'}；政策信号数：{policy_summary.get('signals_count', 0)}；政策-主题相关度阈值：{policy_summary.get('min_relevance_threshold', 0.25)}；去重后事件数：{event_cluster_summary.get('cluster_count', 0)}。",
+        f"- 政策库更新时间：{policy_summary.get('updated_at') or '无'}；原始政策数：{policy_summary.get('raw_policy_count', policy_summary.get('signals_count', 0))}；纳入主线政策数：{policy_summary.get('included_policy_count', policy_summary.get('signals_count', 0))}；排除政策数：{policy_summary.get('excluded_policy_count', 0)}；政策-主题相关度阈值：{policy_summary.get('min_relevance_threshold', 0.25)}；去重后事件数：{event_cluster_summary.get('cluster_count', 0)}。",
         "",
         "## 市场土壤",
         "",
@@ -1134,6 +1161,21 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
     stage_statuses: list[dict[str, Any]] = []
     policy_store = load_policy_store()
     stage_statuses.append(build_stage_status("policy_store", "pass", True, len(policy_store.get("signals", []))))
+    try:
+        policy_provenance_summary = build_policy_provenance_summary(policy_store.get("signals", []))
+        stage_statuses.append(
+            build_stage_status(
+                "policy_provenance",
+                "pass",
+                True,
+                int(policy_provenance_summary.get("included_policy_count") or 0),
+            )
+        )
+    except Exception as exc:
+        stage_statuses.append(build_stage_status("policy_provenance", "fail", True, 0, [], str(exc)))
+        data_quality_summary = build_data_quality_summary(stage_statuses)
+        assert_required_data_quality(data_quality_summary)
+        raise
     event_cluster_summary = policy_event_summary(basis_date, [spec.name for spec in THEMES])
     theme_summary = policy_theme_summary(basis_date, [spec.name for spec in THEMES])
     stage_statuses.append(build_stage_status("policy_theme_summary", "pass", True, len(theme_summary.get("themes", []))))
@@ -1214,7 +1256,11 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
         "broad_indexes": broad,
         "policy_summary": {
             "updated_at": policy_store.get("updated_at", ""),
-            "signals_count": len(policy_store.get("signals", [])),
+            "signals_count": int(policy_provenance_summary.get("included_policy_count") or 0),
+            "raw_policy_count": int(policy_provenance_summary.get("raw_policy_count") or 0),
+            "included_policy_count": int(policy_provenance_summary.get("included_policy_count") or 0),
+            "excluded_policy_count": int(policy_provenance_summary.get("excluded_policy_count") or 0),
+            "policy_provenance_version": POLICY_PROVENANCE_VERSION,
             "policy_weight": POLICY_WEIGHT,
             "scoring_version": "policy_score_v2",
             "theme_relevance_version": "theme_relevance_v2",
@@ -1225,6 +1271,7 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
             "min_relevance_threshold": theme_summary.get("min_relevance_threshold", 0.25),
             "scoring": "authority_score 35%, actionability_score 25%, economic_scope_score 20%, time_decay_score 20%; theme_relevance_v2 maps signals; policy_event_clustering_v2 deduplicates events; policy_theme_stance_v2 applies non-boosting direction multipliers; event_theme_allocation_v2 caps repeated event-theme contribution.",
         },
+        "policy_provenance_summary": policy_provenance_summary,
         "event_cluster_summary": event_cluster_summary,
         "policy_stance_summary": stance_summary,
         "event_theme_allocation_summary": event_theme_allocation_summary,

@@ -3,6 +3,7 @@
   "status_values": ["pass", "degraded", "fail"],
   "required_stages": [
     "policy_store",
+    "policy_provenance",
     "policy_theme_summary",
     "canonical_mainline",
     "contract_validation"

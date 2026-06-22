@@ -1,0 +1,59 @@
+{
+  "version": "policy_source_provenance_v2",
+  "official_domain_allowlist": {
+    "state_council": ["www.gov.cn", "gov.cn"],
+    "ndrc": ["www.ndrc.gov.cn", "ndrc.gov.cn"],
+    "mof": ["www.mof.gov.cn", "mof.gov.cn"],
+    "miit": ["www.miit.gov.cn", "miit.gov.cn"],
+    "csrc": ["www.csrc.gov.cn", "csrc.gov.cn"],
+    "pboc": ["www.pbc.gov.cn", "pbc.gov.cn"],
+    "nea": ["www.nea.gov.cn", "nea.gov.cn"],
+    "most": ["www.most.gov.cn", "most.gov.cn"],
+    "mofcom": ["www.mofcom.gov.cn", "mofcom.gov.cn"],
+    "nda": ["www.nda.gov.cn", "nda.gov.cn"]
+  },
+  "official_domain_suffixes": [".gov.cn"],
+  "source_org_aliases": {
+    "国务院": "state_council",
+    "国务院办公厅": "state_council",
+    "国家发展改革委": "ndrc",
+    "国家发改委": "ndrc",
+    "国家发展和改革委员会": "ndrc",
+    "财政部": "mof",
+    "工业和信息化部": "miit",
+    "工信部": "miit",
+    "中国证监会": "csrc",
+    "证监会": "csrc",
+    "中国人民银行": "pboc",
+    "人民银行": "pboc",
+    "国家能源局": "nea",
+    "科学技术部": "most",
+    "科技部": "most",
+    "商务部": "mofcom",
+    "国家数据局": "nda"
+  },
+  "required_fields": [
+    "policy_id",
+    "title",
+    "source_org",
+    "source_url",
+    "publish_date",
+    "summary",
+    "key_points"
+  ],
+  "recommended_fields": [
+    "beneficiary_chain",
+    "related_industries"
+  ],
+  "field_aliases": {
+    "policy_id": ["policy_id", "id"],
+    "source_org": ["source_org", "source", "issuer", "authority", "department"],
+    "source_url": ["source_url", "url", "official_url"],
+    "publish_date": ["publish_date", "published_date", "date", "source_date"],
+    "summary": ["summary", "evidence"],
+    "title": ["title"],
+    "key_points": ["key_points"],
+    "beneficiary_chain": ["beneficiary_chain"],
+    "related_industries": ["related_industries"]
+  }
+}

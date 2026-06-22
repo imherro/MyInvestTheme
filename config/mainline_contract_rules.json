@@ -5,8 +5,16 @@
   "default_score_field": "mainline_score_v6",
   "data_quality_scoring_version": "live_report_data_guard_v2",
   "data_quality_status_values": ["pass", "degraded", "fail"],
+  "data_quality_required_stages": [
+    "policy_store",
+    "policy_provenance",
+    "policy_theme_summary",
+    "canonical_mainline",
+    "contract_validation"
+  ],
   "required_sections": [
     "policy_summary",
+    "policy_provenance_summary",
     "event_cluster_summary",
     "policy_stance_summary",
     "event_theme_allocation_summary",
@@ -19,6 +27,8 @@
   ],
   "version_contract": {
     "policy_summary.scoring_version": "policy_score_v2",
+    "policy_summary.policy_provenance_version": "policy_source_provenance_v2",
+    "policy_provenance_summary.scoring_version": "policy_source_provenance_v2",
     "event_cluster_summary.scoring_version": "policy_event_clustering_v2",
     "policy_stance_summary.scoring_version": "policy_theme_stance_v2",
     "event_theme_allocation_summary.scoring_version": "event_theme_allocation_v2",

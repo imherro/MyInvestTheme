@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from policy_event_clustering import build_event_cluster_summary, build_policy_event_clusters
+from policy_provenance import filter_policies_by_provenance
 from policy_scoring import policy_score_components
 from theme_relevance import (
     MIN_RELEVANCE_THRESHOLD,
@@ -24,6 +25,11 @@ def load_policy_store(path: Path = POLICY_PATH) -> dict[str, Any]:
     if not path.exists():
         return {"updated_at": "", "signals": []}
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def included_policy_signals(signals: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    included, _ = filter_policies_by_provenance(signals)
+    return included
 
 
 def parse_date(value: str | None) -> date | None:
@@ -51,7 +57,7 @@ def policy_theme_summary(basis_date: str, theme_names: list[str], path: Path = P
     store = load_policy_store(path)
     allowed = set(theme_names)
     themes = [theme for theme in load_theme_config() if theme.get("theme_name") in allowed]
-    signals = scored_policy_signals(store.get("signals", []), basis)
+    signals = scored_policy_signals(included_policy_signals(store.get("signals", [])), basis)
     clusters = build_policy_event_clusters(signals, theme_keywords(themes))
     return build_deduped_theme_summary(signals, themes, clusters, basis, min_threshold=MIN_RELEVANCE_THRESHOLD)
 
@@ -67,7 +73,7 @@ def policy_event_summary(basis_date: str, theme_names: list[str], path: Path = P
     store = load_policy_store(path)
     allowed = set(theme_names)
     themes = [theme for theme in load_theme_config() if theme.get("theme_name") in allowed]
-    signals = scored_policy_signals(store.get("signals", []), basis)
+    signals = scored_policy_signals(included_policy_signals(store.get("signals", [])), basis)
     clusters = build_policy_event_clusters(signals, theme_keywords(themes))
     return build_event_cluster_summary(signals, clusters)
 
@@ -260,17 +266,25 @@ def validate_policy_store(path: Path = POLICY_PATH) -> list[str]:
     errors: list[str] = []
     seen: set[str] = set()
     for index, signal in enumerate(store.get("signals", []), start=1):
-        signal_id = signal.get("id")
+        signal_id = signal.get("id") or signal.get("policy_id")
         if not signal_id:
             errors.append(f"signal {index}: missing id")
         elif signal_id in seen:
             errors.append(f"signal {index}: duplicate id {signal_id}")
         else:
             seen.add(signal_id)
-        for field in ("title", "source", "published_date", "authority_level", "url"):
-            if not signal.get(field):
+        field_aliases = {
+            "title": ("title",),
+            "source": ("source", "source_org"),
+            "published_date": ("published_date", "publish_date"),
+            "authority_level": ("authority_level",),
+            "url": ("url", "source_url", "official_url"),
+        }
+        for field, aliases in field_aliases.items():
+            if not any(signal.get(alias) for alias in aliases):
                 errors.append(f"signal {signal_id or index}: missing {field}")
-        if parse_date(signal.get("published_date")) is None:
+        published = signal.get("published_date") or signal.get("publish_date")
+        if parse_date(published) is None:
             errors.append(f"signal {signal_id or index}: invalid published_date")
         for deprecated in ("specificity", "implementation_path", "confidence"):
             if deprecated in signal:

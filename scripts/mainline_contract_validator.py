@@ -799,6 +799,176 @@ def validate_data_quality_contract(report: dict[str, Any], rules: dict[str, Any]
             actual=optional_failure_count,
         )
 
+    stage_statuses = _as_list(summary.get("stage_statuses"))
+    stages_by_name = {str(status.get("stage")): status for status in stage_statuses if isinstance(status, dict)}
+    for stage in rules.get("data_quality_required_stages") or []:
+        status = stages_by_name.get(str(stage))
+        if not status:
+            add_issue(
+                issues,
+                "error",
+                "DATA_QUALITY_REQUIRED_STAGE_MISSING",
+                f"data_quality_summary.stage_statuses.{stage}",
+                "Required data quality stage is missing from stage_statuses.",
+                expected={"stage": stage, "required": True},
+                actual="missing",
+            )
+            continue
+        if not status.get("required"):
+            add_issue(
+                issues,
+                "error",
+                "DATA_QUALITY_REQUIRED_STAGE_NOT_REQUIRED",
+                f"data_quality_summary.stage_statuses.{stage}.required",
+                "Required data quality stage must be marked required.",
+                expected=True,
+                actual=status.get("required"),
+            )
+
+
+def _find_policy_id_leaks(value: Any, rejected_ids: set[str], path: str) -> list[dict[str, Any]]:
+    leaks: list[dict[str, Any]] = []
+    policy_id_fields = {
+        "policy_id",
+        "primary_policy_id",
+        "selected_relevance_policy_id",
+        "selected_stance_policy_id",
+    }
+    policy_id_list_fields = {"member_policy_ids", "included_policy_ids"}
+    if isinstance(value, dict):
+        for key, item in value.items():
+            child_path = f"{path}.{key}" if path else str(key)
+            if key in policy_id_fields:
+                item_id = str(item or "")
+                if item_id in rejected_ids:
+                    leaks.append({"path": child_path, "policy_id": item_id})
+            elif key in policy_id_list_fields and isinstance(item, list):
+                for index, member_id in enumerate(item):
+                    item_id = str(member_id or "")
+                    if item_id in rejected_ids:
+                        leaks.append({"path": f"{child_path}.{index}", "policy_id": item_id})
+            leaks.extend(_find_policy_id_leaks(item, rejected_ids, child_path))
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            leaks.extend(_find_policy_id_leaks(item, rejected_ids, f"{path}.{index}" if path else str(index)))
+    return leaks
+
+
+def validate_policy_provenance_contract(report: dict[str, Any], rules: dict[str, Any], issues: list[dict[str, Any]]) -> None:
+    summary = report.get("policy_provenance_summary")
+    if not isinstance(summary, dict) or not summary:
+        add_issue(
+            issues,
+            "error",
+            "POLICY_PROVENANCE_SUMMARY_MISSING",
+            "policy_provenance_summary",
+            "New reports must include policy_provenance_summary.",
+            expected="present",
+            actual="missing",
+        )
+        return
+
+    expected_version = "policy_source_provenance_v2"
+    if summary.get("scoring_version") != expected_version:
+        add_issue(
+            issues,
+            "error",
+            "POLICY_PROVENANCE_VERSION_MISMATCH",
+            "policy_provenance_summary.scoring_version",
+            "policy_provenance_summary scoring version mismatch.",
+            expected=expected_version,
+            actual=summary.get("scoring_version"),
+        )
+
+    raw_count = _int(summary.get("raw_policy_count"))
+    included_count = _int(summary.get("included_policy_count"))
+    excluded_count = _int(summary.get("excluded_policy_count"))
+    rejected_count = _int(summary.get("rejected_count"))
+    degraded_count = _int(summary.get("degraded_count"))
+    if raw_count != included_count + excluded_count:
+        add_issue(
+            issues,
+            "error",
+            "POLICY_PROVENANCE_COUNT_MISMATCH",
+            "policy_provenance_summary.raw_policy_count",
+            "raw_policy_count must equal included_policy_count + excluded_policy_count.",
+            expected=included_count + excluded_count,
+            actual=raw_count,
+        )
+    if rejected_count != excluded_count:
+        add_issue(
+            issues,
+            "error",
+            "POLICY_REJECTED_EXCLUDED_COUNT_MISMATCH",
+            "policy_provenance_summary.rejected_count",
+            "rejected_count must equal excluded_policy_count.",
+            expected=excluded_count,
+            actual=rejected_count,
+        )
+
+    policy_summary = _as_dict(report.get("policy_summary"))
+    if _int(policy_summary.get("signals_count")) != included_count:
+        add_issue(
+            issues,
+            "error",
+            "POLICY_SUMMARY_INCLUDED_COUNT_MISMATCH",
+            "policy_summary.signals_count",
+            "policy_summary.signals_count must equal policy_provenance_summary.included_policy_count.",
+            expected=included_count,
+            actual=_int(policy_summary.get("signals_count")),
+        )
+
+    if degraded_count > 0:
+        add_issue(
+            issues,
+            "warning",
+            "POLICY_PROVENANCE_DEGRADED_PRESENT",
+            "policy_provenance_summary.degraded_count",
+            "Some policies are included with degraded provenance.",
+            expected=0,
+            actual=degraded_count,
+        )
+    if rejected_count > 0:
+        add_issue(
+            issues,
+            "warning",
+            "POLICY_PROVENANCE_REJECTED_EXCLUDED",
+            "policy_provenance_summary.rejected_count",
+            "Rejected policies are present in the raw store and must remain excluded from scoring.",
+            expected=0,
+            actual=rejected_count,
+        )
+
+    rejected_ids = {str(item) for item in summary.get("excluded_policy_ids") or [] if str(item)}
+    for row in _as_list(summary.get("excluded_policies")):
+        if isinstance(row, dict) and row.get("policy_id"):
+            rejected_ids.add(str(row.get("policy_id")))
+    if not rejected_ids:
+        return
+    checked_sections = {
+        "theme_summary": report.get("theme_summary"),
+        "event_cluster_summary": report.get("event_cluster_summary"),
+        "policy_stance_summary": report.get("policy_stance_summary"),
+        "event_theme_allocation_summary": report.get("event_theme_allocation_summary"),
+        "mainline_lifecycle_summary": report.get("mainline_lifecycle_summary"),
+        "mainline_ranking": report.get("mainline_ranking"),
+        "theme_ranking": report.get("theme_ranking"),
+        "legacy_theme_ranking": report.get("legacy_theme_ranking"),
+    }
+    leaks: list[dict[str, Any]] = []
+    for section, value in checked_sections.items():
+        leaks.extend(_find_policy_id_leaks(value, rejected_ids, section))
+    if leaks:
+        add_issue(
+            issues,
+            "error",
+            "REJECTED_POLICY_USED_IN_MAINLINE",
+            leaks[0]["path"],
+            "Rejected policy appeared in a mainline scoring section.",
+            expected="no rejected policy IDs in scoring sections",
+            actual=leaks[:10],
+        )
+
 
 def validate_mainline_report_contract(
     report: dict[str, Any],
@@ -820,6 +990,7 @@ def validate_mainline_report_contract(
         "counts_contract": True,
         "legacy_default_leak": True,
         "data_quality_contract": True,
+        "policy_provenance_contract": True,
     }
     validate_required_sections(report, active_rules, issues, require_self_section=require_self_section)
     validate_version_contract(report, active_rules, issues)
@@ -831,6 +1002,7 @@ def validate_mainline_report_contract(
     validate_counts_contract(report, active_rules, issues)
     validate_no_legacy_default_leak(report, active_rules, issues)
     validate_data_quality_contract(report, active_rules, issues)
+    validate_policy_provenance_contract(report, active_rules, issues)
 
     error_count, warning_count = _issue_counts(issues)
     return {
