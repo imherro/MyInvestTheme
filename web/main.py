@@ -223,6 +223,9 @@ def build_score_series() -> dict[str, Any]:
                     "industry_score": item.get("sw_score"),
                     "market_score": item.get("market_score"),
                     "policy_score": item.get("policy_score"),
+                    "theme_score_v2": item.get("theme_score_v2"),
+                    "matched_policy_count": item.get("matched_policy_count"),
+                    "avg_relevance_score_v2": item.get("avg_relevance_score_v2"),
                     "resonance_score": _resonance_score(item),
                     "triple_confirmation": all(
                         (_float_or_none(item.get(key)) or 0) >= 75
@@ -256,6 +259,7 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
             "up_ratio": breadth.get("up_ratio"),
         },
         "theme_ranking": themes,
+        "theme_summary": payload.get("theme_summary") or {},
         "market": {
             "breadth": breadth,
             "broad_indexes": payload.get("broad_indexes") or [],

@@ -1,0 +1,76 @@
+{
+  "themes": [
+    {
+      "theme_id": "hard_tech_semiconductor",
+      "theme_name": "硬科技电子/半导体",
+      "core_keywords": ["半导体", "芯片", "集成电路", "电子", "硬科技"],
+      "industry_keywords": ["半导体设备", "封测", "AI芯片", "电子元件", "元器件", "PCB", "印制电路板", "光学元件", "信息技术"],
+      "beneficiary_keywords": ["半导体", "信息技术", "AI芯片", "硬科技融资", "算力硬件", "电子元件", "科技创新"],
+      "policy_objectives": ["科技自立自强", "新质生产力", "产业基础", "科技创新", "国产替代"],
+      "negative_keywords": ["监管处罚", "压降", "整治", "限制", "风险提示"]
+    },
+    {
+      "theme_id": "high_end_manufacturing_robotics_defense",
+      "theme_name": "高端制造/机器人/军工",
+      "core_keywords": ["高端装备", "机器人", "军工", "智能制造", "自动化"],
+      "industry_keywords": ["机床", "工业机械", "通用设备", "专用设备", "航空", "船舶", "高端装备"],
+      "beneficiary_keywords": ["先进制造", "现代化产业体系", "产业基础", "自动化改造", "工业智能化", "并购融资"],
+      "policy_objectives": ["新质生产力", "产业升级", "现代化产业体系", "科技创新", "产业基础"],
+      "negative_keywords": ["监管处罚", "压降", "整治", "限制", "风险提示"]
+    },
+    {
+      "theme_id": "infrastructure_materials",
+      "theme_name": "建材/稳增长修复",
+      "core_keywords": ["建材", "建筑材料", "基建", "基础设施", "水泥", "玻璃"],
+      "industry_keywords": ["建筑产品", "装修建材", "玻璃玻纤", "工程建设", "非金属材料"],
+      "beneficiary_keywords": ["现代化基础设施", "重大工程", "基础设施", "工程建设", "稳增长"],
+      "policy_objectives": ["稳增长", "扩大内需", "现代化基础设施", "重大工程"],
+      "negative_keywords": ["监管处罚", "压降", "整治", "限制", "风险提示"]
+    },
+    {
+      "theme_id": "ai_compute_communications",
+      "theme_name": "AI算力/通信",
+      "core_keywords": ["人工智能", "AI", "大模型", "算力", "智能算力", "数据中心", "通信"],
+      "industry_keywords": ["服务器", "芯片", "光模块", "液冷", "IDC", "云计算", "通信网络", "IT设备"],
+      "beneficiary_keywords": ["算力基础设施", "智能计算中心", "数据要素", "算法模型", "算力设施", "算电协同", "通信网络"],
+      "policy_objectives": ["数字经济", "新质生产力", "科技自立自强", "智能经济", "人工智能"],
+      "negative_keywords": ["监管处罚", "压降", "整治", "限制", "风险提示"]
+    },
+    {
+      "theme_id": "new_energy_power_equipment",
+      "theme_name": "新能源/电力设备",
+      "core_keywords": ["新能源", "电力设备", "电池", "锂电", "光伏", "风电", "储能"],
+      "industry_keywords": ["电网", "电网调度", "清洁能源", "能源装备", "固态电池", "绿色低碳"],
+      "beneficiary_keywords": ["清洁能源供给", "电网调度", "储能", "电力设备", "绿色低碳转型", "能源装备"],
+      "policy_objectives": ["绿色低碳", "能源转型", "双碳", "新质生产力", "现代化基础设施"],
+      "negative_keywords": ["监管处罚", "压降", "整治", "限制", "风险提示"]
+    },
+    {
+      "theme_id": "resources_cycle",
+      "theme_name": "资源周期",
+      "core_keywords": ["资源", "有色", "煤炭", "石油", "钢铁", "稀土", "黄金", "铜"],
+      "industry_keywords": ["小金属", "工业金属", "铝", "能源", "矿产", "金属新材"],
+      "beneficiary_keywords": ["资源保障", "能源安全", "战略资源", "矿产资源", "工业金属"],
+      "policy_objectives": ["能源安全", "资源安全", "产业基础", "稳增长"],
+      "negative_keywords": ["监管处罚", "压降", "整治", "限制", "风险提示"]
+    },
+    {
+      "theme_id": "consumption_media",
+      "theme_name": "消费/传媒",
+      "core_keywords": ["消费", "传媒", "游戏", "影视", "旅游", "家电", "食品饮料"],
+      "industry_keywords": ["零售", "免税", "教育", "社会服务", "美容护理", "家居用品", "消费电子"],
+      "beneficiary_keywords": ["扩大内需", "消费升级", "文化消费", "旅游消费", "家电消费"],
+      "policy_objectives": ["扩大内需", "促消费", "消费复苏", "文化强国"],
+      "negative_keywords": ["监管处罚", "压降", "整治", "限制", "风险提示"]
+    },
+    {
+      "theme_id": "innovative_medicine",
+      "theme_name": "创新药/医药",
+      "core_keywords": ["创新药", "医药", "医疗器械", "生物制品", "疫苗", "CRO", "制药"],
+      "industry_keywords": ["生命科学", "化学制药", "中药", "生物科技", "医疗服务"],
+      "beneficiary_keywords": ["未盈利创新企业", "成长型创新企业", "创新药产业", "医疗器械", "生命科学"],
+      "policy_objectives": ["科技创新", "新质生产力", "健康中国", "创新发展"],
+      "negative_keywords": ["监管处罚", "压降", "整治", "限制", "风险提示"]
+    }
+  ]
+}

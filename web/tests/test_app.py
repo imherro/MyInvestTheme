@@ -31,6 +31,7 @@ def test_latest_report_contract():
     assert set(body) == {"report_id", "result"}
     assert body["report_id"].startswith("mainline_review_")
     assert body["result"]["theme_ranking"]
+    assert body["result"].get("theme_summary", {}).get("scoring_version") == "theme_relevance_v2"
 
 
 def test_index_api_returns_homepage_content():
@@ -41,6 +42,7 @@ def test_index_api_returns_homepage_content():
     assert body["latest_report"]["report_id"].startswith("mainline_review_")
     assert body["latest_report"]["basis_date"]
     assert body["theme_ranking"]
+    assert body["theme_summary"]["scoring_version"] == "theme_relevance_v2"
     first_theme = body["theme_ranking"][0]
     assert "evidence_breakdown" in first_theme
     labels = {item["label"] for item in first_theme["evidence_breakdown"]}
@@ -85,6 +87,7 @@ def test_reports_and_score_series():
     assert "theme_score" in first_point
     assert "etf_score" in first_point
     assert "policy_score" in first_point
+    assert "theme_score_v2" in first_point
     assert "resonance_score" in first_point
     assert "triple_confirmation" in first_point
 

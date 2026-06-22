@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 import tushare as ts
 
-from policy_signals import load_policy_store, score_policy_by_theme
+from policy_signals import load_policy_store, policy_theme_summary, score_policy_by_theme
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -486,6 +486,10 @@ def theme_rows(
                 "large_net": large_net,
                 "policy_score": policy_score,
                 "policy_evidence_count": int(policy.get("evidence_count") or 0),
+                "theme_score_v2": float(policy.get("theme_score_v2") or 0.0),
+                "matched_policy_count": int(policy.get("matched_policy_count") or 0),
+                "avg_relevance_score_v2": float(policy.get("avg_relevance_score_v2") or 0.0),
+                "avg_policy_score_v2": float(policy.get("avg_policy_score_v2") or 0.0),
                 "top_policy": top_policy,
                 "policy_details": policy_details,
                 "top_sw": join_names(sw_match.sort_values("score", ascending=False).to_dict("records"), limit=4),
@@ -581,9 +585,24 @@ def conclusion_lines(theme_ranking: list[dict[str, Any]], breadth: dict[str, Any
     return lines
 
 
+def matched_keywords(evidence: list[dict[str, Any]], limit: int = 8) -> str:
+    keywords = []
+    seen = set()
+    for item in evidence:
+        keyword = str(item.get("keyword") or "")
+        if not keyword or keyword in seen:
+            continue
+        seen.add(keyword)
+        keywords.append(keyword)
+        if len(keywords) >= limit:
+            break
+    return " / ".join(keywords) if keywords else "无"
+
+
 def render_markdown(payload: dict[str, Any]) -> str:
     basis = payload["basis_date"]
     policy_summary = payload.get("policy_summary") or {}
+    theme_summary = payload.get("theme_summary") or {}
     lines = [
         f"# A股主线研究报告（基准日 {basis}）",
         "",
@@ -615,10 +634,10 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "- 行业/主题强度：1日分位25% + 5日分位35% + 20日分位25% + 热度分位15%。申万热度为当日成交额相对近20日均值；同花顺热度为换手率。",
         "- ETF强度：1日分位20% + 5日分位35% + 20日分位30% + 成交额分位15%。",
         "- 市场分：申万映射25% + 同花顺主题30% + ETF代理25% + 涨停结构10% + 大单/特大单资金排名10%。",
-        f"- 政策分：读取 `data/policy_signals.json`，按政策评分V2计算：权威级别35% + 行动性25% + 经济覆盖面20% + 时间衰减20%；主题相关度用于缩放每条政策信号。",
+        f"- 政策分：读取 `data/policy_signals.json`，按政策评分V2计算：权威级别35% + 行动性25% + 经济覆盖面20% + 时间衰减20%；`theme_relevance_v2` 用于缩放每条政策信号。",
         f"- 主线证据分：市场分{(1 - policy_summary.get('policy_weight', POLICY_WEIGHT)) * 100:.0f}% + 政策分{policy_summary.get('policy_weight', POLICY_WEIGHT) * 100:.0f}%。",
         "- 阶段：85分以上为主线确认，72-85为次主线/强修复，50-72为观察线，50以下为弱势/退潮。",
-        f"- 政策库更新时间：{policy_summary.get('updated_at') or '无'}；政策信号数：{policy_summary.get('signals_count', 0)}。",
+        f"- 政策库更新时间：{policy_summary.get('updated_at') or '无'}；政策信号数：{policy_summary.get('signals_count', 0)}；政策-主题相关度阈值：{policy_summary.get('min_relevance_threshold', 0.25)}。",
         "",
         "## 市场土壤",
         "",
@@ -681,6 +700,41 @@ def render_markdown(payload: dict[str, Any]) -> str:
         lines.append(
             f"| {item['theme']} | {item['policy_score']:.2f} | {item['policy_evidence_count']} | {item.get('top_policy') or '无'} |"
         )
+
+    lines += [
+        "",
+        "## 政策-主题相关度V2",
+        "",
+        f"- 版本：{theme_summary.get('scoring_version', 'theme_relevance_v2')}",
+        f"- 最低匹配阈值：{theme_summary.get('min_relevance_threshold', 0.25)}",
+        "",
+        "| 主线 | theme_score_v2 | 匹配政策数 | 平均相关度 | 平均政策强度 | 主要支撑政策 |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
+    for theme in theme_summary.get("themes", []):
+        top_titles = "；".join(item.get("title", "") for item in theme.get("top_policy_contributors", [])[:2]) or "无"
+        lines.append(
+            f"| {theme.get('theme_name', '')} | {theme.get('theme_score_v2', 0):.4f} | {theme.get('matched_policy_count', 0)} | {theme.get('avg_relevance_score_v2', 0):.4f} | {theme.get('avg_policy_score_v2', 0):.4f} | {top_titles} |"
+        )
+
+    for theme in theme_summary.get("themes", []):
+        lines += [
+            "",
+            f"### {theme.get('theme_name', '')}",
+            f"- theme_score_v2：{theme.get('theme_score_v2', 0):.4f}",
+            f"- 匹配政策数：{theme.get('matched_policy_count', 0)}",
+            f"- 平均相关度：{theme.get('avg_relevance_score_v2', 0):.4f}",
+            f"- 平均政策强度：{theme.get('avg_policy_score_v2', 0):.4f}",
+        ]
+        contributors = theme.get("top_policy_contributors", [])[:3]
+        if contributors:
+            lines.append("- 主要支撑政策：")
+            for index, contributor in enumerate(contributors, start=1):
+                lines.append(
+                    f"  {index}. {contributor.get('title', '')}；policy_score_v2={contributor.get('policy_score_v2', 0):.4f}；relevance_score_v2={contributor.get('relevance_score_v2', 0):.4f}；contribution={contributor.get('contribution', 0):.4f}；keyword_score={contributor.get('keyword_score', 0):.4f}；beneficiary_score={contributor.get('beneficiary_score', 0):.4f}；policy_objective_score={contributor.get('policy_objective_score', 0):.4f}；negative_filter_score={contributor.get('negative_filter_score', 1):.4f}；命中证据：{matched_keywords(contributor.get('matched_evidence', []))}"
+                )
+        else:
+            lines.append("- 主要支撑政策：无")
 
     lines += [
         "",
@@ -763,6 +817,7 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
     d20 = open_days[idx - 20]
     basis_date = f"{basis_raw[:4]}-{basis_raw[4:6]}-{basis_raw[6:]}"
     policy_store = load_policy_store()
+    theme_summary = policy_theme_summary(basis_date, [spec.name for spec in THEMES])
     policy_by_theme = score_policy_by_theme(basis_date, [spec.name for spec in THEMES])
 
     breadth = stock_breadth(pro, basis_raw, d5, d20)
@@ -791,8 +846,11 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
             "signals_count": len(policy_store.get("signals", [])),
             "policy_weight": POLICY_WEIGHT,
             "scoring_version": "policy_score_v2",
-            "scoring": "authority_score 35%, actionability_score 25%, economic_scope_score 20%, time_decay_score 20%; theme relevance scales each signal.",
+            "theme_relevance_version": "theme_relevance_v2",
+            "min_relevance_threshold": theme_summary.get("min_relevance_threshold", 0.25),
+            "scoring": "authority_score 35%, actionability_score 25%, economic_scope_score 20%, time_decay_score 20%; theme_relevance_v2 scales each signal.",
         },
+        "theme_summary": theme_summary,
         "theme_ranking": ranking,
         "sw_top": clean_records(
             sw,

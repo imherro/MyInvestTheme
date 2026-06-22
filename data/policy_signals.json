@@ -15,24 +15,11 @@
       "economic_scope_score": 0.8,
       "time_decay_score": 0.530819,
       "policy_score_v2": 0.563664,
+      "summary": "强调智能经济以人工智能为底层驱动，数据为关键生产要素，算力为基础支撑，并推动智能技术与实体经济融合。",
       "evidence": "强调智能经济以人工智能为底层驱动，数据为关键生产要素，算力为基础支撑，并推动智能技术与实体经济融合。",
-      "themes": [
-        {
-          "theme": "AI算力/通信",
-          "relevance": 0.95,
-          "beneficiary_chain": ["人工智能", "数据要素", "算力基础设施", "通信网络"]
-        },
-        {
-          "theme": "高端制造/机器人/军工",
-          "relevance": 0.52,
-          "beneficiary_chain": ["智能制造", "自动化改造", "工业智能化"]
-        },
-        {
-          "theme": "硬科技电子/半导体",
-          "relevance": 0.48,
-          "beneficiary_chain": ["AI芯片", "电子元件", "算力硬件"]
-        }
-      ]
+      "key_points": ["人工智能", "数据要素", "算力基础设施", "智能经济", "实体经济融合"],
+      "beneficiary_chain": ["人工智能", "数据要素", "算力基础设施", "通信网络", "智能制造", "AI芯片", "电子元件"],
+      "related_industries": ["人工智能", "通信", "半导体", "高端制造"]
     },
     {
       "id": "nea-2026-05-09-ai-energy-action-plan",
@@ -47,19 +34,11 @@
       "economic_scope_score": 0.8,
       "time_decay_score": 0.230693,
       "policy_score_v2": 0.486139,
+      "summary": "行动方案聚焦保障算力设施能源供给、推动绿色低碳转型、促进算力电力协同，并部署29项重点任务。",
       "evidence": "行动方案聚焦保障算力设施能源供给、推动绿色低碳转型、促进算力电力协同，并部署29项重点任务。",
-      "themes": [
-        {
-          "theme": "AI算力/通信",
-          "relevance": 0.96,
-          "beneficiary_chain": ["算力设施", "数据中心", "算电协同", "通信网络"]
-        },
-        {
-          "theme": "新能源/电力设备",
-          "relevance": 0.90,
-          "beneficiary_chain": ["清洁能源供给", "电网调度", "储能", "电力设备"]
-        }
-      ]
+      "key_points": ["人工智能", "能源", "算力设施能源供给", "绿色低碳转型", "算电协同", "29项重点任务"],
+      "beneficiary_chain": ["算力设施", "数据中心", "算电协同", "电网调度", "储能", "电力设备"],
+      "related_industries": ["AI算力", "电力设备", "新能源", "通信"]
     },
     {
       "id": "csrc-2026-04-10-gem-reform-new-quality-productivity",
@@ -74,29 +53,11 @@
       "economic_scope_score": 0.8,
       "time_decay_score": 0.087744,
       "policy_score_v2": 0.475049,
+      "summary": "政策强调创业板更好服务成长型创新创业企业和新质生产力，覆盖信息技术、新能源、高端装备等战略性新兴产业。",
       "evidence": "政策强调创业板更好服务成长型创新创业企业和新质生产力，覆盖信息技术、新能源、高端装备等战略性新兴产业。",
-      "themes": [
-        {
-          "theme": "硬科技电子/半导体",
-          "relevance": 0.78,
-          "beneficiary_chain": ["信息技术", "半导体", "硬科技融资"]
-        },
-        {
-          "theme": "新能源/电力设备",
-          "relevance": 0.74,
-          "beneficiary_chain": ["新能源", "绿色债券", "成长型企业融资"]
-        },
-        {
-          "theme": "高端制造/机器人/军工",
-          "relevance": 0.70,
-          "beneficiary_chain": ["高端装备", "先进制造", "并购融资"]
-        },
-        {
-          "theme": "创新药/医药",
-          "relevance": 0.52,
-          "beneficiary_chain": ["未盈利创新企业", "成长型创新企业"]
-        }
-      ]
+      "key_points": ["创业板改革", "新质生产力", "成长型创新创业企业", "信息技术", "新能源", "高端装备", "并购融资"],
+      "beneficiary_chain": ["信息技术", "半导体", "硬科技融资", "新能源", "高端装备", "先进制造", "未盈利创新企业"],
+      "related_industries": ["半导体", "新能源", "高端制造", "创新药"]
     },
     {
       "id": "ndrc-2026-06-01-109-major-projects-industrial-foundation",
@@ -111,29 +72,11 @@
       "economic_scope_score": 1.0,
       "time_decay_score": 0.496585,
       "policy_score_v2": 0.671817,
+      "summary": "围绕十五五规划109项重大工程，强调新质生产力、现代化基础设施、绿色低碳转型和产业基础能力。",
       "evidence": "围绕十五五规划109项重大工程，强调新质生产力、现代化基础设施、绿色低碳转型和产业基础能力。",
-      "themes": [
-        {
-          "theme": "高端制造/机器人/军工",
-          "relevance": 0.68,
-          "beneficiary_chain": ["现代化产业体系", "产业基础", "先进制造"]
-        },
-        {
-          "theme": "新能源/电力设备",
-          "relevance": 0.62,
-          "beneficiary_chain": ["绿色低碳转型", "基础设施", "能源装备"]
-        },
-        {
-          "theme": "硬科技电子/半导体",
-          "relevance": 0.58,
-          "beneficiary_chain": ["科技创新", "产业升级", "数字化转型"]
-        },
-        {
-          "theme": "建材/稳增长修复",
-          "relevance": 0.42,
-          "beneficiary_chain": ["现代化基础设施", "重大工程"]
-        }
-      ]
+      "key_points": ["十五五规划", "109项重大工程", "新质生产力", "现代化基础设施", "绿色低碳转型", "产业基础能力"],
+      "beneficiary_chain": ["现代化产业体系", "产业基础", "先进制造", "绿色低碳转型", "基础设施", "能源装备", "科技创新", "产业升级", "数字化转型", "重大工程"],
+      "related_industries": ["高端制造", "新能源", "半导体", "建筑材料", "基础设施"]
     }
   ]
 }
