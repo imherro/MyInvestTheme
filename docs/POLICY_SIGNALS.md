@@ -724,8 +724,8 @@ Report-level fields:
 ```text
 canonical_mainline_summary.scoring_version = canonical_mainline_output_v2
 canonical_mainline_summary.default_score_field = mainline_score_v6
-mainline_ranking = canonical default ranking by mainline_score_v6
-legacy_theme_ranking = market-context comparison ranking
+mainline_ranking = policy-mainline ranking by mainline_score_v6
+legacy_theme_ranking = market-heat observation ranking
 policy_provenance_summary.scoring_version = policy_source_provenance_v2
 policy_snapshot_summary.scoring_version = policy_snapshot_integrity_v2
 snapshot_registry_update_summary.scoring_version = snapshot_registry_finalization_v2
@@ -739,7 +739,7 @@ contract_validation_summary.scoring_version = mainline_contract_validator_v2
 contract_validation_summary.status = pass | fail
 ```
 
-`legacy_evidence_score`, `evidence_score`, and `market_score` are market-context comparison fields only. They are not the canonical mainline ranking score and must not be used for the default one-line conclusion, homepage top mainline, or API default score.
+`legacy_evidence_score`, `evidence_score`, and `market_score` are market-heat observation fields only. They are not the policy-mainline ranking score and must not be used for the default one-line conclusion, homepage top mainline, or API default score.
 
 Report contract validator V2:
 
@@ -822,7 +822,7 @@ required failure behavior:
   do not write Markdown
 ```
 
-`data_quality_summary` is written into JSON, Markdown, `/api/latest`, `/api/index`, and `/api/health`. A degraded optional market-context stage affects legacy market-context display only; canonical `mainline_score_v6` remains produced from the policy-theme scoring chain.
+`data_quality_summary` is written into JSON, Markdown, `/api/latest`, `/api/index`, and `/api/health`. A degraded optional market-context stage affects market-heat observation display only; canonical `mainline_score_v6` remains produced from the policy-theme scoring chain.
 
 API score-series contract:
 

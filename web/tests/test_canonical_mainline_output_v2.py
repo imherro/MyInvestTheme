@@ -174,7 +174,7 @@ def test_markdown_conclusion_does_not_use_legacy_evidence_top():
 
 def test_markdown_mainline_table_uses_v6_fields():
     markdown = render_markdown(markdown_payload())
-    mainline = section(markdown, "## 主线分层")
+    mainline = section(markdown, "## 政策主线")
     assert "mainline_score_v6" in mainline
     assert "生命周期" in mainline
     assert "theme_score_v5" in mainline

@@ -98,7 +98,7 @@
         const title = [
           `${theme.theme} ${p.x}`,
           `mainline_score_v6 ${formatMainlineScore(p.mainline_score_v6 ?? p.default_score)}`,
-          `旧证据分 ${formatScore(p.legacy_evidence_score ?? p.evidence_score)}`,
+          `兼容证据分 ${formatScore(p.legacy_evidence_score ?? p.evidence_score)}`,
           `主题分 ${formatScore(p.theme_score)}`,
           `ETF分 ${formatScore(p.etf_score)}`,
           `共振 ${p.triple_confirmation ? "三强共振" : "未共振"}`,

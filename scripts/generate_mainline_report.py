@@ -827,13 +827,13 @@ def render_markdown(payload: dict[str, Any]) -> str:
     lines += [f"- {line}" for line in conclusion_lines(canonical_summary, mainline_ranking, payload["breadth"])]
     lines += [
         "",
-        "## 默认主线口径",
+        "## 口径：政策主线",
         "",
-        f"- 默认主线输出版本：{canonical_summary.get('scoring_version', 'canonical_mainline_output_v2')}",
-        f"- 默认排序字段：{canonical_summary.get('default_score_field', 'mainline_score_v6')}",
+        f"- 政策主线输出版本：{canonical_summary.get('scoring_version', 'canonical_mainline_output_v2')}",
+        f"- 政策主线排序字段：{canonical_summary.get('default_score_field', 'mainline_score_v6')}",
         "- mainline_score_v6 = theme_score_v5 × lifecycle_quality_multiplier。",
         "- theme_score_v5 已包含政策强度、主题相关度、事件去重、政策方向性、事件-主题贡献分配。",
-        "- 旧 evidence_score / market_score 仅作为兼容或市场背景观察，不参与默认主线排序。",
+        "- 市场热度观察只作为辅助背景，不参与政策主线排序。",
         "",
         "## 数据质量摘要",
         "",
@@ -854,7 +854,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
     if data_quality_summary.get("status") == "degraded":
         lines += [
             "",
-            "本报告 canonical mainline_score_v6 不受可选市场背景数据缺失影响；受影响的是旧市场证据观察区。",
+            "本报告政策主线 mainline_score_v6 不受可选市场背景数据缺失影响；受影响的是市场热度观察区。",
         ]
     lines += [
         "",
@@ -913,7 +913,9 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- 校验时间：{contract_summary.get('checked_at', '')}",
         f"- 已检查模块：{', '.join(key for key, value in (contract_summary.get('checked_sections') or {}).items() if value) or '无'}",
         "",
-        "## 主线分层",
+        "## 政策主线",
+        "",
+        "方法：policy_score_v2 → theme_relevance_v2 → policy_event_clustering_v2 → policy_theme_stance_v2 → event_theme_allocation_v2 → mainline_lifecycle_v2，得到 mainline_score_v6。",
         "",
         "| 主题 | mainline_score_v6 | 生命周期 | theme_score_v5 | 30日分数 | 90日分数 | 事件数 | 来源机构数 | 主要支撑事件 |",
         "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
@@ -936,11 +938,11 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "",
         "- 行业/主题强度：1日分位25% + 5日分位35% + 20日分位25% + 热度分位15%。申万热度为当日成交额相对近20日均值；同花顺热度为换手率。",
         "- ETF强度：1日分位20% + 5日分位35% + 20日分位30% + 成交额分位15%。",
-        "- 旧市场证据分：申万映射25% + 同花顺主题30% + ETF代理25% + 涨停结构10% + 大单/特大单资金排名10%，仅作为市场背景观察。",
+        "- 市场热度分：申万映射25% + 同花顺主题30% + ETF代理25% + 涨停结构10% + 大单/特大单资金排名10%，仅作为市场热度观察。",
         f"- 政策分：读取 `data/policy_signals.json`，按政策评分V2计算：权威级别35% + 行动性25% + 经济覆盖面20% + 时间衰减20%；`theme_relevance_v2` 计算政策-主题相关度，`policy_event_clustering_v2` 做事件去重，`policy_theme_stance_v2` 对监管/约束政策做方向性折扣，`event_theme_allocation_v2` 对同一政策事件的多主题贡献做预算分配，`mainline_lifecycle_v2` 识别主线生命周期。",
-        "- 默认主线分：mainline_score_v6 = theme_score_v5 × lifecycle_quality_multiplier。",
-        f"- 旧证据分兼容口径：旧市场证据分{(1 - policy_summary.get('policy_weight', POLICY_WEIGHT)) * 100:.0f}% + 政策分{policy_summary.get('policy_weight', POLICY_WEIGHT) * 100:.0f}%，不参与默认主线排序。",
-        "- 旧阶段：85分以上为主线确认，72-85为次主线/强修复，50-72为观察线，50以下为弱势/退潮，仅用于旧市场证据观察。",
+        "- 政策主线分：mainline_score_v6 = theme_score_v5 × lifecycle_quality_multiplier。",
+        f"- 兼容证据分：市场热度分{(1 - policy_summary.get('policy_weight', POLICY_WEIGHT)) * 100:.0f}% + 政策分{policy_summary.get('policy_weight', POLICY_WEIGHT) * 100:.0f}%，不参与政策主线排序。",
+        "- 热度阶段：85分以上为主线确认，72-85为次主线/强修复，50-72为观察线，50以下为弱势/退潮，仅用于市场热度观察。",
         f"- 政策库更新时间：{policy_summary.get('updated_at') or '无'}；原始政策数：{policy_summary.get('raw_policy_count', policy_summary.get('signals_count', 0))}；纳入主线政策数：{policy_summary.get('included_policy_count', policy_summary.get('signals_count', 0))}；排除政策数：{policy_summary.get('excluded_policy_count', 0)}；政策-主题相关度阈值：{policy_summary.get('min_relevance_threshold', 0.25)}；去重后事件数：{event_cluster_summary.get('cluster_count', 0)}。",
         "",
         "## 市场土壤",
@@ -1151,29 +1153,29 @@ def render_markdown(payload: dict[str, Any]) -> str:
     for item in payload["moneyflow_top"][:20]:
         lines.append(f"| {item['industry']} | {item['large_net']:.2f} | {item['net']:.2f} | {item['count']} |")
 
-    lines += ["", "## 旧市场证据观察（非默认主线排序）", ""]
+    lines += ["", "## 市场热度观察", ""]
     lines += [
-        "说明：本节保留旧 evidence_score / market_score 口径用于市场背景观察，不参与默认主线排序。",
+        "方法：市场热度分=申万映射25%+同花顺主题30%+ETF代理25%+涨停结构10%+大单/特大单资金排名10%；兼容证据分=市场热度分85%+政策分15%。本节只作辅助观察，不参与政策主线排序。",
         "",
     ]
     for item in legacy_theme_ranking:
         lines += [
             f"### {item.get('theme', '')}：{item.get('stage', '')}",
-            f"- 证据分：{fmt_number(item.get('evidence_score'))}，证据项：{item.get('evidence_count') or 0}",
-            f"- 市场分：{fmt_number(item.get('market_score'))}；政策分：{fmt_number(item.get('policy_score'))}；政策证据：{item.get('policy_evidence_count') or 0}",
+            f"- 兼容证据分：{fmt_number(item.get('evidence_score'))}，证据项：{item.get('evidence_count') or 0}",
+            f"- 市场热度分：{fmt_number(item.get('market_score'))}；政策分：{fmt_number(item.get('policy_score'))}；政策证据：{item.get('policy_evidence_count') or 0}",
             f"- 申万映射：{item.get('top_sw') or '无'}",
             f"- 主题指数：{item.get('top_ths') or '无'}",
             f"- ETF代理：{item.get('top_etf') or '无'}",
             f"- 政策映射：{item.get('top_policy') or '无'}",
         ]
         if item.get("stage") == "主线确认":
-            lines.append("- 市场观察：价格、主题、ETF和结构资金同步度较高，但本节不是默认主线排序。")
+            lines.append("- 市场观察：价格、主题、ETF和结构资金同步度较高，但本节不是政策主线排序。")
         elif item.get("stage") == "次主线/强修复":
-            lines.append("- 市场观察：有较强修复或轮动迹象，但本节不是默认主线排序。")
+            lines.append("- 市场观察：有较强修复或轮动迹象，但本节不是政策主线排序。")
         elif item.get("stage") == "观察线":
             lines.append("- 市场观察：存在局部强度，但证据链尚未完整闭环。")
         else:
-            lines.append("- 市场观察：当前旧证据分偏弱。")
+            lines.append("- 市场观察：当前兼容证据分偏弱。")
         lines.append("")
 
     lines += [

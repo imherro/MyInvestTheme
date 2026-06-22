@@ -15,14 +15,17 @@
     <strong>{{ report_id }}</strong>
   </div>
   <div class="metric">
-    <span>V6第一主线</span>
+    <span>政策主线第一</span>
     <strong>{{ report.canonical_mainline_summary.top_mainline.theme_name if report.canonical_mainline_summary.top_mainline is defined else "" }}</strong>
   </div>
 </section>
 
 <section class="section-band">
   <div class="section-head">
-    <h1>主线分层</h1>
+    <div>
+      <h1>政策主线</h1>
+      <span class="hint">方法：policy_score_v2 → theme_relevance_v2 → event allocation → lifecycle，得到 mainline_score_v6</span>
+    </div>
     <div class="actions">
       <a class="button" href="/api/latest">读取最新API</a>
       <a class="button secondary" href="/reports/{{ report_id }}">完整报告</a>
@@ -70,8 +73,10 @@
 
 <section class="section-band">
   <div class="section-head">
-    <h2>旧市场证据观察（非默认主线排序）</h2>
-    <span class="hint">旧 evidence_score / market_score 仅作背景观察</span>
+    <div>
+      <h2>市场热度观察</h2>
+      <span class="hint">方法：市场热度分=申万25%+同花顺30%+ETF25%+涨停10%+资金10%；兼容证据分=市场热度分85%+政策分15%，不参与政策主线排序</span>
+    </div>
   </div>
   <div class="table-wrap">
     <table>
@@ -86,10 +91,10 @@
       </colgroup>
       <thead>
         <tr>
-          <th>旧排序</th>
+          <th>热度排序</th>
           <th>主题</th>
-          <th>旧阶段</th>
-          <th>旧证据分</th>
+          <th>热度阶段</th>
+          <th>兼容证据分</th>
           <th>政策分</th>
           <th>证据项/拆解</th>
           <th>ETF代理</th>

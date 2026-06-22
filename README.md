@@ -47,7 +47,7 @@ Policy scoring:
 - `theme_score_v2_raw` is the undeduplicated policy-theme comparison score, `theme_score_v3_dedup` is the deduplicated score before direction adjustment, `theme_score_v4_stance_adjusted` is the direction-adjusted score before allocation, `theme_score_v5` is the event-theme allocated score, and `mainline_score_v6` is the default lifecycle-adjusted policy-theme score.
 - Default canonical mainline score is `mainline_score_v6`.
 - `mainline_score_v6 = theme_score_v5 * lifecycle_quality_multiplier`.
-- `legacy_evidence_score` is a market-context comparison field and is not the canonical mainline ranking score.
+- `legacy_evidence_score` is a market-heat observation comparison field and is not the policy-mainline ranking score.
 - See `docs/POLICY_SIGNALS.md` for the extraction schema and scoring rules.
 
 Validate report contract:
@@ -101,8 +101,8 @@ The homepage endpoint returns the main content used by `/`:
 - `reports`
 - `markdown`
 
-`mainline_ranking` is the canonical default mainline list. `theme_ranking` and `legacy_theme_ranking` are compatibility market-context lists and are not the default mainline ranking.
-In `score_series`, `score` and `default_score` both use `mainline_score_v6`; old market-context values are exposed only as `legacy_*` fields.
+`mainline_ranking` is the policy-mainline list. `theme_ranking` and `legacy_theme_ranking` are compatibility market-heat observation lists and are not the policy-mainline ranking.
+In `score_series`, `score` and `default_score` both use `mainline_score_v6`; market-heat observation values are exposed only as `legacy_*` fields.
 `/api/index`, `/api/latest`, and `/api/health` expose the latest `contract_validation_summary` or status fields. Contract errors block new JSON/Markdown writes; warnings are retained for audit.
 `data_quality_summary` is also exposed by `/api/latest`, `/api/index`, and `/api/health`. Required data stages block writes if they fail; optional market-context stages can degrade with schema fallback and do not change `mainline_score_v6`.
 `policy_provenance_summary` is exposed by `/api/latest` and `/api/index`; `/api/health` exposes the latest provenance status and rejected/degraded counts.
