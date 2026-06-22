@@ -12,6 +12,12 @@ Run:
 python scripts/run_web.py --port 8012
 ```
 
+Generate latest research:
+
+```powershell
+python scripts/generate_mainline_report.py --write
+```
+
 Open:
 
 - Latest research: http://127.0.0.1:8012/

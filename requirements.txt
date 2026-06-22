@@ -3,3 +3,7 @@ uvicorn
 jinja2
 pytest
 httpx
+pandas
+numpy
+tushare
+baostock
