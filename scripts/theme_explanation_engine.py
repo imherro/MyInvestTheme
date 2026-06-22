@@ -6,9 +6,12 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from trace_graph_builder import build_trace_graph, round6, validate_trace_graph
-except ModuleNotFoundError:
-    from scripts.trace_graph_builder import build_trace_graph, round6, validate_trace_graph
+    from .trace_graph_builder import build_trace_graph, round6, validate_trace_graph
+except ImportError:
+    try:
+        from trace_graph_builder import build_trace_graph, round6, validate_trace_graph
+    except ModuleNotFoundError:
+        from scripts.trace_graph_builder import build_trace_graph, round6, validate_trace_graph
 
 
 ROOT = Path(__file__).resolve().parents[1]

@@ -23,6 +23,13 @@ from scripts.mainline_contract_validator import validate_mainline_report_contrac
 from scripts.golden_snapshot_builder import GOLDEN_PATH
 from scripts.system_drift_detector import build_drift_report, load_golden_snapshot
 from scripts.theme_explanation_engine import ThemeExplanationNotFound, build_theme_explanation
+from scripts.counterfactual_simulator import (
+    CounterfactualTargetNotFound,
+    simulate_remove_event,
+    simulate_remove_policy,
+)
+from scripts.mainline_sensitivity_engine import build_theme_sensitivity
+from scripts.core_driver_detector import detect_core_drivers
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
@@ -766,6 +773,49 @@ def api_explain_theme(theme_id: str, report_id: str | None = None) -> dict[str, 
     except ThemeExplanationNotFound as exc:
         raise HTTPException(status_code=404, detail="主题解释不存在") from exc
     return {"report_id": effective_report_id, "result": explanation}
+
+
+def _simulation_report(report_id: str | None) -> tuple[str, dict[str, Any]]:
+    if report_id:
+        return report_id, _with_canonical_fields(load_report(report_id))
+    latest_report_id, payload, _ = load_latest_report()
+    return latest_report_id, _with_canonical_fields(payload)
+
+
+@app.get("/api/simulate/remove-policy/{policy_id}")
+def api_simulate_remove_policy(policy_id: str, report_id: str | None = None) -> dict[str, Any]:
+    effective_report_id, payload = _simulation_report(report_id)
+    try:
+        simulation = simulate_remove_policy(payload, policy_id)
+    except CounterfactualTargetNotFound as exc:
+        raise HTTPException(status_code=404, detail="模拟目标不存在") from exc
+    return {"report_id": effective_report_id, "result": simulation}
+
+
+@app.get("/api/simulate/remove-event/{event_cluster_id}")
+def api_simulate_remove_event(event_cluster_id: str, report_id: str | None = None) -> dict[str, Any]:
+    effective_report_id, payload = _simulation_report(report_id)
+    try:
+        simulation = simulate_remove_event(payload, event_cluster_id)
+    except CounterfactualTargetNotFound as exc:
+        raise HTTPException(status_code=404, detail="模拟目标不存在") from exc
+    return {"report_id": effective_report_id, "result": simulation}
+
+
+@app.get("/api/sensitivity/theme/{theme_id}")
+def api_theme_sensitivity(theme_id: str, report_id: str | None = None) -> dict[str, Any]:
+    effective_report_id, payload = _simulation_report(report_id)
+    try:
+        sensitivity = build_theme_sensitivity(payload, theme_id)
+    except CounterfactualTargetNotFound as exc:
+        raise HTTPException(status_code=404, detail="主题敏感度不存在") from exc
+    return {"report_id": effective_report_id, "result": sensitivity}
+
+
+@app.get("/api/core-drivers")
+def api_core_drivers(report_id: str | None = None) -> dict[str, Any]:
+    effective_report_id, payload = _simulation_report(report_id)
+    return {"report_id": effective_report_id, "result": detect_core_drivers(payload)}
 
 
 @app.get("/api/golden-snapshot")

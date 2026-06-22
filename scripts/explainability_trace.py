@@ -6,19 +6,27 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from theme_explanation_engine import (
+    from .theme_explanation_engine import (
         ThemeExplanationNotFound,
         build_theme_explanation,
         latest_report_path,
         load_report,
     )
-except ModuleNotFoundError:
-    from scripts.theme_explanation_engine import (
-        ThemeExplanationNotFound,
-        build_theme_explanation,
-        latest_report_path,
-        load_report,
-    )
+except ImportError:
+    try:
+        from theme_explanation_engine import (
+            ThemeExplanationNotFound,
+            build_theme_explanation,
+            latest_report_path,
+            load_report,
+        )
+    except ModuleNotFoundError:
+        from scripts.theme_explanation_engine import (
+            ThemeExplanationNotFound,
+            build_theme_explanation,
+            latest_report_path,
+            load_report,
+        )
 
 
 def _line(text: str = "") -> None:

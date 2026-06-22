@@ -42,6 +42,7 @@ Policy scoring:
 - Reproducibility manifest uses deterministic `reproducibility_manifest_v2` from `config/reproducibility_manifest_rules.json` to record Git metadata, code/config/input fingerprints, JSON/Markdown artifact hashes, runtime metadata, run arguments, and secret-safety status without reading or writing `.env` values.
 - System drift control uses deterministic `system_drift_control_v2` from `config/system_drift_rules.json` and `data/golden_mainline_snapshot.json` to compare the current report with a golden snapshot without changing `mainline_score_v6`.
 - Explainability trace uses deterministic `explainability_trace_graph_v2` to expose policy -> event -> theme -> mainline paths, event contribution breakdowns, and formula checks without changing scores, ranking, contract validation, drift, or snapshots.
+- Counterfactual simulation uses deterministic `counterfactual_mainline_simulator_v2`, `mainline_sensitivity_engine_v2`, and `core_driver_detector_v2` to simulate removing a policy or event on an in-memory report copy without writing reports or changing real scores, ranking, contract validation, drift, or snapshots.
 - `theme_score_v2_raw` is the undeduplicated policy-theme comparison score, `theme_score_v3_dedup` is the deduplicated score before direction adjustment, `theme_score_v4_stance_adjusted` is the direction-adjusted score before allocation, `theme_score_v5` is the event-theme allocated score, and `mainline_score_v6` is the default lifecycle-adjusted policy-theme score.
 - Default canonical mainline score is `mainline_score_v6`.
 - `mainline_score_v6 = theme_score_v5 * lifecycle_quality_multiplier`.
@@ -58,6 +59,9 @@ python scripts/reproducibility_manifest.py --path research/mainline/mainline_rev
 python scripts/golden_snapshot_builder.py --latest --write
 python scripts/system_drift_detector.py --latest
 python scripts/explainability_trace.py --latest --theme ai_compute_communications
+python scripts/counterfactual_simulator.py --latest --remove-policy ndrc-2026-06-03-intelligent-economy
+python scripts/mainline_sensitivity_engine.py --latest --theme ai_compute_communications
+python scripts/core_driver_detector.py --latest
 ```
 
 Open:
@@ -70,6 +74,10 @@ Open:
 - Golden snapshot API: http://127.0.0.1:8012/api/golden-snapshot
 - Compare report API: http://127.0.0.1:8012/api/compare
 - Theme explanation API: http://127.0.0.1:8012/api/explain/theme/ai_compute_communications
+- Remove-policy simulation API: http://127.0.0.1:8012/api/simulate/remove-policy/ndrc-2026-06-03-intelligent-economy
+- Remove-event simulation API: http://127.0.0.1:8012/api/simulate/remove-event/event_20260603_ndrc_ndrc_2026_06_03_intelligent_economy
+- Theme sensitivity API: http://127.0.0.1:8012/api/sensitivity/theme/ai_compute_communications
+- Core drivers API: http://127.0.0.1:8012/api/core-drivers
 
 ## API Contract
 
@@ -99,6 +107,7 @@ In `score_series`, `score` and `default_score` both use `mainline_score_v6`; old
 `snapshot_registry_update_summary` is exposed by `/api/latest` and `/api/index`; `/api/health` exposes the latest registry update status and updated registry hash.
 `reproducibility_manifest` is exposed by `/api/latest` and `/api/index`; `/api/health` exposes the latest reproducibility status, Git commit, and JSON artifact hash.
 `/api/explain/theme/{theme_id}` exposes the latest theme explanation graph. Pass `?report_id=mainline_review_YYYY-MM-DD_HHMMSS` to inspect a historical report. The response contains `trace_graph`, `top_policy_paths`, `event_breakdowns`, and validation checks for contribution sums and the `mainline_score_v6` formula.
+`/api/simulate/remove-policy/{policy_id}` and `/api/simulate/remove-event/{event_cluster_id}` return counterfactual overlay results with `baseline_ranking`, `counterfactual_ranking`, `theme_impacts`, and impact summary fields. `/api/sensitivity/theme/{theme_id}` ranks a theme's policy and event sensitivity. `/api/core-drivers` ranks policy-level total mainline impact. All simulation endpoints support `?report_id=<report_id>` and are read-only.
 
 The latest report endpoint returns the newest research report artifact:
 

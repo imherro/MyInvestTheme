@@ -205,6 +205,32 @@ Read-only API and CLI:
 python scripts/explainability_trace.py --latest --theme <theme_id>
 ```
 
+## Counterfactual Mainline Simulator V2
+
+`counterfactual_mainline_simulator_v2` is deterministic and read-only. It does not call an LLM, embeddings, external search, market data, or web scraping. It builds an in-memory copy of a formal report, removes one policy or event, recalculates the temporary theme contribution and lifecycle-adjusted score, and returns the simulated impact.
+
+It supports:
+
+- remove-policy simulation
+- remove-event simulation
+- theme-level sensitivity ranking
+- core policy driver detection by total simulated mainline score drop
+
+The counterfactual layer does not write JSON/Markdown reports, update policy stores, update snapshot registries, change `mainline_score_v6`, change canonical ranking, or participate in contract validation, drift control, golden snapshots, reproducibility manifests, or report finalization.
+
+Read-only API and CLI:
+
+```text
+/api/simulate/remove-policy/<policy_id>
+/api/simulate/remove-event/<event_cluster_id>
+/api/sensitivity/theme/<theme_id>
+/api/core-drivers
+python scripts/counterfactual_simulator.py --latest --remove-policy <policy_id>
+python scripts/counterfactual_simulator.py --latest --remove-event <event_cluster_id>
+python scripts/mainline_sensitivity_engine.py --latest --theme <theme_id>
+python scripts/core_driver_detector.py --latest
+```
+
 ## Signal Schema
 
 Each signal in `data/policy_signals.json` must include:
