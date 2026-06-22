@@ -1,4 +1,5 @@
 import asyncio
+import re
 
 import httpx
 
@@ -166,3 +167,12 @@ def test_pages_render():
     reports = get("/reports")
     assert reports.status_code == 200
     assert "历次研究结果" in reports.text
+
+
+def test_index_table_column_contract():
+    latest = get("/")
+    assert latest.status_code == 200
+    tables = re.findall(r"<table>.*?</table>", latest.text, flags=re.S)
+    assert len(tables) >= 2
+    for table in tables[:2]:
+        assert table.count("<col ") == table.count("<th>")
