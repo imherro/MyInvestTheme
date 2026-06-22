@@ -23,7 +23,20 @@
 <section class="section-band">
   <div class="section-head">
     <div>
-      <h1>政策主线</h1>
+      <div class="title-row">
+        <h1>政策主线</h1>
+        <span class="info-popover">
+          <button class="info-icon" type="button" aria-label="查看政策主线说明" aria-describedby="policy-mainline-help">?</button>
+          <span id="policy-mainline-help" class="info-panel" role="tooltip">
+            <strong>计算方法</strong>
+            <span>policy_score_v2 → theme_relevance_v2 → event allocation → lifecycle，得到 mainline_score_v6。</span>
+            <strong>生命周期优先级</strong>
+            <span>accelerating &gt; sustained &gt; emerging &gt; single_event_emerging &gt; cooling &gt; legacy_tail &gt; undated_unknown &gt; dormant。</span>
+            <strong>使用建议</strong>
+            <span>先用政策主线定候选方向；优先关注 accelerating 和 sustained；emerging 等市场确认；cooling 与 legacy_tail 不宜作为新开核心依据。</span>
+          </span>
+        </span>
+      </div>
       <span class="hint">方法：policy_score_v2 → theme_relevance_v2 → event allocation → lifecycle，得到 mainline_score_v6</span>
     </div>
     <div class="actions">
@@ -73,7 +86,20 @@
 <section class="section-band">
   <div class="section-head">
     <div>
-      <h2>市场热度观察</h2>
+      <div class="title-row">
+        <h2>市场热度观察</h2>
+        <span class="info-popover">
+          <button class="info-icon" type="button" aria-label="查看市场热度观察说明" aria-describedby="market-heat-help">?</button>
+          <span id="market-heat-help" class="info-panel" role="tooltip">
+            <strong>计算方法</strong>
+            <span>市场热度分 = 申万 25% + 同花顺 30% + ETF 25% + 涨停 10% + 资金 10%；兼容证据分 = 市场热度分 85% + 政策分 15%。</span>
+            <strong>热度阶段优先级</strong>
+            <span>主线确认 &gt; 次主线/强修复 &gt; 观察线 &gt; 弱势/退潮。</span>
+            <strong>使用建议</strong>
+            <span>市场热度更适合看执行时机和资金确认；政策主线靠前且市场热度靠前时优先级最高；市场热但政策弱时，只当短线观察。</span>
+          </span>
+        </span>
+      </div>
       <span class="hint">方法：市场热度分=申万25%+同花顺30%+ETF25%+涨停10%+资金10%；兼容证据分=市场热度分85%+政策分15%，不参与政策主线排序</span>
     </div>
   </div>

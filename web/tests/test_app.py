@@ -163,6 +163,10 @@ def test_pages_render():
     assert "证据项/拆解" in latest.text
     assert "资金排名" in latest.text
     assert "政策分" in latest.text
+    assert "生命周期优先级" in latest.text
+    assert "热度阶段优先级" in latest.text
+    assert "accelerating" in latest.text
+    assert "政策主线靠前且市场热度靠前" in latest.text
 
     reports = get("/reports")
     assert reports.status_code == 200

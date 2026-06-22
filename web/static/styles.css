@@ -133,6 +133,74 @@ h2 {
   font-size: 18px;
 }
 
+.title-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  position: relative;
+}
+
+.info-popover {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.info-icon {
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--brand-dark);
+  cursor: help;
+  display: inline-grid;
+  place-items: center;
+  font: 700 13px/1 "Segoe UI", Arial, sans-serif;
+  padding: 0;
+}
+
+.info-icon:hover,
+.info-icon:focus-visible {
+  border-color: var(--brand);
+  outline: 2px solid rgba(15, 118, 110, 0.16);
+  outline-offset: 2px;
+}
+
+.info-panel {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 8px);
+  width: min(440px, calc(100vw - 48px));
+  display: grid;
+  gap: 6px;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 12px 28px rgba(23, 32, 51, 0.16);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.info-panel strong {
+  font-size: 13px;
+  color: var(--brand-dark);
+}
+
+.info-popover:hover .info-panel,
+.info-popover:focus-within .info-panel {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .hint,
 .muted {
   color: var(--muted);
@@ -370,6 +438,10 @@ th {
 
   .page {
     padding: 16px;
+  }
+
+  .info-panel {
+    width: min(360px, calc(100vw - 72px));
   }
 
   table {
