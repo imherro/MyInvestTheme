@@ -16,6 +16,7 @@ from generate_mainline_report import (
     choose_basis_date,
     get_trade_dates,
     make_client,
+    write_report_artifacts,
 )
 from policy_signals import POLICY_PATH, validate_policy_store
 
@@ -93,15 +94,6 @@ def existing_report_for_basis(basis_date: str) -> Path | None:
     return None
 
 
-def write_report(report_id: str, payload: dict[str, Any], markdown: str) -> tuple[Path, Path]:
-    REPORT_DIR.mkdir(parents=True, exist_ok=True)
-    json_path = REPORT_DIR / f"{report_id}.json"
-    md_path = REPORT_DIR / f"{report_id}.md"
-    json_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    md_path.write_text(markdown, encoding="utf-8")
-    return json_path, md_path
-
-
 def latest_complete_basis(today: str) -> tuple[str, dict[str, Any]]:
     pro = make_client()
     open_days = get_trade_dates(pro, today)
@@ -174,7 +166,7 @@ def main() -> int:
         return 0
 
     report_id, payload, markdown = build_report(args.today)
-    json_path, md_path = write_report(report_id, payload, markdown)
+    json_path, md_path = write_report_artifacts(report_id, payload, markdown)
     top = payload["theme_ranking"][0]
     print(f"Generated: {json_path}", flush=True)
     print(f"Generated: {md_path}", flush=True)

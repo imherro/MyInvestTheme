@@ -240,6 +240,23 @@ def _policy_provenance_summary(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _policy_snapshot_summary(payload: dict[str, Any]) -> dict[str, Any]:
+    summary = payload.get("policy_snapshot_summary")
+    if isinstance(summary, dict) and summary:
+        return summary
+    return {
+        "scoring_version": "policy_snapshot_integrity_v2",
+        "status": "missing",
+        "raw_policy_count": 0,
+        "changed_policy_count": 0,
+        "changed_without_revision_note_count": 0,
+        "duplicate_policy_id_conflict_count": 0,
+        "duplicate_source_url_conflict_count": 0,
+        "policies": [],
+        "removed_policies": [],
+    }
+
+
 def _legacy_theme_rows(payload: dict[str, Any]) -> list[dict[str, Any]]:
     rows = payload.get("legacy_theme_ranking") or []
     if rows:
@@ -266,6 +283,7 @@ def _with_canonical_fields(payload: dict[str, Any]) -> dict[str, Any]:
         result.setdefault("legacy_theme_ranking", build_legacy_theme_ranking(result.get("theme_ranking") or []))
     result.setdefault("data_quality_summary", _data_quality_summary(result))
     result.setdefault("policy_provenance_summary", _policy_provenance_summary(result))
+    result.setdefault("policy_snapshot_summary", _policy_snapshot_summary(result))
     result.setdefault("contract_validation_summary", _contract_summary(result))
     return result
 
@@ -285,6 +303,7 @@ def _report_summary(path: Path) -> dict[str, Any]:
     canonical_mainline_summary = _canonical_summary(payload)
     data_quality_summary = _data_quality_summary(payload)
     policy_provenance_summary = _policy_provenance_summary(payload)
+    policy_snapshot_summary = _policy_snapshot_summary(payload)
     contract_validation_summary = _contract_summary(payload)
     return {
         "report_id": _report_id(path),
@@ -307,6 +326,14 @@ def _report_summary(path: Path) -> dict[str, Any]:
         "policy_provenance_excluded_count": policy_provenance_summary.get("excluded_policy_count", 0),
         "policy_provenance_rejected_count": policy_provenance_summary.get("rejected_count", 0),
         "policy_provenance_degraded_count": policy_provenance_summary.get("degraded_count", 0),
+        "policy_snapshot_status": policy_snapshot_summary.get("status", ""),
+        "policy_snapshot_changed_count": policy_snapshot_summary.get("changed_policy_count", 0),
+        "policy_snapshot_changed_without_revision_note_count": policy_snapshot_summary.get(
+            "changed_without_revision_note_count", 0
+        ),
+        "policy_snapshot_duplicate_policy_id_conflict_count": policy_snapshot_summary.get(
+            "duplicate_policy_id_conflict_count", 0
+        ),
         "contract_validation_status": contract_validation_summary.get("status", ""),
         "contract_validation_error_count": contract_validation_summary.get("error_count", 0),
         "contract_validation_warning_count": contract_validation_summary.get("warning_count", 0),
@@ -316,6 +343,7 @@ def _report_summary(path: Path) -> dict[str, Any]:
         "canonical_mainline_summary": canonical_mainline_summary,
         "data_quality_summary": data_quality_summary,
         "policy_provenance_summary": policy_provenance_summary,
+        "policy_snapshot_summary": policy_snapshot_summary,
         "contract_validation_summary": contract_validation_summary,
         "event_cluster_summary": {
             "raw_policy_count": event_cluster_summary.get("raw_policy_count", 0),
@@ -492,6 +520,7 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
     theme_summary = payload.get("theme_summary") or {}
     data_quality_summary = _data_quality_summary(payload)
     policy_provenance_summary = _policy_provenance_summary(payload)
+    policy_snapshot_summary = _policy_snapshot_summary(payload)
     contract_validation_summary = _contract_summary(payload)
     top_mainline = mainline_ranking[0] if mainline_ranking else {}
     breadth = payload.get("breadth") or {}
@@ -519,6 +548,14 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
             "policy_provenance_included_count": policy_provenance_summary.get("included_policy_count", 0),
             "policy_provenance_excluded_count": policy_provenance_summary.get("excluded_policy_count", 0),
             "policy_provenance_rejected_count": policy_provenance_summary.get("rejected_count", 0),
+            "policy_snapshot_status": policy_snapshot_summary.get("status", ""),
+            "policy_snapshot_changed_count": policy_snapshot_summary.get("changed_policy_count", 0),
+            "policy_snapshot_changed_without_revision_note_count": policy_snapshot_summary.get(
+                "changed_without_revision_note_count", 0
+            ),
+            "policy_snapshot_duplicate_policy_id_conflict_count": policy_snapshot_summary.get(
+                "duplicate_policy_id_conflict_count", 0
+            ),
             "contract_validation_status": contract_validation_summary.get("status", ""),
             "contract_validation_error_count": contract_validation_summary.get("error_count", 0),
             "contract_validation_warning_count": contract_validation_summary.get("warning_count", 0),
@@ -534,6 +571,7 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
         "canonical_mainline_summary": canonical_mainline_summary,
         "data_quality_summary": data_quality_summary,
         "policy_provenance_summary": policy_provenance_summary,
+        "policy_snapshot_summary": policy_snapshot_summary,
         "contract_validation_summary": contract_validation_summary,
         "theme_ranking": legacy_theme_ranking,
         "legacy_theme_ranking": legacy_theme_ranking,
@@ -560,6 +598,7 @@ def latest_page(request: Request) -> HTMLResponse:
     page_report["canonical_mainline_summary"] = _canonical_summary(payload)
     page_report["data_quality_summary"] = _data_quality_summary(payload)
     page_report["policy_provenance_summary"] = _policy_provenance_summary(payload)
+    page_report["policy_snapshot_summary"] = _policy_snapshot_summary(payload)
     page_report["contract_validation_summary"] = _contract_summary(payload)
     page_report["legacy_theme_ranking"] = enrich_theme_ranking(_legacy_theme_rows(payload))
     page_report["theme_ranking"] = page_report["legacy_theme_ranking"]
@@ -608,6 +647,13 @@ def health() -> dict[str, Any]:
         "latest_policy_provenance_status": latest.get("policy_provenance_status"),
         "latest_policy_provenance_rejected_count": latest.get("policy_provenance_rejected_count"),
         "latest_policy_provenance_degraded_count": latest.get("policy_provenance_degraded_count"),
+        "latest_policy_snapshot_status": latest.get("policy_snapshot_status"),
+        "latest_policy_snapshot_changed_without_revision_note_count": latest.get(
+            "policy_snapshot_changed_without_revision_note_count"
+        ),
+        "latest_policy_snapshot_duplicate_policy_id_conflict_count": latest.get(
+            "policy_snapshot_duplicate_policy_id_conflict_count"
+        ),
         "latest_contract_status": latest.get("contract_validation_status"),
         "latest_contract_error_count": latest.get("contract_validation_error_count"),
         "latest_contract_warning_count": latest.get("contract_validation_warning_count"),

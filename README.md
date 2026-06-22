@@ -30,6 +30,7 @@ Policy scoring:
 
 - Codex reviews official policy sources and maintains `data/policy_signals.json`.
 - Before scoring, `policy_source_provenance_v2` from `config/policy_source_rules.json` validates policy source URL, official domain, source organization/domain match, required fields, publish date parseability, and stable content hash. Rejected policies are excluded before theme scoring.
+- `policy_snapshot_integrity_v2` from `config/policy_snapshot_rules.json` compares each policy's `content_hash` with `data/policy_snapshot_registry.json`; an existing `policy_id` whose content changes without a revision note blocks new report writes.
 - The report generator calculates `policy_score` from `policy_score_v2`, a deterministic rule score.
 - Policy-to-theme mapping uses deterministic `theme_relevance_v2` rules from `config/themes.json`; old manual relevance values do not participate.
 - Policy event clustering uses deterministic `policy_event_clustering_v2`; policy direction uses deterministic `policy_theme_stance_v2` from `config/policy_stance_rules.json`.
@@ -65,6 +66,7 @@ The homepage endpoint returns the main content used by `/`:
 - `canonical_mainline_summary`
 - `contract_validation_summary`
 - `policy_provenance_summary`
+- `policy_snapshot_summary`
 - `mainline_ranking`
 - `theme_ranking`
 - `legacy_theme_ranking`
@@ -78,6 +80,7 @@ In `score_series`, `score` and `default_score` both use `mainline_score_v6`; old
 `/api/index`, `/api/latest`, and `/api/health` expose the latest `contract_validation_summary` or status fields. Contract errors block new JSON/Markdown writes; warnings are retained for audit.
 `data_quality_summary` is also exposed by `/api/latest`, `/api/index`, and `/api/health`. Required data stages block writes if they fail; optional market-context stages can degrade with schema fallback and do not change `mainline_score_v6`.
 `policy_provenance_summary` is exposed by `/api/latest` and `/api/index`; `/api/health` exposes the latest provenance status and rejected/degraded counts.
+`policy_snapshot_summary` is exposed by `/api/latest` and `/api/index`; `/api/health` exposes the latest snapshot status and silent-change/duplicate-conflict counts.
 
 The latest report endpoint returns the newest research report artifact:
 

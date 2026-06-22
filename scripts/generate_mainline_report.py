@@ -33,6 +33,14 @@ from data_quality_guard import (
 from mainline_contract_validator import validate_mainline_report_contract
 from policy_provenance import SCORING_VERSION as POLICY_PROVENANCE_VERSION
 from policy_provenance import build_policy_provenance_summary
+from policy_snapshot_integrity import SCORING_VERSION as POLICY_SNAPSHOT_VERSION
+from policy_snapshot_integrity import (
+    assert_policy_snapshot_integrity,
+    build_policy_snapshot_summary,
+    build_updated_snapshot_registry,
+    load_snapshot_registry,
+    save_snapshot_registry,
+)
 from policy_signals import load_policy_store, policy_event_summary, policy_theme_summary, score_policy_by_theme
 
 
@@ -779,6 +787,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
     event_theme_allocation_summary = payload.get("event_theme_allocation_summary") or {}
     mainline_lifecycle_summary = payload.get("mainline_lifecycle_summary") or {}
     policy_provenance_summary = payload.get("policy_provenance_summary") or {}
+    policy_snapshot_summary = payload.get("policy_snapshot_summary") or {}
     canonical_summary = payload.get("canonical_mainline_summary") or {}
     data_quality_summary = payload.get("data_quality_summary") or {}
     contract_summary = payload.get("contract_validation_summary") or {}
@@ -846,6 +855,32 @@ def render_markdown(payload: dict[str, Any]) -> str:
         for item in excluded_policies[:5]:
             lines.append(
                 f"- {item.get('policy_id', '')}：{item.get('exclusion_reason', '')}；domain={item.get('source_domain', '')}"
+            )
+    lines += [
+        "",
+        "## 政策快照完整性摘要",
+        "",
+        f"- 快照版本：{policy_snapshot_summary.get('scoring_version', POLICY_SNAPSHOT_VERSION)}",
+        f"- 状态：{policy_snapshot_summary.get('status', 'not_run')}",
+        f"- 原始政策数：{policy_snapshot_summary.get('raw_policy_count', 0)}",
+        f"- 新增政策数：{policy_snapshot_summary.get('new_policy_count', 0)}",
+        f"- 未变化政策数：{policy_snapshot_summary.get('unchanged_policy_count', 0)}",
+        f"- 内容变更政策数：{policy_snapshot_summary.get('changed_policy_count', 0)}",
+        f"- 有说明变更数：{policy_snapshot_summary.get('changed_with_revision_note_count', 0)}",
+        f"- 无说明变更数：{policy_snapshot_summary.get('changed_without_revision_note_count', 0)}",
+        f"- 重复 policy_id 冲突数：{policy_snapshot_summary.get('duplicate_policy_id_conflict_count', 0)}",
+        f"- 重复 source_url 冲突数：{policy_snapshot_summary.get('duplicate_source_url_conflict_count', 0)}",
+        f"- 移除政策数：{policy_snapshot_summary.get('removed_policy_count', 0)}",
+        f"- Registry 更新状态：{policy_snapshot_summary.get('registry_update_status', 'pending')}",
+    ]
+    changed_with_note = [
+        item for item in policy_snapshot_summary.get("policies", []) if item.get("snapshot_status") == "changed_with_revision_note"
+    ][:10]
+    if changed_with_note:
+        lines += ["", "有说明变更样本："]
+        for item in changed_with_note:
+            lines.append(
+                f"- {item.get('policy_id', '')}：previous_content_hash={item.get('previous_content_hash', '')}；content_hash={item.get('content_hash', '')}；revision_id={item.get('revision_id', '')}；revision_note={item.get('revision_note', '')}"
             )
     lines += [
         "",
@@ -1158,11 +1193,16 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
     d5 = open_days[idx - 5]
     d20 = open_days[idx - 20]
     basis_date = f"{basis_raw[:4]}-{basis_raw[4:6]}-{basis_raw[6:]}"
+    generated_dt = datetime.now(TZ)
+    generated_iso = generated_dt.isoformat(timespec="seconds")
+    now = generated_dt.strftime("%Y-%m-%d %H:%M:%S CST")
+    report_id = f"mainline_review_{generated_dt.strftime('%Y-%m-%d_%H%M%S')}"
     stage_statuses: list[dict[str, Any]] = []
     policy_store = load_policy_store()
-    stage_statuses.append(build_stage_status("policy_store", "pass", True, len(policy_store.get("signals", []))))
+    raw_policies = policy_store.get("signals", [])
+    stage_statuses.append(build_stage_status("policy_store", "pass", True, len(raw_policies)))
     try:
-        policy_provenance_summary = build_policy_provenance_summary(policy_store.get("signals", []))
+        policy_provenance_summary = build_policy_provenance_summary(raw_policies)
         stage_statuses.append(
             build_stage_status(
                 "policy_provenance",
@@ -1173,6 +1213,29 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
         )
     except Exception as exc:
         stage_statuses.append(build_stage_status("policy_provenance", "fail", True, 0, [], str(exc)))
+        data_quality_summary = build_data_quality_summary(stage_statuses)
+        assert_required_data_quality(data_quality_summary)
+        raise
+    try:
+        previous_snapshot_registry = load_snapshot_registry()
+        policy_snapshot_summary = build_policy_snapshot_summary(
+            raw_policies=raw_policies,
+            provenance_summary=policy_provenance_summary,
+            previous_registry=previous_snapshot_registry,
+            report_id=report_id,
+            generated_at=generated_iso,
+        )
+        assert_policy_snapshot_integrity(policy_snapshot_summary)
+        stage_statuses.append(
+            build_stage_status(
+                "policy_snapshot_integrity",
+                "pass",
+                True,
+                int(policy_snapshot_summary.get("snapshot_policy_count") or 0),
+            )
+        )
+    except Exception as exc:
+        stage_statuses.append(build_stage_status("policy_snapshot_integrity", "fail", True, 0, [], str(exc)))
         data_quality_summary = build_data_quality_summary(stage_statuses)
         assert_required_data_quality(data_quality_summary)
         raise
@@ -1242,12 +1305,11 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
     data_quality_summary = build_data_quality_summary(stage_statuses)
     assert_required_data_quality(data_quality_summary)
 
-    now = datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S CST")
-    report_id = f"mainline_review_{datetime.now(TZ).strftime('%Y-%m-%d_%H%M%S')}"
     data_sources = (ROOT / "数据源.md").read_text(encoding="utf-8") if (ROOT / "数据源.md").exists() else ""
 
     payload = {
         "generated_at": now,
+        "generated_at_iso": generated_iso,
         "basis_date": basis_date,
         "nominal_today": nominal_today,
         "data_sources_root": data_sources,
@@ -1261,6 +1323,7 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
             "included_policy_count": int(policy_provenance_summary.get("included_policy_count") or 0),
             "excluded_policy_count": int(policy_provenance_summary.get("excluded_policy_count") or 0),
             "policy_provenance_version": POLICY_PROVENANCE_VERSION,
+            "policy_snapshot_version": POLICY_SNAPSHOT_VERSION,
             "policy_weight": POLICY_WEIGHT,
             "scoring_version": "policy_score_v2",
             "theme_relevance_version": "theme_relevance_v2",
@@ -1272,6 +1335,7 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
             "scoring": "authority_score 35%, actionability_score 25%, economic_scope_score 20%, time_decay_score 20%; theme_relevance_v2 maps signals; policy_event_clustering_v2 deduplicates events; policy_theme_stance_v2 applies non-boosting direction multipliers; event_theme_allocation_v2 caps repeated event-theme contribution.",
         },
         "policy_provenance_summary": policy_provenance_summary,
+        "policy_snapshot_summary": policy_snapshot_summary,
         "event_cluster_summary": event_cluster_summary,
         "policy_stance_summary": stance_summary,
         "event_theme_allocation_summary": event_theme_allocation_summary,
@@ -1317,6 +1381,33 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
     return report_id, payload, render_markdown(payload)
 
 
+def update_snapshot_registry_after_success(report_id: str, payload: dict[str, Any]) -> None:
+    contract = payload.get("contract_validation_summary") or {}
+    snapshot_summary = payload.get("policy_snapshot_summary") or {}
+    if contract.get("status") != "pass":
+        return
+    if snapshot_summary.get("status") not in {"pass", "degraded"}:
+        return
+    previous_registry = load_snapshot_registry()
+    updated_registry = build_updated_snapshot_registry(
+        previous_registry,
+        snapshot_summary,
+        report_id,
+        payload.get("generated_at_iso") or payload.get("generated_at", ""),
+    )
+    save_snapshot_registry(updated_registry)
+
+
+def write_report_artifacts(report_id: str, payload: dict[str, Any], markdown: str) -> tuple[Path, Path]:
+    REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    json_path = REPORT_DIR / f"{report_id}.json"
+    md_path = REPORT_DIR / f"{report_id}.md"
+    json_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    md_path.write_text(markdown, encoding="utf-8")
+    update_snapshot_registry_after_success(report_id, payload)
+    return json_path, md_path
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate latest A-share mainline research report.")
     parser.add_argument("--today", default=datetime.now(TZ).strftime("%Y-%m-%d"), help="Nominal today in YYYY-MM-DD.")
@@ -1325,11 +1416,7 @@ def main() -> None:
 
     report_id, payload, markdown = build_report(args.today)
     if args.write:
-        REPORT_DIR.mkdir(parents=True, exist_ok=True)
-        json_path = REPORT_DIR / f"{report_id}.json"
-        md_path = REPORT_DIR / f"{report_id}.md"
-        json_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-        md_path.write_text(markdown, encoding="utf-8")
+        json_path, md_path = write_report_artifacts(report_id, payload, markdown)
         print(json_path)
         print(md_path)
     else:

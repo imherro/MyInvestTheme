@@ -4,6 +4,7 @@
   "required_stages": [
     "policy_store",
     "policy_provenance",
+    "policy_snapshot_integrity",
     "policy_theme_summary",
     "canonical_mainline",
     "contract_validation"

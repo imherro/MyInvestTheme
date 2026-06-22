@@ -7,14 +7,15 @@ The daily automation keeps policy research separate from market scoring.
 1. Codex reviews official policy sources after market close.
 2. Codex updates `data/policy_signals.json` only when there is a relevant new or corrected official signal.
 3. `scripts/policy_provenance.py` validates source provenance through deterministic `policy_source_provenance_v2`; rejected policies are excluded before scoring.
-4. `scripts/generate_mainline_report.py` reads the included policy set and recalculates `policy_score_v2` deterministically for the report basis date.
-5. `scripts/theme_relevance.py` maps policy signals to mainline themes through deterministic `theme_relevance_v2` rules from `config/themes.json`.
-6. `scripts/policy_event_clustering.py` clusters duplicate policy signals into deterministic policy events.
-7. `scripts/policy_stance.py` identifies whether each policy supports, mildly supports, neutrally mixes, mildly restricts, or restricts each matched theme.
-8. `scripts/theme_allocation.py` allocates one event's finite contribution budget across matched themes through deterministic `event_theme_allocation_v2`.
-9. `scripts/mainline_lifecycle.py` classifies each theme's current lifecycle through deterministic `mainline_lifecycle_v2`.
-10. `scripts/canonical_mainline.py` publishes the canonical default output contract through deterministic `canonical_mainline_output_v2`.
-11. `scripts/daily_mainline_update.py` commits the policy store together with any new report.
+4. `scripts/policy_snapshot_integrity.py` compares current policy content hashes with `data/policy_snapshot_registry.json`; unexplained historical content changes block report writes.
+5. `scripts/generate_mainline_report.py` reads the included policy set and recalculates `policy_score_v2` deterministically for the report basis date.
+6. `scripts/theme_relevance.py` maps policy signals to mainline themes through deterministic `theme_relevance_v2` rules from `config/themes.json`.
+7. `scripts/policy_event_clustering.py` clusters duplicate policy signals into deterministic policy events.
+8. `scripts/policy_stance.py` identifies whether each policy supports, mildly supports, neutrally mixes, mildly restricts, or restricts each matched theme.
+9. `scripts/theme_allocation.py` allocates one event's finite contribution budget across matched themes through deterministic `event_theme_allocation_v2`.
+10. `scripts/mainline_lifecycle.py` classifies each theme's current lifecycle through deterministic `mainline_lifecycle_v2`.
+11. `scripts/canonical_mainline.py` publishes the canonical default output contract through deterministic `canonical_mainline_output_v2`.
+12. `scripts/daily_mainline_update.py` commits the policy store together with any new report.
 
 ## Official Sources
 
@@ -59,6 +60,41 @@ policy_provenance_summary.degraded_count
 policy_provenance_summary.rejected_count
 policy_summary.signals_count = policy_provenance_summary.included_policy_count
 ```
+
+## Policy Snapshot Integrity V2
+
+`policy_snapshot_integrity_v2` is deterministic. It does not call an LLM, embeddings, external search, market data, or web scraping. It only compares the policy store and provenance `content_hash` values against the local snapshot registry.
+
+Configuration lives in `config/policy_snapshot_rules.json`:
+
+- registry path: `data/policy_snapshot_registry.json`
+- identity fields: `policy_id`, `source_url`, `content_hash`
+- revision note fields: `revision_note`, `content_revision_note`, `change_note`
+- revision id fields: `revision_id`, `content_revision_id`
+- blockers: unexplained content changes, conflicting duplicate `policy_id`, conflicting duplicate `source_url`
+- warnings: removed policy and content change with revision note
+
+Snapshot statuses:
+
+- `new`: `policy_id` is not present in the registry.
+- `unchanged`: current `content_hash` equals the registry hash.
+- `changed_with_revision_note`: current `content_hash` differs and the policy includes a revision note. This is allowed but warned.
+- `changed_without_revision_note`: current `content_hash` differs and the policy has no revision note. This blocks new report writes.
+- `removed_from_current_store`: a registry policy is absent from the current raw store. This is a warning.
+- `duplicate_policy_id_conflict`: the current raw store has the same `policy_id` with conflicting `source_url` or `content_hash`. This blocks writes.
+- `duplicate_source_url_conflict`: the current raw store has the same `source_url` across multiple `policy_id` values with conflicting `content_hash`. This blocks writes.
+
+Registry update rule:
+
+```text
+Only after JSON write success
+and Markdown write success
+and contract_validation_summary.status == pass
+and policy_snapshot_summary.status in pass/degraded
+then update data/policy_snapshot_registry.json
+```
+
+The snapshot layer does not change `policy_score_v2`, `theme_score_v5`, `mainline_score_v6`, or `mainline_ranking`. It only protects reproducibility and auditability.
 
 ## Signal Schema
 
@@ -210,11 +246,12 @@ The report writes:
 - `canonical_mainline_summary.default_score_field = mainline_score_v6`
 - `data_quality_summary.scoring_version = live_report_data_guard_v2`
 - `policy_provenance_summary.scoring_version = policy_source_provenance_v2`
+- `policy_snapshot_summary.scoring_version = policy_snapshot_integrity_v2`
 - `contract_validation_summary.scoring_version = mainline_contract_validator_v2`
 
-`mainline_contract_validator_v2` is deterministic. It reads `config/mainline_contract_rules.json` and validates required sections, version fields, policy provenance counts, rejected-policy leakage, canonical ordering, score monotonicity, score formulas, event allocation budgets, lifecycle state counts, summary counts, and legacy default-score leakage. New report generation attaches `contract_validation_summary`; any error blocks JSON and Markdown writes, while warnings are preserved in the report and Markdown.
+`mainline_contract_validator_v2` is deterministic. It reads `config/mainline_contract_rules.json` and validates required sections, version fields, policy provenance counts, rejected-policy leakage, policy snapshot integrity, canonical ordering, score monotonicity, score formulas, event allocation budgets, lifecycle state counts, summary counts, and legacy default-score leakage. New report generation attaches `contract_validation_summary`; any error blocks JSON and Markdown writes, while warnings are preserved in the report and Markdown.
 
-`live_report_data_guard_v2` is deterministic. It reads `config/data_quality_rules.json` and only guards the live report generation pipeline against empty optional tables, missing columns, optional-source exceptions, or required-stage failures. It does not add scoring factors, change `mainline_score_v6`, change `mainline_ranking`, or use market data availability as a theme score input. Required stages such as policy store, policy provenance, policy theme summary, canonical mainline, and contract validation still block writes if they fail.
+`live_report_data_guard_v2` is deterministic. It reads `config/data_quality_rules.json` and only guards the live report generation pipeline against empty optional tables, missing columns, optional-source exceptions, or required-stage failures. It does not add scoring factors, change `mainline_score_v6`, change `mainline_ranking`, or use market data availability as a theme score input. Required stages such as policy store, policy provenance, policy snapshot integrity, policy theme summary, canonical mainline, and contract validation still block writes if they fail.
 
 ## Policy Theme Stance V2
 
@@ -482,6 +519,7 @@ Final canonical chain:
 
 ```text
 policy_source_provenance_v2
+-> policy_snapshot_integrity_v2
 -> policy_score_v2
 -> relevance_score_v2
 -> policy_event_clustering_v2
@@ -507,6 +545,7 @@ canonical_mainline_summary.default_score_field = mainline_score_v6
 mainline_ranking = canonical default ranking by mainline_score_v6
 legacy_theme_ranking = market-context comparison ranking
 policy_provenance_summary.scoring_version = policy_source_provenance_v2
+policy_snapshot_summary.scoring_version = policy_snapshot_integrity_v2
 data_quality_summary.scoring_version = live_report_data_guard_v2
 data_quality_summary.status = pass | degraded | fail
 contract_validation_summary.scoring_version = mainline_contract_validator_v2
@@ -521,6 +560,7 @@ Report contract validator V2:
 required_sections:
   policy_summary
   policy_provenance_summary
+  policy_snapshot_summary
   event_cluster_summary
   policy_stance_summary
   event_theme_allocation_summary
@@ -539,6 +579,9 @@ error examples:
   mainline_score_v6 > theme_score_v5
   score formula mismatch
   rejected policy used in mainline scoring
+  unexplained policy content change
+  duplicate policy_id/source_url conflict
+  policy snapshot content_hash mismatch
   event allocation over budget
   lifecycle state count mismatch
   legacy evidence used as default score
@@ -556,6 +599,7 @@ Live report data guard V2:
 required stages:
   policy_store
   policy_provenance
+  policy_snapshot_integrity
   policy_theme_summary
   canonical_mainline
   contract_validation

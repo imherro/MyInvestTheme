@@ -1,0 +1,21 @@
+{
+  "version": "policy_snapshot_integrity_v2",
+  "registry_path": "data/policy_snapshot_registry.json",
+  "content_hash_field": "content_hash",
+  "policy_id_field": "policy_id",
+  "source_url_field": "source_url",
+  "revision_note_fields": [
+    "revision_note",
+    "content_revision_note",
+    "change_note"
+  ],
+  "revision_id_fields": [
+    "revision_id",
+    "content_revision_id"
+  ],
+  "block_on_changed_without_revision_note": true,
+  "block_on_duplicate_policy_id_conflict": true,
+  "block_on_duplicate_source_url_conflict": true,
+  "warn_on_removed_policy": true,
+  "warn_on_changed_with_revision_note": true
+}

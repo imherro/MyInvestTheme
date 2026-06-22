@@ -970,6 +970,151 @@ def validate_policy_provenance_contract(report: dict[str, Any], rules: dict[str,
         )
 
 
+def validate_policy_snapshot_contract(report: dict[str, Any], rules: dict[str, Any], issues: list[dict[str, Any]]) -> None:
+    summary = report.get("policy_snapshot_summary")
+    if not isinstance(summary, dict) or not summary:
+        add_issue(
+            issues,
+            "error",
+            "POLICY_SNAPSHOT_SUMMARY_MISSING",
+            "policy_snapshot_summary",
+            "New reports must include policy_snapshot_summary.",
+            expected="present",
+            actual="missing",
+        )
+        return
+
+    expected_version = "policy_snapshot_integrity_v2"
+    if summary.get("scoring_version") != expected_version:
+        add_issue(
+            issues,
+            "error",
+            "POLICY_SNAPSHOT_VERSION_MISMATCH",
+            "policy_snapshot_summary.scoring_version",
+            "policy_snapshot_summary scoring version mismatch.",
+            expected=expected_version,
+            actual=summary.get("scoring_version"),
+        )
+
+    allowed_statuses = {"pass", "degraded", "fail"}
+    if summary.get("status") not in allowed_statuses:
+        add_issue(
+            issues,
+            "error",
+            "POLICY_SNAPSHOT_STATUS_INVALID",
+            "policy_snapshot_summary.status",
+            "policy_snapshot_summary status is invalid.",
+            expected=sorted(allowed_statuses),
+            actual=summary.get("status"),
+        )
+    if summary.get("status") == "fail":
+        add_issue(
+            issues,
+            "error",
+            "POLICY_SNAPSHOT_STATUS_FAIL",
+            "policy_snapshot_summary.status",
+            "policy_snapshot_summary fail status must block new report writes.",
+            expected="pass or degraded",
+            actual="fail",
+        )
+
+    provenance = _as_dict(report.get("policy_provenance_summary"))
+    if _int(summary.get("raw_policy_count")) != _int(provenance.get("raw_policy_count")):
+        add_issue(
+            issues,
+            "error",
+            "POLICY_SNAPSHOT_RAW_COUNT_MISMATCH",
+            "policy_snapshot_summary.raw_policy_count",
+            "policy_snapshot_summary.raw_policy_count must equal policy_provenance_summary.raw_policy_count.",
+            expected=_int(provenance.get("raw_policy_count")),
+            actual=_int(summary.get("raw_policy_count")),
+        )
+
+    changed_without = _int(summary.get("changed_without_revision_note_count"))
+    if changed_without > 0:
+        add_issue(
+            issues,
+            "error",
+            "POLICY_SNAPSHOT_CHANGED_WITHOUT_REVISION_NOTE",
+            "policy_snapshot_summary.changed_without_revision_note_count",
+            "Policy content changed without a revision note.",
+            expected=0,
+            actual=changed_without,
+        )
+
+    duplicate_policy_id_conflicts = _int(summary.get("duplicate_policy_id_conflict_count"))
+    if duplicate_policy_id_conflicts > 0:
+        add_issue(
+            issues,
+            "error",
+            "POLICY_SNAPSHOT_DUPLICATE_POLICY_ID_CONFLICT",
+            "policy_snapshot_summary.duplicate_policy_id_conflict_count",
+            "Duplicate policy_id conflict must block new report writes.",
+            expected=0,
+            actual=duplicate_policy_id_conflicts,
+        )
+
+    duplicate_source_url_conflicts = _int(summary.get("duplicate_source_url_conflict_count"))
+    if duplicate_source_url_conflicts > 0:
+        add_issue(
+            issues,
+            "error",
+            "POLICY_SNAPSHOT_DUPLICATE_SOURCE_URL_CONFLICT",
+            "policy_snapshot_summary.duplicate_source_url_conflict_count",
+            "Duplicate source_url conflict must block new report writes.",
+            expected=0,
+            actual=duplicate_source_url_conflicts,
+        )
+
+    changed_with = _int(summary.get("changed_with_revision_note_count"))
+    if changed_with > 0:
+        add_issue(
+            issues,
+            "warning",
+            "POLICY_SNAPSHOT_CHANGED_WITH_REVISION_NOTE",
+            "policy_snapshot_summary.changed_with_revision_note_count",
+            "Policy content changed with a revision note.",
+            expected=0,
+            actual=changed_with,
+        )
+
+    removed = _int(summary.get("removed_policy_count"))
+    if removed > 0:
+        add_issue(
+            issues,
+            "warning",
+            "POLICY_SNAPSHOT_REMOVED_POLICY",
+            "policy_snapshot_summary.removed_policy_count",
+            "Policy exists in the snapshot registry but is absent from the current raw store.",
+            expected=0,
+            actual=removed,
+        )
+
+    provenance_by_id = {
+        str(row.get("policy_id")): row
+        for row in _as_list(provenance.get("policies"))
+        if isinstance(row, dict) and row.get("policy_id")
+    }
+    for index, row in enumerate(_as_list(summary.get("policies"))):
+        if not isinstance(row, dict):
+            continue
+        policy_id = str(row.get("policy_id") or "")
+        if not policy_id or policy_id not in provenance_by_id:
+            continue
+        expected_hash = provenance_by_id[policy_id].get("content_hash")
+        actual_hash = row.get("content_hash")
+        if expected_hash != actual_hash:
+            add_issue(
+                issues,
+                "error",
+                "POLICY_SNAPSHOT_CONTENT_HASH_MISMATCH",
+                f"policy_snapshot_summary.policies.{index}.content_hash",
+                "Snapshot content_hash must match the corresponding policy provenance content_hash.",
+                expected=expected_hash,
+                actual=actual_hash,
+            )
+
+
 def validate_mainline_report_contract(
     report: dict[str, Any],
     rules: dict[str, Any] | None = None,
@@ -991,6 +1136,7 @@ def validate_mainline_report_contract(
         "legacy_default_leak": True,
         "data_quality_contract": True,
         "policy_provenance_contract": True,
+        "policy_snapshot_contract": True,
     }
     validate_required_sections(report, active_rules, issues, require_self_section=require_self_section)
     validate_version_contract(report, active_rules, issues)
@@ -1003,6 +1149,7 @@ def validate_mainline_report_contract(
     validate_no_legacy_default_leak(report, active_rules, issues)
     validate_data_quality_contract(report, active_rules, issues)
     validate_policy_provenance_contract(report, active_rules, issues)
+    validate_policy_snapshot_contract(report, active_rules, issues)
 
     error_count, warning_count = _issue_counts(issues)
     return {

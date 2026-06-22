@@ -1,0 +1,95 @@
+{
+  "version": "policy_snapshot_integrity_v2",
+  "updated_at": "2026-06-22T17:20:47+08:00",
+  "last_report_id": "mainline_review_2026-06-22_172047",
+  "policy_snapshots": [
+    {
+      "policy_id": "csrc-2026-04-10-gem-reform-new-quality-productivity",
+      "title": "中国证监会发布《关于深化创业板改革更好服务新质生产力发展的意见》",
+      "source_org_norm": "csrc",
+      "source_url": "https://www.csrc.gov.cn/csrc/c100028/c7625370/content.shtml",
+      "source_domain": "www.csrc.gov.cn",
+      "publish_date": "2026-04-10",
+      "content_hash": "sha256:d5ff1f27ac03049a89184a6a962cd24b4072204ede8620b1c18996606d153752",
+      "previous_content_hash": "",
+      "snapshot_status": "new",
+      "provenance_status": "verified",
+      "inclusion_status": "included_in_mainline",
+      "revision_id": "",
+      "revision_note": "",
+      "first_seen_report_id": "mainline_review_2026-06-22_172047",
+      "last_seen_report_id": "mainline_review_2026-06-22_172047",
+      "first_seen_at": "2026-06-22T17:20:47+08:00",
+      "last_seen_at": "2026-06-22T17:20:47+08:00",
+      "snapshot_reasons": [
+        "policy_id_not_seen_before"
+      ]
+    },
+    {
+      "policy_id": "ndrc-2026-06-01-109-major-projects-industrial-foundation",
+      "title": "透视109项重大工程：如何夯实产业基础",
+      "source_org_norm": "ndrc",
+      "source_url": "https://www.ndrc.gov.cn/wsdwhfz/202606/t20260601_1405600.html",
+      "source_domain": "www.ndrc.gov.cn",
+      "publish_date": "2026-06-01",
+      "content_hash": "sha256:ae2a46c087ff60ef33e0c909cbe894f81b4c78928c35daad1c08d5a07fb2553a",
+      "previous_content_hash": "",
+      "snapshot_status": "new",
+      "provenance_status": "verified",
+      "inclusion_status": "included_in_mainline",
+      "revision_id": "",
+      "revision_note": "",
+      "first_seen_report_id": "mainline_review_2026-06-22_172047",
+      "last_seen_report_id": "mainline_review_2026-06-22_172047",
+      "first_seen_at": "2026-06-22T17:20:47+08:00",
+      "last_seen_at": "2026-06-22T17:20:47+08:00",
+      "snapshot_reasons": [
+        "policy_id_not_seen_before"
+      ]
+    },
+    {
+      "policy_id": "ndrc-2026-06-03-intelligent-economy",
+      "title": "发展智能经济新形态为高质量发展注入强劲动能",
+      "source_org_norm": "ndrc",
+      "source_url": "https://www.ndrc.gov.cn/wsdwhfz/202606/t20260603_1405684.html",
+      "source_domain": "www.ndrc.gov.cn",
+      "publish_date": "2026-06-03",
+      "content_hash": "sha256:78d88646b01b38282e53fdce7ae9a7132cbf1ba2f4f9a4b47f27c2a007191c33",
+      "previous_content_hash": "",
+      "snapshot_status": "new",
+      "provenance_status": "verified",
+      "inclusion_status": "included_in_mainline",
+      "revision_id": "",
+      "revision_note": "",
+      "first_seen_report_id": "mainline_review_2026-06-22_172047",
+      "last_seen_report_id": "mainline_review_2026-06-22_172047",
+      "first_seen_at": "2026-06-22T17:20:47+08:00",
+      "last_seen_at": "2026-06-22T17:20:47+08:00",
+      "snapshot_reasons": [
+        "policy_id_not_seen_before"
+      ]
+    },
+    {
+      "policy_id": "nea-2026-05-09-ai-energy-action-plan",
+      "title": "国家能源局联合相关部门促进人工智能与能源双向赋能",
+      "source_org_norm": "nea",
+      "source_url": "https://www.nea.gov.cn/20260509/45e5721670704d4e8555d2212211db45/c.html",
+      "source_domain": "www.nea.gov.cn",
+      "publish_date": "2026-05-09",
+      "content_hash": "sha256:54af6fcd03ccc2576365ff3d3e4f25221ca616c21b5fc51ecc3b1467ca538fd4",
+      "previous_content_hash": "",
+      "snapshot_status": "new",
+      "provenance_status": "verified",
+      "inclusion_status": "included_in_mainline",
+      "revision_id": "",
+      "revision_note": "",
+      "first_seen_report_id": "mainline_review_2026-06-22_172047",
+      "last_seen_report_id": "mainline_review_2026-06-22_172047",
+      "first_seen_at": "2026-06-22T17:20:47+08:00",
+      "last_seen_at": "2026-06-22T17:20:47+08:00",
+      "snapshot_reasons": [
+        "policy_id_not_seen_before"
+      ]
+    }
+  ]
+}
