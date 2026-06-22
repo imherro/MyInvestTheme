@@ -30,13 +30,21 @@
   </div>
   <div class="table-wrap">
     <table>
+      <colgroup>
+        <col class="col-rank">
+        <col class="col-theme">
+        <col class="col-stage">
+        <col class="col-score">
+        <col class="col-evidence">
+        <col class="col-etf">
+      </colgroup>
       <thead>
         <tr>
           <th>排序</th>
           <th>主题</th>
           <th>阶段</th>
           <th>证据分</th>
-          <th>证据项</th>
+          <th>证据项/拆解</th>
           <th>ETF代理</th>
         </tr>
       </thead>
@@ -46,8 +54,25 @@
           <td>{{ loop.index }}</td>
           <td class="strong">{{ item.theme }}</td>
           <td><span class="stage">{{ item.stage }}</span></td>
-          <td>{{ "%.2f"|format(item.evidence_score) }}</td>
-          <td>{{ item.evidence_count }}</td>
+          <td class="score-cell">{{ "%.2f"|format(item.evidence_score) }}</td>
+          <td class="evidence-cell">
+            <details class="evidence-details">
+              <summary>
+                <span class="evidence-count">{{ item.evidence_count }}/5</span>
+                <span class="evidence-action">查看</span>
+              </summary>
+              <div class="evidence-list">
+                {% for evidence in item.evidence_breakdown %}
+                <div class="evidence-row {{ 'is-active' if evidence.active else 'is-inactive' }}">
+                  <span class="evidence-state">{{ '计入' if evidence.active else '未计入' }}</span>
+                  <span class="evidence-name">{{ evidence.label }}</span>
+                  <span class="evidence-score">{{ "%.1f"|format(evidence.score) if evidence.score is not none else "无" }}</span>
+                  <span class="evidence-note">{{ evidence.note }}</span>
+                </div>
+                {% endfor %}
+              </div>
+            </details>
+          </td>
           <td class="muted etf-cell">{{ item.top_etf }}</td>
         </tr>
         {% endfor %}

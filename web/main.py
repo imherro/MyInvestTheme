@@ -85,6 +85,66 @@ def _resonance_score(item: dict[str, Any]) -> float | None:
     return sum(valid_scores) / len(valid_scores)
 
 
+def _moneyflow_score(item: dict[str, Any]) -> float | None:
+    flow_rank = _float_or_none(item.get("flow_rank"))
+    if flow_rank is None:
+        return None
+    return flow_rank * 100
+
+
+def _moneyflow_note(item: dict[str, Any]) -> str:
+    large_net = _float_or_none(item.get("large_net"))
+    if large_net is None:
+        return "大单/特大单净额无数据"
+    return f"大单/特大单净额 {large_net:.2f}"
+
+
+def _evidence_breakdown(item: dict[str, Any]) -> list[dict[str, Any]]:
+    limit_count = int(_float_or_none(item.get("limit_count")) or 0)
+    large_net = _float_or_none(item.get("large_net")) or 0
+    return [
+        {
+            "label": "申万行业",
+            "score": _float_or_none(item.get("sw_score")),
+            "active": (_float_or_none(item.get("sw_score")) or 0) > 0,
+            "note": item.get("top_sw") or "无映射",
+        },
+        {
+            "label": "同花顺主题",
+            "score": _float_or_none(item.get("ths_score")),
+            "active": (_float_or_none(item.get("ths_score")) or 0) > 0,
+            "note": item.get("top_ths") or "无主题匹配",
+        },
+        {
+            "label": "ETF代理",
+            "score": _float_or_none(item.get("etf_score")),
+            "active": (_float_or_none(item.get("etf_score")) or 0) > 0,
+            "note": item.get("top_etf") or "无ETF匹配",
+        },
+        {
+            "label": "涨停结构",
+            "score": _float_or_none(item.get("limit_score")),
+            "active": limit_count > 0,
+            "note": f"匹配涨停 {limit_count} 个",
+        },
+        {
+            "label": "资金排名",
+            "score": _moneyflow_score(item),
+            "active": large_net > 0,
+            "note": _moneyflow_note(item),
+        },
+    ]
+
+
+def enrich_theme_ranking(themes: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    enriched = []
+    for item in themes:
+        enriched_item = dict(item)
+        enriched_item["evidence_breakdown"] = _evidence_breakdown(item)
+        enriched.append(enriched_item)
+    return enriched
+
+
 def _report_summary(path: Path) -> dict[str, Any]:
     payload = _load_json(path)
     themes = payload.get("theme_ranking") or []
@@ -160,7 +220,7 @@ def build_score_series() -> dict[str, Any]:
 
 
 def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) -> dict[str, Any]:
-    themes = payload.get("theme_ranking") or []
+    themes = enrich_theme_ranking(payload.get("theme_ranking") or [])
     top_theme = themes[0] if themes else {}
     breadth = payload.get("breadth") or {}
     return {
@@ -189,13 +249,15 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
 @app.get("/", response_class=HTMLResponse)
 def latest_page(request: Request) -> HTMLResponse:
     report_id, payload, markdown = load_latest_report()
+    page_report = dict(payload)
+    page_report["theme_ranking"] = enrich_theme_ranking(payload.get("theme_ranking") or [])
     reports = list_reports()
     return templates.TemplateResponse(
         request,
         "index.html",
         {
             "report_id": report_id,
-            "report": payload,
+            "report": page_report,
             "markdown": markdown,
             "reports": reports,
             "page": "latest",

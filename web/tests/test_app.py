@@ -41,6 +41,15 @@ def test_index_api_returns_homepage_content():
     assert body["latest_report"]["report_id"].startswith("mainline_review_")
     assert body["latest_report"]["basis_date"]
     assert body["theme_ranking"]
+    first_theme = body["theme_ranking"][0]
+    assert "evidence_breakdown" in first_theme
+    assert {item["label"] for item in first_theme["evidence_breakdown"]} == {
+        "申万行业",
+        "同花顺主题",
+        "ETF代理",
+        "涨停结构",
+        "资金排名",
+    }
     assert body["market"]["breadth"]
     assert body["market"]["broad_indexes"]
     assert body["score_series"]["report_count"] >= 1
@@ -79,6 +88,8 @@ def test_pages_render():
     latest = get("/")
     assert latest.status_code == 200
     assert "A股主线研究台" in latest.text
+    assert "证据项/拆解" in latest.text
+    assert "资金排名" in latest.text
 
     reports = get("/reports")
     assert reports.status_code == 200
