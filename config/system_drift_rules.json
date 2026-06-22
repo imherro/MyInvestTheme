@@ -1,0 +1,21 @@
+{
+  "version": "system_drift_control_v2",
+  "golden_snapshot_path": "data/golden_mainline_snapshot.json",
+  "score_warning_threshold": 0.001,
+  "score_critical_threshold": 0.01,
+  "allocation_warning_threshold": 0.001,
+  "allocation_critical_threshold": 0.01,
+  "top1_change_status": "critical",
+  "top3_swap_status": "warning",
+  "lifecycle_change_status": "critical",
+  "required_report_sections": [
+    "mainline_ranking",
+    "theme_summary",
+    "event_theme_allocation_summary",
+    "mainline_lifecycle_summary",
+    "policy_stance_summary",
+    "canonical_mainline_summary",
+    "contract_validation_summary",
+    "reproducibility_manifest"
+  ]
+}

@@ -40,6 +40,7 @@ Policy scoring:
 - Report contract validation uses deterministic `mainline_contract_validator_v2` from `config/mainline_contract_rules.json` to check report sections, version fields, policy provenance, canonical ranking, score formulas, event allocation budgets, lifecycle counts, and legacy default-score leakage before a new report is written.
 - Snapshot registry finalization uses deterministic `snapshot_registry_finalization_v2` from `config/snapshot_registry_finalization_rules.json`; written JSON/Markdown reports must carry an `updated` registry receipt rather than a pending registry state.
 - Reproducibility manifest uses deterministic `reproducibility_manifest_v2` from `config/reproducibility_manifest_rules.json` to record Git metadata, code/config/input fingerprints, JSON/Markdown artifact hashes, runtime metadata, run arguments, and secret-safety status without reading or writing `.env` values.
+- System drift control uses deterministic `system_drift_control_v2` from `config/system_drift_rules.json` and `data/golden_mainline_snapshot.json` to compare the current report with a golden snapshot without changing `mainline_score_v6`.
 - `theme_score_v2_raw` is the undeduplicated policy-theme comparison score, `theme_score_v3_dedup` is the deduplicated score before direction adjustment, `theme_score_v4_stance_adjusted` is the direction-adjusted score before allocation, `theme_score_v5` is the event-theme allocated score, and `mainline_score_v6` is the default lifecycle-adjusted policy-theme score.
 - Default canonical mainline score is `mainline_score_v6`.
 - `mainline_score_v6 = theme_score_v5 * lifecycle_quality_multiplier`.
@@ -53,6 +54,8 @@ python scripts/mainline_contract_validator.py --latest
 python scripts/mainline_contract_validator.py --path research/mainline/mainline_review_2026-06-22_155506.json
 python scripts/reproducibility_manifest.py --latest
 python scripts/reproducibility_manifest.py --path research/mainline/mainline_review_2026-06-22_180013.json
+python scripts/golden_snapshot_builder.py --latest --write
+python scripts/system_drift_detector.py --latest
 ```
 
 Open:
@@ -61,6 +64,9 @@ Open:
 - Historical research: http://127.0.0.1:8012/reports
 - Homepage content API: http://127.0.0.1:8012/api/index
 - Latest report API: http://127.0.0.1:8012/api/latest
+- Drift status API: http://127.0.0.1:8012/api/drift
+- Golden snapshot API: http://127.0.0.1:8012/api/golden-snapshot
+- Compare report API: http://127.0.0.1:8012/api/compare
 
 ## API Contract
 

@@ -17,7 +17,8 @@ The daily automation keeps policy research separate from market scoring.
 11. `scripts/canonical_mainline.py` publishes the canonical default output contract through deterministic `canonical_mainline_output_v2`.
 12. `scripts/snapshot_registry_finalizer.py` writes the final registry receipt and formal report artifacts.
 13. `scripts/reproducibility_manifest.py` records Git metadata, input/config/code fingerprints, artifact hashes, runtime metadata and secret-safety status through deterministic `reproducibility_manifest_v2`.
-14. `scripts/daily_mainline_update.py` commits the policy store together with any new report.
+14. `scripts/golden_snapshot_builder.py` and `scripts/system_drift_detector.py` compare current reports with `data/golden_mainline_snapshot.json` through deterministic `system_drift_control_v2`.
+15. `scripts/daily_mainline_update.py` commits the policy store together with any new report.
 
 ## Official Sources
 
@@ -145,6 +146,40 @@ Manifest status:
 - `fail`: required fingerprint missing or secret safety fails. Formal report writing is blocked.
 
 Formal JSON/Markdown artifacts must not retain `reproducibility_manifest.status = pending`; pending is only allowed during dry-run report construction.
+
+## System Drift Control V2
+
+`system_drift_control_v2` is deterministic. It does not call an LLM, embeddings, external search, market data, or web scraping. It compares a current report against `data/golden_mainline_snapshot.json`.
+
+Configuration lives in `config/system_drift_rules.json`.
+
+Golden snapshot contains:
+
+- source report id, basis date, source Git commit and source report hash
+- canonical `mainline_ranking`
+- `theme_scores` keyed by theme id
+- `lifecycle_states` keyed by theme id
+- event-theme `allocation_matrix`
+- policy stance comparison matrix
+- report section inventory
+
+Drift checks:
+
+- ranking drift: top1 change is critical; top3 order change is warning by default
+- score drift: `mainline_score_v6` delta `<= 0.001` is OK, `0.001-0.01` is warning, `> 0.01` is critical
+- allocation drift: event-theme allocated contribution deltas use the same warning/critical thresholds
+- lifecycle drift: lifecycle state changes are critical
+- structural drift: missing required report sections are critical
+
+Drift control is a trust layer only. It does not change policy scoring, lifecycle rules, event allocation, `mainline_score_v6`, or `mainline_ranking`.
+
+Read-only APIs:
+
+```text
+/api/golden-snapshot
+/api/drift
+/api/compare?report_id=<report_id>
+```
 
 ## Signal Schema
 

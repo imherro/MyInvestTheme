@@ -20,6 +20,8 @@ from scripts.canonical_mainline import (
     build_mainline_ranking,
 )
 from scripts.mainline_contract_validator import validate_mainline_report_contract
+from scripts.golden_snapshot_builder import GOLDEN_PATH
+from scripts.system_drift_detector import build_drift_report, load_golden_snapshot
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
@@ -749,3 +751,29 @@ def api_index() -> dict[str, Any]:
 def api_latest() -> dict[str, Any]:
     report_id, payload, _ = load_latest_report()
     return {"report_id": report_id, "result": _with_canonical_fields(payload)}
+
+
+@app.get("/api/golden-snapshot")
+def api_golden_snapshot() -> dict[str, Any]:
+    if not GOLDEN_PATH.exists():
+        raise HTTPException(status_code=404, detail="golden snapshot does not exist")
+    return load_golden_snapshot(GOLDEN_PATH)
+
+
+@app.get("/api/drift")
+def api_drift() -> dict[str, Any]:
+    _, payload, _ = load_latest_report()
+    if not GOLDEN_PATH.exists():
+        raise HTTPException(status_code=404, detail="golden snapshot does not exist")
+    return build_drift_report(load_golden_snapshot(GOLDEN_PATH), _with_canonical_fields(payload))
+
+
+@app.get("/api/compare")
+def api_compare(report_id: str | None = None) -> dict[str, Any]:
+    if report_id:
+        payload = load_report(report_id)
+    else:
+        _, payload, _ = load_latest_report()
+    if not GOLDEN_PATH.exists():
+        raise HTTPException(status_code=404, detail="golden snapshot does not exist")
+    return build_drift_report(load_golden_snapshot(GOLDEN_PATH), _with_canonical_fields(payload))
