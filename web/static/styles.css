@@ -398,6 +398,21 @@ th {
   gap: 6px;
 }
 
+.chart-subhead {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 8px 0 4px;
+}
+
+.chart-subhead strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
 .legend-line {
   width: 28px;
   height: 0;
@@ -408,6 +423,83 @@ th {
 .legend-line.market {
   border-top-color: #b54708;
   border-top-style: dashed;
+}
+
+.strength-board {
+  display: grid;
+  gap: 6px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.strength-row {
+  display: grid;
+  grid-template-columns: 170px minmax(420px, 1fr) 190px;
+  gap: 14px;
+  align-items: center;
+}
+
+.strength-row > strong {
+  font-size: 13px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.strength-bars {
+  display: grid;
+  gap: 5px;
+}
+
+.strength-track {
+  height: 18px;
+  border-radius: 4px;
+  background: #eef2f6;
+  position: relative;
+  overflow: hidden;
+}
+
+.strength-label {
+  position: absolute;
+  left: 7px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  color: #344054;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.strength-bar {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  min-width: 2px;
+}
+
+.strength-bar.policy {
+  background: rgba(15, 118, 110, 0.72);
+}
+
+.strength-bar.market {
+  background: rgba(181, 71, 8, 0.68);
+}
+
+.strength-score {
+  display: grid;
+  gap: 3px;
+  font-size: 12px;
+}
+
+.strength-score span {
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.strength-score em {
+  color: var(--brand-dark);
+  font-style: normal;
+  font-weight: 700;
 }
 
 .spark-list {

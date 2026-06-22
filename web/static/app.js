@@ -139,6 +139,32 @@
       </div>`;
   }
 
+  function renderStrengthRow(theme, scaleMax) {
+    const latest = latestPoint(theme.points || []);
+    const policy = policyScore(latest);
+    const market = marketScore(latest);
+    const policyWidth = policy === null ? 0 : clamp(policy / scaleMax, 0, 1) * 100;
+    const marketWidth = market === null ? 0 : clamp(market / scaleMax, 0, 1) * 100;
+    return `
+      <div class="strength-row">
+        <strong>${escapeHtml(theme.theme)}</strong>
+        <div class="strength-bars">
+          <div class="strength-track">
+            <span class="strength-label">政策</span>
+            <span class="strength-bar policy" style="width: ${policyWidth.toFixed(1)}%"></span>
+          </div>
+          <div class="strength-track">
+            <span class="strength-label">热度</span>
+            <span class="strength-bar market" style="width: ${marketWidth.toFixed(1)}%"></span>
+          </div>
+        </div>
+        <div class="strength-score">
+          <span>${formatScore(policy)} / ${formatScore(market)}</span>
+          <em>${escapeHtml(judgement(policy, market))}</em>
+        </div>
+      </div>`;
+  }
+
   function drawScoreChart(container, payload) {
     const themes = (payload.themes || [])
       .map((theme) => ({
@@ -147,7 +173,7 @@
       }))
       .filter((theme) => theme.points.length)
       .sort((a, b) => latestPolicyScore(b) - latestPolicyScore(a))
-      .slice(0, 6);
+      .slice(0, 8);
 
     if (!themes.length) {
       container.innerHTML = '<div class="chart-empty">暂无曲线数据。</div>';
@@ -157,13 +183,29 @@
     const labels = Array.from(new Set(themes.flatMap((theme) => theme.points.map((point) => point.x))));
     const scores = themes.flatMap((theme) => theme.points.flatMap((point) => [policyScore(point), marketScore(point)]).filter((score) => score !== null));
     const yMax = Math.max(100, Math.ceil(Math.max(...scores) / 10) * 10);
+    const latestScores = themes.flatMap((theme) => {
+      const point = latestPoint(theme.points || []);
+      return [policyScore(point), marketScore(point)].filter((score) => score !== null);
+    });
+    const strengthScaleMax = Math.max(100, Math.ceil(Math.max(...latestScores) / 10) * 10);
 
     container.innerHTML = `
       <div class="dual-chart">
         <div class="chart-legend">
           <span><i class="legend-line policy"></i>绿色实线=政策主线分 mainline_score_v6 × 100</span>
           <span><i class="legend-line market"></i>橙色虚线=市场热度观察分</span>
-          <span>横轴=报告生成时间，显示最新政策主线分前 6 个主题</span>
+          <span>横轴=报告生成时间，显示最新政策主线分前 8 个主题</span>
+        </div>
+        <div class="strength-board">
+          <div class="chart-subhead">
+            <strong>最新强弱对比</strong>
+            <span>横条越长，当前分数越高；格式为 政策主线分 / 市场热度分</span>
+          </div>
+          ${themes.map((theme) => renderStrengthRow(theme, strengthScaleMax)).join("")}
+        </div>
+        <div class="chart-subhead">
+          <strong>时间走势</strong>
+          <span>同一主题内比较政策线和热度线是否同向</span>
         </div>
         <div class="spark-list">
           ${themes.map((theme) => renderThemeRow(theme, labels, yMax)).join("")}
