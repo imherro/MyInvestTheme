@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 import sys
 from copy import deepcopy
 from datetime import datetime
@@ -1115,12 +1116,146 @@ def validate_policy_snapshot_contract(report: dict[str, Any], rules: dict[str, A
             )
 
 
+def _sha256_hash_like(value: Any) -> bool:
+    return bool(re.fullmatch(r"sha256:[0-9a-f]{64}", str(value or "")))
+
+
+def validate_snapshot_registry_finalization_contract(
+    report: dict[str, Any],
+    rules: dict[str, Any],
+    issues: list[dict[str, Any]],
+    *,
+    allow_pending_registry: bool = False,
+) -> None:
+    del rules
+    summary = report.get("snapshot_registry_update_summary")
+    if not isinstance(summary, dict) or not summary:
+        add_issue(
+            issues,
+            "error",
+            "SNAPSHOT_REGISTRY_UPDATE_SUMMARY_MISSING",
+            "snapshot_registry_update_summary",
+            "Written reports must include snapshot_registry_update_summary.",
+            expected="present",
+            actual="missing",
+        )
+        return
+
+    expected_version = "snapshot_registry_finalization_v2"
+    if summary.get("scoring_version") != expected_version:
+        add_issue(
+            issues,
+            "error",
+            "SNAPSHOT_REGISTRY_FINALIZATION_VERSION_MISMATCH",
+            "snapshot_registry_update_summary.scoring_version",
+            "snapshot registry finalization version mismatch.",
+            expected=expected_version,
+            actual=summary.get("scoring_version"),
+        )
+
+    status = str(summary.get("status") or "")
+    allowed_statuses = {"updated", "skipped", "failed", "pending"}
+    if status not in allowed_statuses:
+        add_issue(
+            issues,
+            "error",
+            "SNAPSHOT_REGISTRY_UPDATE_STATUS_INVALID",
+            "snapshot_registry_update_summary.status",
+            "snapshot registry update status is invalid.",
+            expected=sorted(allowed_statuses),
+            actual=status,
+        )
+    if status == "failed":
+        add_issue(
+            issues,
+            "error",
+            "SNAPSHOT_REGISTRY_UPDATE_FAILED",
+            "snapshot_registry_update_summary.status",
+            "Snapshot registry update failed.",
+            expected="updated",
+            actual=status,
+        )
+    if status == "pending" and not allow_pending_registry:
+        add_issue(
+            issues,
+            "error",
+            "SNAPSHOT_REGISTRY_UPDATE_PENDING_IN_WRITTEN_REPORT",
+            "snapshot_registry_update_summary.status",
+            "Written reports must not retain pending registry update status.",
+            expected="updated",
+            actual=status,
+        )
+
+    snapshot = _as_dict(report.get("policy_snapshot_summary"))
+    if snapshot.get("registry_update_status") != status:
+        add_issue(
+            issues,
+            "error",
+            "SNAPSHOT_REGISTRY_STATUS_MISMATCH",
+            "policy_snapshot_summary.registry_update_status",
+            "policy_snapshot_summary registry status must match snapshot_registry_update_summary.status.",
+            expected=status,
+            actual=snapshot.get("registry_update_status"),
+        )
+
+    receipt_hash = snapshot.get("registry_update_receipt_hash")
+    if status == "updated" and not _sha256_hash_like(receipt_hash):
+        add_issue(
+            issues,
+            "error",
+            "SNAPSHOT_REGISTRY_RECEIPT_HASH_INVALID",
+            "policy_snapshot_summary.registry_update_receipt_hash",
+            "registry_update_receipt_hash must be a sha256 hash.",
+            expected="sha256:<64 hex>",
+            actual=receipt_hash,
+        )
+
+    report_id = str(report.get("report_id") or "")
+    if summary.get("report_id") != report_id:
+        add_issue(
+            issues,
+            "error",
+            "SNAPSHOT_REGISTRY_REPORT_ID_MISMATCH",
+            "snapshot_registry_update_summary.report_id",
+            "snapshot registry update report_id must match report.report_id.",
+            expected=report_id,
+            actual=summary.get("report_id"),
+        )
+
+    for key in ("previous_registry_hash", "updated_registry_hash"):
+        value = summary.get(key)
+        if status == "updated" and not _sha256_hash_like(value):
+            add_issue(
+                issues,
+                "error",
+                "SNAPSHOT_REGISTRY_HASH_INVALID",
+                f"snapshot_registry_update_summary.{key}",
+                f"{key} must be a sha256 hash.",
+                expected="sha256:<64 hex>",
+                actual=value,
+            )
+
+    policy_count_after = _int(summary.get("registry_policy_count_after"))
+    snapshot_policy_count = len(_as_list(snapshot.get("policies")))
+    if status == "updated" and policy_count_after != snapshot_policy_count:
+        add_issue(
+            issues,
+            "error",
+            "SNAPSHOT_REGISTRY_POLICY_COUNT_MISMATCH",
+            "snapshot_registry_update_summary.registry_policy_count_after",
+            "registry_policy_count_after must equal len(policy_snapshot_summary.policies).",
+            expected=snapshot_policy_count,
+            actual=policy_count_after,
+        )
+
+
 def validate_mainline_report_contract(
     report: dict[str, Any],
     rules: dict[str, Any] | None = None,
     *,
     checked_at: str | None = None,
     require_self_section: bool = False,
+    allow_pending_registry: bool = False,
 ) -> dict[str, Any]:
     active_rules = rules or load_rules()
     issues: list[dict[str, Any]] = []
@@ -1137,6 +1272,7 @@ def validate_mainline_report_contract(
         "data_quality_contract": True,
         "policy_provenance_contract": True,
         "policy_snapshot_contract": True,
+        "snapshot_registry_finalization_contract": True,
     }
     validate_required_sections(report, active_rules, issues, require_self_section=require_self_section)
     validate_version_contract(report, active_rules, issues)
@@ -1150,6 +1286,12 @@ def validate_mainline_report_contract(
     validate_data_quality_contract(report, active_rules, issues)
     validate_policy_provenance_contract(report, active_rules, issues)
     validate_policy_snapshot_contract(report, active_rules, issues)
+    validate_snapshot_registry_finalization_contract(
+        report,
+        active_rules,
+        issues,
+        allow_pending_registry=allow_pending_registry,
+    )
 
     error_count, warning_count = _issue_counts(issues)
     return {
@@ -1169,12 +1311,14 @@ def assert_mainline_report_contract(
     *,
     checked_at: str | None = None,
     require_self_section: bool = False,
+    allow_pending_registry: bool = False,
 ) -> dict[str, Any]:
     summary = validate_mainline_report_contract(
         report,
         rules,
         checked_at=checked_at,
         require_self_section=require_self_section,
+        allow_pending_registry=allow_pending_registry,
     )
     if summary["error_count"]:
         codes = ", ".join(issue["code"] for issue in summary["issues"] if issue["severity"] == "error")

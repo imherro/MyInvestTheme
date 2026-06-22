@@ -1,7 +1,7 @@
 {
   "version": "policy_snapshot_integrity_v2",
-  "updated_at": "2026-06-22T17:20:47+08:00",
-  "last_report_id": "mainline_review_2026-06-22_172047",
+  "updated_at": "2026-06-22T17:38:53+08:00",
+  "last_report_id": "mainline_review_2026-06-22_173853",
   "policy_snapshots": [
     {
       "policy_id": "csrc-2026-04-10-gem-reform-new-quality-productivity",
@@ -11,18 +11,18 @@
       "source_domain": "www.csrc.gov.cn",
       "publish_date": "2026-04-10",
       "content_hash": "sha256:d5ff1f27ac03049a89184a6a962cd24b4072204ede8620b1c18996606d153752",
-      "previous_content_hash": "",
-      "snapshot_status": "new",
+      "previous_content_hash": "sha256:d5ff1f27ac03049a89184a6a962cd24b4072204ede8620b1c18996606d153752",
+      "snapshot_status": "unchanged",
       "provenance_status": "verified",
       "inclusion_status": "included_in_mainline",
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-22_172047",
+      "last_seen_report_id": "mainline_review_2026-06-22_173853",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-22T17:20:47+08:00",
+      "last_seen_at": "2026-06-22T17:38:53+08:00",
       "snapshot_reasons": [
-        "policy_id_not_seen_before"
+        "content_hash_unchanged"
       ]
     },
     {
@@ -33,18 +33,18 @@
       "source_domain": "www.ndrc.gov.cn",
       "publish_date": "2026-06-01",
       "content_hash": "sha256:ae2a46c087ff60ef33e0c909cbe894f81b4c78928c35daad1c08d5a07fb2553a",
-      "previous_content_hash": "",
-      "snapshot_status": "new",
+      "previous_content_hash": "sha256:ae2a46c087ff60ef33e0c909cbe894f81b4c78928c35daad1c08d5a07fb2553a",
+      "snapshot_status": "unchanged",
       "provenance_status": "verified",
       "inclusion_status": "included_in_mainline",
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-22_172047",
+      "last_seen_report_id": "mainline_review_2026-06-22_173853",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-22T17:20:47+08:00",
+      "last_seen_at": "2026-06-22T17:38:53+08:00",
       "snapshot_reasons": [
-        "policy_id_not_seen_before"
+        "content_hash_unchanged"
       ]
     },
     {
@@ -55,18 +55,18 @@
       "source_domain": "www.ndrc.gov.cn",
       "publish_date": "2026-06-03",
       "content_hash": "sha256:78d88646b01b38282e53fdce7ae9a7132cbf1ba2f4f9a4b47f27c2a007191c33",
-      "previous_content_hash": "",
-      "snapshot_status": "new",
+      "previous_content_hash": "sha256:78d88646b01b38282e53fdce7ae9a7132cbf1ba2f4f9a4b47f27c2a007191c33",
+      "snapshot_status": "unchanged",
       "provenance_status": "verified",
       "inclusion_status": "included_in_mainline",
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-22_172047",
+      "last_seen_report_id": "mainline_review_2026-06-22_173853",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-22T17:20:47+08:00",
+      "last_seen_at": "2026-06-22T17:38:53+08:00",
       "snapshot_reasons": [
-        "policy_id_not_seen_before"
+        "content_hash_unchanged"
       ]
     },
     {
@@ -77,18 +77,18 @@
       "source_domain": "www.nea.gov.cn",
       "publish_date": "2026-05-09",
       "content_hash": "sha256:54af6fcd03ccc2576365ff3d3e4f25221ca616c21b5fc51ecc3b1467ca538fd4",
-      "previous_content_hash": "",
-      "snapshot_status": "new",
+      "previous_content_hash": "sha256:54af6fcd03ccc2576365ff3d3e4f25221ca616c21b5fc51ecc3b1467ca538fd4",
+      "snapshot_status": "unchanged",
       "provenance_status": "verified",
       "inclusion_status": "included_in_mainline",
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-22_172047",
+      "last_seen_report_id": "mainline_review_2026-06-22_173853",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-22T17:20:47+08:00",
+      "last_seen_at": "2026-06-22T17:38:53+08:00",
       "snapshot_reasons": [
-        "policy_id_not_seen_before"
+        "content_hash_unchanged"
       ]
     }
   ]

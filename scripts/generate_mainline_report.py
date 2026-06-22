@@ -39,8 +39,9 @@ from policy_snapshot_integrity import (
     build_policy_snapshot_summary,
     build_updated_snapshot_registry,
     load_snapshot_registry,
-    save_snapshot_registry,
 )
+from snapshot_registry_finalizer import SCORING_VERSION as SNAPSHOT_REGISTRY_FINALIZATION_VERSION
+from snapshot_registry_finalizer import finalize_report_artifacts_with_registry
 from policy_signals import load_policy_store, policy_event_summary, policy_theme_summary, score_policy_by_theme
 
 
@@ -224,6 +225,11 @@ def rounded(value: Any, digits: int = 4) -> float | None:
 def fmt_pct(value: Any) -> str:
     number = pct(value)
     return "" if number is None else f"{number:.2f}%"
+
+
+def fmt_number(value: Any, digits: int = 2) -> str:
+    number = pct(value)
+    return "" if number is None else f"{number:.{digits}f}"
 
 
 def percentile_rank(series: pd.Series) -> pd.Series:
@@ -752,12 +758,12 @@ def _replace_data_quality_stage(payload: dict[str, Any], stage_status: dict[str,
     payload["data_quality_summary"] = build_data_quality_summary(statuses)
 
 
-def attach_contract_validation(payload: dict[str, Any]) -> dict[str, Any]:
+def attach_contract_validation(payload: dict[str, Any], *, allow_pending_registry: bool = False) -> dict[str, Any]:
     _replace_data_quality_stage(
         payload,
         build_stage_status("contract_validation", "pass", True, 1, [], None),
     )
-    summary = validate_mainline_report_contract(payload)
+    summary = validate_mainline_report_contract(payload, allow_pending_registry=allow_pending_registry)
     if summary["error_count"]:
         _replace_data_quality_stage(
             payload,
@@ -770,7 +776,7 @@ def attach_contract_validation(payload: dict[str, Any]) -> dict[str, Any]:
         payload,
         build_stage_status("contract_validation", "pass", True, 1, [], None),
     )
-    summary = validate_mainline_report_contract(payload)
+    summary = validate_mainline_report_contract(payload, allow_pending_registry=allow_pending_registry)
     payload["contract_validation_summary"] = summary
     if summary["error_count"]:
         codes = ", ".join(issue["code"] for issue in summary["issues"] if issue["severity"] == "error")
@@ -1138,19 +1144,19 @@ def render_markdown(payload: dict[str, Any]) -> str:
     ]
     for item in legacy_theme_ranking:
         lines += [
-            f"### {item['theme']}：{item['stage']}",
-            f"- 证据分：{item['evidence_score']:.2f}，证据项：{item['evidence_count']}",
-            f"- 市场分：{item['market_score']:.2f}；政策分：{item['policy_score']:.2f}；政策证据：{item['policy_evidence_count']}",
-            f"- 申万映射：{item['top_sw']}",
-            f"- 主题指数：{item['top_ths']}",
-            f"- ETF代理：{item['top_etf']}",
+            f"### {item.get('theme', '')}：{item.get('stage', '')}",
+            f"- 证据分：{fmt_number(item.get('evidence_score'))}，证据项：{item.get('evidence_count') or 0}",
+            f"- 市场分：{fmt_number(item.get('market_score'))}；政策分：{fmt_number(item.get('policy_score'))}；政策证据：{item.get('policy_evidence_count') or 0}",
+            f"- 申万映射：{item.get('top_sw') or '无'}",
+            f"- 主题指数：{item.get('top_ths') or '无'}",
+            f"- ETF代理：{item.get('top_etf') or '无'}",
             f"- 政策映射：{item.get('top_policy') or '无'}",
         ]
-        if item["stage"] == "主线确认":
+        if item.get("stage") == "主线确认":
             lines.append("- 市场观察：价格、主题、ETF和结构资金同步度较高，但本节不是默认主线排序。")
-        elif item["stage"] == "次主线/强修复":
+        elif item.get("stage") == "次主线/强修复":
             lines.append("- 市场观察：有较强修复或轮动迹象，但本节不是默认主线排序。")
-        elif item["stage"] == "观察线":
+        elif item.get("stage") == "观察线":
             lines.append("- 市场观察：存在局部强度，但证据链尚未完整闭环。")
         else:
             lines.append("- 市场观察：当前旧证据分偏弱。")
@@ -1226,6 +1232,8 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
             generated_at=generated_iso,
         )
         assert_policy_snapshot_integrity(policy_snapshot_summary)
+        policy_snapshot_summary["registry_update_version"] = SNAPSHOT_REGISTRY_FINALIZATION_VERSION
+        policy_snapshot_summary["registry_update_receipt_hash"] = ""
         stage_statuses.append(
             build_stage_status(
                 "policy_snapshot_integrity",
@@ -1308,6 +1316,7 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
     data_sources = (ROOT / "数据源.md").read_text(encoding="utf-8") if (ROOT / "数据源.md").exists() else ""
 
     payload = {
+        "report_id": report_id,
         "generated_at": now,
         "generated_at_iso": generated_iso,
         "basis_date": basis_date,
@@ -1336,6 +1345,25 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
         },
         "policy_provenance_summary": policy_provenance_summary,
         "policy_snapshot_summary": policy_snapshot_summary,
+        "snapshot_registry_update_summary": {
+            "scoring_version": SNAPSHOT_REGISTRY_FINALIZATION_VERSION,
+            "status": "pending",
+            "registry_path": "data/policy_snapshot_registry.json",
+            "report_id": report_id,
+            "updated_at": "",
+            "previous_registry_hash": "",
+            "updated_registry_hash": "",
+            "registry_policy_count_before": len(previous_snapshot_registry.get("policy_snapshots") or []),
+            "registry_policy_count_after": 0,
+            "new_policy_count": int(policy_snapshot_summary.get("new_policy_count") or 0),
+            "unchanged_policy_count": int(policy_snapshot_summary.get("unchanged_policy_count") or 0),
+            "changed_with_revision_note_count": int(policy_snapshot_summary.get("changed_with_revision_note_count") or 0),
+            "removed_policy_count": int(policy_snapshot_summary.get("removed_policy_count") or 0),
+            "json_artifact_path": f"research/mainline/{report_id}.json",
+            "markdown_artifact_path": f"research/mainline/{report_id}.md",
+            "write_steps": ["build_payload"],
+            "error": "",
+        },
         "event_cluster_summary": event_cluster_summary,
         "policy_stance_summary": stance_summary,
         "event_theme_allocation_summary": event_theme_allocation_summary,
@@ -1377,34 +1405,43 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
     contract_errors = assert_canonical_mainline_contract(payload)
     if contract_errors:
         raise RuntimeError(f"Canonical mainline contract failed: {', '.join(contract_errors)}")
-    attach_contract_validation(payload)
+    attach_contract_validation(payload, allow_pending_registry=True)
     return report_id, payload, render_markdown(payload)
 
 
-def update_snapshot_registry_after_success(report_id: str, payload: dict[str, Any]) -> None:
+def _registry_path_for_write() -> Path:
+    return ROOT / "data" / "policy_snapshot_registry.json"
+
+
+def updated_snapshot_registry_for_payload(report_id: str, payload: dict[str, Any]) -> dict[str, Any]:
     contract = payload.get("contract_validation_summary") or {}
     snapshot_summary = payload.get("policy_snapshot_summary") or {}
     if contract.get("status") != "pass":
-        return
+        raise RuntimeError("Contract validation must pass before registry finalization.")
     if snapshot_summary.get("status") not in {"pass", "degraded"}:
-        return
+        raise RuntimeError("Policy snapshot summary must pass before registry finalization.")
     previous_registry = load_snapshot_registry()
-    updated_registry = build_updated_snapshot_registry(
+    return build_updated_snapshot_registry(
         previous_registry,
         snapshot_summary,
         report_id,
         payload.get("generated_at_iso") or payload.get("generated_at", ""),
     )
-    save_snapshot_registry(updated_registry)
 
 
 def write_report_artifacts(report_id: str, payload: dict[str, Any], markdown: str) -> tuple[Path, Path]:
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     json_path = REPORT_DIR / f"{report_id}.json"
     md_path = REPORT_DIR / f"{report_id}.md"
-    json_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    md_path.write_text(markdown, encoding="utf-8")
-    update_snapshot_registry_after_success(report_id, payload)
+    updated_registry = updated_snapshot_registry_for_payload(report_id, payload)
+    finalize_report_artifacts_with_registry(
+        payload,
+        markdown,
+        json_path,
+        md_path,
+        _registry_path_for_write(),
+        updated_registry,
+    )
     return json_path, md_path
 
 

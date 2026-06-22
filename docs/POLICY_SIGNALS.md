@@ -84,17 +84,23 @@ Snapshot statuses:
 - `duplicate_policy_id_conflict`: the current raw store has the same `policy_id` with conflicting `source_url` or `content_hash`. This blocks writes.
 - `duplicate_source_url_conflict`: the current raw store has the same `source_url` across multiple `policy_id` values with conflicting `content_hash`. This blocks writes.
 
-Registry update rule:
+Snapshot registry finalization rule:
 
 ```text
-Only after JSON write success
-and Markdown write success
-and contract_validation_summary.status == pass
+Build report payload with registry_update_status = pending
+and contract_validation_summary.status == pass with dry-run pending allowed
 and policy_snapshot_summary.status in pass/degraded
-then update data/policy_snapshot_registry.json
+then prepare JSON.tmp and Markdown.tmp
+then back up and update data/policy_snapshot_registry.json
+then inject snapshot_registry_update_summary.status = updated
+then inject policy_snapshot_summary.registry_update_status = updated
+then validate the final report contract with pending disallowed
+then atomically replace the formal JSON and Markdown artifacts
 ```
 
 The snapshot layer does not change `policy_score_v2`, `theme_score_v5`, `mainline_score_v6`, or `mainline_ranking`. It only protects reproducibility and auditability.
+
+If registry write or final artifact replacement fails, temporary report files are removed and the registry backup is restored when possible. Formal JSON/Markdown artifacts must not retain `registry_update_status = pending`.
 
 ## Signal Schema
 
@@ -247,9 +253,10 @@ The report writes:
 - `data_quality_summary.scoring_version = live_report_data_guard_v2`
 - `policy_provenance_summary.scoring_version = policy_source_provenance_v2`
 - `policy_snapshot_summary.scoring_version = policy_snapshot_integrity_v2`
+- `snapshot_registry_update_summary.scoring_version = snapshot_registry_finalization_v2`
 - `contract_validation_summary.scoring_version = mainline_contract_validator_v2`
 
-`mainline_contract_validator_v2` is deterministic. It reads `config/mainline_contract_rules.json` and validates required sections, version fields, policy provenance counts, rejected-policy leakage, policy snapshot integrity, canonical ordering, score monotonicity, score formulas, event allocation budgets, lifecycle state counts, summary counts, and legacy default-score leakage. New report generation attaches `contract_validation_summary`; any error blocks JSON and Markdown writes, while warnings are preserved in the report and Markdown.
+`mainline_contract_validator_v2` is deterministic. It reads `config/mainline_contract_rules.json` and validates required sections, version fields, policy provenance counts, rejected-policy leakage, policy snapshot integrity, snapshot registry finalization, canonical ordering, score monotonicity, score formulas, event allocation budgets, lifecycle state counts, summary counts, and legacy default-score leakage. New report generation attaches `contract_validation_summary`; any error blocks JSON and Markdown writes, while warnings are preserved in the report and Markdown.
 
 `live_report_data_guard_v2` is deterministic. It reads `config/data_quality_rules.json` and only guards the live report generation pipeline against empty optional tables, missing columns, optional-source exceptions, or required-stage failures. It does not add scoring factors, change `mainline_score_v6`, change `mainline_ranking`, or use market data availability as a theme score input. Required stages such as policy store, policy provenance, policy snapshot integrity, policy theme summary, canonical mainline, and contract validation still block writes if they fail.
 
@@ -546,6 +553,9 @@ mainline_ranking = canonical default ranking by mainline_score_v6
 legacy_theme_ranking = market-context comparison ranking
 policy_provenance_summary.scoring_version = policy_source_provenance_v2
 policy_snapshot_summary.scoring_version = policy_snapshot_integrity_v2
+snapshot_registry_update_summary.scoring_version = snapshot_registry_finalization_v2
+snapshot_registry_update_summary.status = updated | skipped | failed | pending
+policy_snapshot_summary.registry_update_status = snapshot_registry_update_summary.status
 data_quality_summary.scoring_version = live_report_data_guard_v2
 data_quality_summary.status = pass | degraded | fail
 contract_validation_summary.scoring_version = mainline_contract_validator_v2
@@ -561,6 +571,7 @@ required_sections:
   policy_summary
   policy_provenance_summary
   policy_snapshot_summary
+  snapshot_registry_update_summary
   event_cluster_summary
   policy_stance_summary
   event_theme_allocation_summary
@@ -582,6 +593,9 @@ error examples:
   unexplained policy content change
   duplicate policy_id/source_url conflict
   policy snapshot content_hash mismatch
+  written report keeps registry update pending
+  registry receipt hash is missing or malformed
+  registry policy count does not match policy_snapshot_summary.policies
   event allocation over budget
   lifecycle state count mismatch
   legacy evidence used as default score

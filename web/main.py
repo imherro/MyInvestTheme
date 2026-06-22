@@ -257,6 +257,18 @@ def _policy_snapshot_summary(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _snapshot_registry_update_summary(payload: dict[str, Any]) -> dict[str, Any]:
+    summary = payload.get("snapshot_registry_update_summary")
+    if isinstance(summary, dict) and summary:
+        return summary
+    return {
+        "scoring_version": "snapshot_registry_finalization_v2",
+        "status": "missing",
+        "updated_registry_hash": "",
+        "registry_policy_count_after": 0,
+    }
+
+
 def _legacy_theme_rows(payload: dict[str, Any]) -> list[dict[str, Any]]:
     rows = payload.get("legacy_theme_ranking") or []
     if rows:
@@ -284,6 +296,7 @@ def _with_canonical_fields(payload: dict[str, Any]) -> dict[str, Any]:
     result.setdefault("data_quality_summary", _data_quality_summary(result))
     result.setdefault("policy_provenance_summary", _policy_provenance_summary(result))
     result.setdefault("policy_snapshot_summary", _policy_snapshot_summary(result))
+    result.setdefault("snapshot_registry_update_summary", _snapshot_registry_update_summary(result))
     result.setdefault("contract_validation_summary", _contract_summary(result))
     return result
 
@@ -304,6 +317,7 @@ def _report_summary(path: Path) -> dict[str, Any]:
     data_quality_summary = _data_quality_summary(payload)
     policy_provenance_summary = _policy_provenance_summary(payload)
     policy_snapshot_summary = _policy_snapshot_summary(payload)
+    snapshot_registry_update_summary = _snapshot_registry_update_summary(payload)
     contract_validation_summary = _contract_summary(payload)
     return {
         "report_id": _report_id(path),
@@ -334,6 +348,8 @@ def _report_summary(path: Path) -> dict[str, Any]:
         "policy_snapshot_duplicate_policy_id_conflict_count": policy_snapshot_summary.get(
             "duplicate_policy_id_conflict_count", 0
         ),
+        "snapshot_registry_update_status": snapshot_registry_update_summary.get("status", ""),
+        "snapshot_registry_updated_hash": snapshot_registry_update_summary.get("updated_registry_hash", ""),
         "contract_validation_status": contract_validation_summary.get("status", ""),
         "contract_validation_error_count": contract_validation_summary.get("error_count", 0),
         "contract_validation_warning_count": contract_validation_summary.get("warning_count", 0),
@@ -344,6 +360,7 @@ def _report_summary(path: Path) -> dict[str, Any]:
         "data_quality_summary": data_quality_summary,
         "policy_provenance_summary": policy_provenance_summary,
         "policy_snapshot_summary": policy_snapshot_summary,
+        "snapshot_registry_update_summary": snapshot_registry_update_summary,
         "contract_validation_summary": contract_validation_summary,
         "event_cluster_summary": {
             "raw_policy_count": event_cluster_summary.get("raw_policy_count", 0),
@@ -521,6 +538,7 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
     data_quality_summary = _data_quality_summary(payload)
     policy_provenance_summary = _policy_provenance_summary(payload)
     policy_snapshot_summary = _policy_snapshot_summary(payload)
+    snapshot_registry_update_summary = _snapshot_registry_update_summary(payload)
     contract_validation_summary = _contract_summary(payload)
     top_mainline = mainline_ranking[0] if mainline_ranking else {}
     breadth = payload.get("breadth") or {}
@@ -556,6 +574,8 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
             "policy_snapshot_duplicate_policy_id_conflict_count": policy_snapshot_summary.get(
                 "duplicate_policy_id_conflict_count", 0
             ),
+            "snapshot_registry_update_status": snapshot_registry_update_summary.get("status", ""),
+            "snapshot_registry_updated_hash": snapshot_registry_update_summary.get("updated_registry_hash", ""),
             "contract_validation_status": contract_validation_summary.get("status", ""),
             "contract_validation_error_count": contract_validation_summary.get("error_count", 0),
             "contract_validation_warning_count": contract_validation_summary.get("warning_count", 0),
@@ -572,6 +592,7 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
         "data_quality_summary": data_quality_summary,
         "policy_provenance_summary": policy_provenance_summary,
         "policy_snapshot_summary": policy_snapshot_summary,
+        "snapshot_registry_update_summary": snapshot_registry_update_summary,
         "contract_validation_summary": contract_validation_summary,
         "theme_ranking": legacy_theme_ranking,
         "legacy_theme_ranking": legacy_theme_ranking,
@@ -599,6 +620,7 @@ def latest_page(request: Request) -> HTMLResponse:
     page_report["data_quality_summary"] = _data_quality_summary(payload)
     page_report["policy_provenance_summary"] = _policy_provenance_summary(payload)
     page_report["policy_snapshot_summary"] = _policy_snapshot_summary(payload)
+    page_report["snapshot_registry_update_summary"] = _snapshot_registry_update_summary(payload)
     page_report["contract_validation_summary"] = _contract_summary(payload)
     page_report["legacy_theme_ranking"] = enrich_theme_ranking(_legacy_theme_rows(payload))
     page_report["theme_ranking"] = page_report["legacy_theme_ranking"]
@@ -654,6 +676,8 @@ def health() -> dict[str, Any]:
         "latest_policy_snapshot_duplicate_policy_id_conflict_count": latest.get(
             "policy_snapshot_duplicate_policy_id_conflict_count"
         ),
+        "latest_snapshot_registry_update_status": latest.get("snapshot_registry_update_status"),
+        "latest_snapshot_registry_updated_hash": latest.get("snapshot_registry_updated_hash"),
         "latest_contract_status": latest.get("contract_validation_status"),
         "latest_contract_error_count": latest.get("contract_validation_error_count"),
         "latest_contract_warning_count": latest.get("contract_validation_warning_count"),

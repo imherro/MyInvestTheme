@@ -152,27 +152,19 @@ def test_removed_policy_is_warning_only():
     assert_policy_snapshot_integrity(summary)
 
 
-def test_registry_is_not_updated_when_json_write_fails(monkeypatch, tmp_path):
+def test_registry_is_not_updated_when_prefinalization_fails(monkeypatch, tmp_path):
     payload = {
         "generated_at": "2026-06-22 18:00:00 CST",
         "generated_at_iso": "2026-06-22T18:00:00+08:00",
         "contract_validation_summary": {"status": "pass"},
         "policy_snapshot_summary": {"status": "pass", "policies": []},
     }
-    called = {"updated": False}
     monkeypatch.setattr(gen, "REPORT_DIR", tmp_path)
-    monkeypatch.setattr(gen, "update_snapshot_registry_after_success", lambda report_id, payload: called.__setitem__("updated", True))
-    original_write_text = Path.write_text
-
-    def fail_json(path, *args, **kwargs):
-        if path.suffix == ".json":
-            raise OSError("mock json write failed")
-        return original_write_text(path, *args, **kwargs)
-
-    monkeypatch.setattr(Path, "write_text", fail_json)
-    with pytest.raises(OSError, match="mock json write failed"):
+    monkeypatch.setattr(gen, "updated_snapshot_registry_for_payload", lambda report_id, payload: (_ for _ in ()).throw(RuntimeError("mock prefinalization failed")))
+    with pytest.raises(RuntimeError, match="mock prefinalization failed"):
         gen.write_report_artifacts("mock_report", payload, "markdown")
-    assert called["updated"] is False
+    assert not (tmp_path / "mock_report.json").exists()
+    assert not (tmp_path / "mock_report.md").exists()
 
 
 def test_contract_validator_detects_changed_without_revision_note():

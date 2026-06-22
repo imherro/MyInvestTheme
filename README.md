@@ -38,6 +38,7 @@ Policy scoring:
 - Mainline lifecycle uses deterministic `mainline_lifecycle_v2` from `config/mainline_lifecycle_rules.json` to classify themes as accelerating, sustained, emerging, single-event emerging, cooling, legacy tail, unknown, or dormant.
 - Live report data guard uses deterministic `live_report_data_guard_v2` from `config/data_quality_rules.json` to keep optional market-context stages from crashing report generation when they return empty tables or missing columns.
 - Report contract validation uses deterministic `mainline_contract_validator_v2` from `config/mainline_contract_rules.json` to check report sections, version fields, policy provenance, canonical ranking, score formulas, event allocation budgets, lifecycle counts, and legacy default-score leakage before a new report is written.
+- Snapshot registry finalization uses deterministic `snapshot_registry_finalization_v2` from `config/snapshot_registry_finalization_rules.json`; written JSON/Markdown reports must carry an `updated` registry receipt rather than a pending registry state.
 - `theme_score_v2_raw` is the undeduplicated policy-theme comparison score, `theme_score_v3_dedup` is the deduplicated score before direction adjustment, `theme_score_v4_stance_adjusted` is the direction-adjusted score before allocation, `theme_score_v5` is the event-theme allocated score, and `mainline_score_v6` is the default lifecycle-adjusted policy-theme score.
 - Default canonical mainline score is `mainline_score_v6`.
 - `mainline_score_v6 = theme_score_v5 * lifecycle_quality_multiplier`.
@@ -67,6 +68,7 @@ The homepage endpoint returns the main content used by `/`:
 - `contract_validation_summary`
 - `policy_provenance_summary`
 - `policy_snapshot_summary`
+- `snapshot_registry_update_summary`
 - `mainline_ranking`
 - `theme_ranking`
 - `legacy_theme_ranking`
@@ -81,6 +83,7 @@ In `score_series`, `score` and `default_score` both use `mainline_score_v6`; old
 `data_quality_summary` is also exposed by `/api/latest`, `/api/index`, and `/api/health`. Required data stages block writes if they fail; optional market-context stages can degrade with schema fallback and do not change `mainline_score_v6`.
 `policy_provenance_summary` is exposed by `/api/latest` and `/api/index`; `/api/health` exposes the latest provenance status and rejected/degraded counts.
 `policy_snapshot_summary` is exposed by `/api/latest` and `/api/index`; `/api/health` exposes the latest snapshot status and silent-change/duplicate-conflict counts.
+`snapshot_registry_update_summary` is exposed by `/api/latest` and `/api/index`; `/api/health` exposes the latest registry update status and updated registry hash.
 
 The latest report endpoint returns the newest research report artifact:
 
