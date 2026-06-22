@@ -1,7 +1,7 @@
 {
   "version": "policy_snapshot_integrity_v2",
-  "updated_at": "2026-06-22T18:06:41+08:00",
-  "last_report_id": "mainline_review_2026-06-22_180641",
+  "updated_at": "2026-06-22T18:34:27+08:00",
+  "last_report_id": "mainline_review_2026-06-22_183427",
   "policy_snapshots": [
     {
       "policy_id": "csrc-2026-04-10-gem-reform-new-quality-productivity",
@@ -18,11 +18,33 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-22_180641",
+      "last_seen_report_id": "mainline_review_2026-06-22_183427",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-22T18:06:41+08:00",
+      "last_seen_at": "2026-06-22T18:34:27+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
+      ]
+    },
+    {
+      "policy_id": "nda-2026-06-08-high-quality-datasets-action-plan",
+      "title": "国家数据局关于印发《关于推进行业高质量数据集建设行动的实施方案》的通知",
+      "source_org_norm": "nda",
+      "source_url": "https://www.nda.gov.cn/sjj/zwgk/tzgg/0608/20260608172117399715004_pc.html",
+      "source_domain": "www.nda.gov.cn",
+      "publish_date": "2026-06-08",
+      "content_hash": "sha256:830c1d252c47ddfdc89c33c5a26a3a28361c812bc7bef69b3c05b9e82a6c7e22",
+      "previous_content_hash": "",
+      "snapshot_status": "new",
+      "provenance_status": "verified",
+      "inclusion_status": "included_in_mainline",
+      "revision_id": "",
+      "revision_note": "",
+      "first_seen_report_id": "mainline_review_2026-06-22_183427",
+      "last_seen_report_id": "mainline_review_2026-06-22_183427",
+      "first_seen_at": "2026-06-22T18:34:27+08:00",
+      "last_seen_at": "2026-06-22T18:34:27+08:00",
+      "snapshot_reasons": [
+        "policy_id_not_seen_before"
       ]
     },
     {
@@ -40,9 +62,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-22_180641",
+      "last_seen_report_id": "mainline_review_2026-06-22_183427",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-22T18:06:41+08:00",
+      "last_seen_at": "2026-06-22T18:34:27+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -62,9 +84,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-22_180641",
+      "last_seen_report_id": "mainline_review_2026-06-22_183427",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-22T18:06:41+08:00",
+      "last_seen_at": "2026-06-22T18:34:27+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -84,9 +106,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-22_180641",
+      "last_seen_report_id": "mainline_review_2026-06-22_183427",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-22T18:06:41+08:00",
+      "last_seen_at": "2026-06-22T18:34:27+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]

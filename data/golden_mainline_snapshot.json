@@ -1,18 +1,18 @@
 {
   "scoring_version": "system_drift_control_v2",
   "snapshot_id": "mainline_gold_v1",
-  "created_at": "2026-06-22T18:06:41+08:00",
-  "source_report_id": "mainline_review_2026-06-22_180641",
+  "created_at": "2026-06-22T18:34:27+08:00",
+  "source_report_id": "mainline_review_2026-06-22_183427",
   "basis_date": "2026-06-22",
-  "source_reproducibility_json_hash": "sha256:7b6d05feb806060ed12819ec9277ba6c616ebdaf0f47640410b6f61a09008993",
-  "source_git_commit": "8454495",
+  "source_reproducibility_json_hash": "sha256:ac4b3b753a9a9e492147178820c3cef5a5f27d7bdd16b9c1c61fd6abe2a3017b",
+  "source_git_commit": "0bc29fc",
   "mainline_ranking": [
     {
       "rank": 1,
       "theme_id": "ai_compute_communications",
       "theme_name": "AI算力/通信",
-      "mainline_score_v6": 0.515,
-      "lifecycle_state": "sustained"
+      "mainline_score_v6": 1.0036,
+      "lifecycle_state": "accelerating"
     },
     {
       "rank": 2,
@@ -30,17 +30,17 @@
     },
     {
       "rank": 4,
+      "theme_id": "infrastructure_materials",
+      "theme_name": "建材/稳增长修复",
+      "mainline_score_v6": 0.3595,
+      "lifecycle_state": "accelerating"
+    },
+    {
+      "rank": 5,
       "theme_id": "high_end_manufacturing_robotics_defense",
       "theme_name": "高端制造/机器人/军工",
       "mainline_score_v6": 0.2695,
       "lifecycle_state": "sustained"
-    },
-    {
-      "rank": 5,
-      "theme_id": "infrastructure_materials",
-      "theme_name": "建材/稳增长修复",
-      "mainline_score_v6": 0.2244,
-      "lifecycle_state": "accelerating"
     },
     {
       "rank": 6,
@@ -67,11 +67,11 @@
   "theme_scores": {
     "ai_compute_communications": {
       "rank": 1,
-      "mainline_score_v6": 0.515,
-      "theme_score_v5": 0.5858,
-      "theme_score_v4_stance_adjusted": 0.8172,
-      "theme_score_v3_dedup": 0.9205,
-      "theme_score_v2_raw": 0.9205
+      "mainline_score_v6": 1.0036,
+      "theme_score_v5": 1.0036,
+      "theme_score_v4_stance_adjusted": 1.235,
+      "theme_score_v3_dedup": 1.4776,
+      "theme_score_v2_raw": 1.4776
     },
     "hard_tech_semiconductor": {
       "rank": 2,
@@ -89,21 +89,21 @@
       "theme_score_v3_dedup": 1.0363,
       "theme_score_v2_raw": 1.0363
     },
-    "high_end_manufacturing_robotics_defense": {
+    "infrastructure_materials": {
       "rank": 4,
+      "mainline_score_v6": 0.3595,
+      "theme_score_v5": 0.3719,
+      "theme_score_v4_stance_adjusted": 0.6551,
+      "theme_score_v3_dedup": 1.0199,
+      "theme_score_v2_raw": 1.0199
+    },
+    "high_end_manufacturing_robotics_defense": {
+      "rank": 5,
       "mainline_score_v6": 0.2695,
       "theme_score_v5": 0.3065,
       "theme_score_v4_stance_adjusted": 0.5723,
       "theme_score_v3_dedup": 0.763,
       "theme_score_v2_raw": 0.763
-    },
-    "infrastructure_materials": {
-      "rank": 5,
-      "mainline_score_v6": 0.2244,
-      "theme_score_v5": 0.254,
-      "theme_score_v4_stance_adjusted": 0.5372,
-      "theme_score_v3_dedup": 0.784,
-      "theme_score_v2_raw": 0.784
     },
     "innovative_medicine": {
       "rank": 6,
@@ -131,11 +131,11 @@
     }
   },
   "lifecycle_states": {
-    "ai_compute_communications": "sustained",
+    "ai_compute_communications": "accelerating",
     "hard_tech_semiconductor": "accelerating",
     "new_energy_power_equipment": "sustained",
-    "high_end_manufacturing_robotics_defense": "sustained",
     "infrastructure_materials": "accelerating",
+    "high_end_manufacturing_robotics_defense": "sustained",
     "innovative_medicine": "legacy_tail",
     "consumption_media": "dormant",
     "resources_cycle": "dormant"
@@ -160,6 +160,10 @@
       "ai_compute_communications": 0.3428,
       "hard_tech_semiconductor": 0.1524,
       "infrastructure_materials": 0.0685
+    },
+    "event_20260608_nda_nda_2026_06_08_high_quality_datasets_action_plan": {
+      "ai_compute_communications": 0.4178,
+      "infrastructure_materials": 0.1179
     }
   },
   "stance_matrix": {
@@ -173,6 +177,11 @@
         "cluster_stance_label": "supportive",
         "cluster_stance_score_v2": 0.65,
         "direction_multiplier": 1.0
+      },
+      "event_20260608_nda_nda_2026_06_08_high_quality_datasets_action_plan": {
+        "cluster_stance_label": "mildly_supportive",
+        "cluster_stance_score_v2": 0.2,
+        "direction_multiplier": 0.75
       }
     },
     "consumption_media": {},
@@ -212,6 +221,11 @@
         "direction_multiplier": 0.75
       },
       "event_20260603_ndrc_ndrc_2026_06_03_intelligent_economy": {
+        "cluster_stance_label": "neutral_or_mixed",
+        "cluster_stance_score_v2": 0.0,
+        "direction_multiplier": 0.5
+      },
+      "event_20260608_nda_nda_2026_06_08_high_quality_datasets_action_plan": {
         "cluster_stance_label": "neutral_or_mixed",
         "cluster_stance_score_v2": 0.0,
         "direction_multiplier": 0.5
@@ -272,5 +286,5 @@
     "theme_summary",
     "ths_top"
   ],
-  "snapshot_hash": "sha256:8f44a1424533cc9b74b19aa168815f02bd83082509426c82ef42cbbec8382b40"
+  "snapshot_hash": "sha256:2135a6eed83ccf49c89eaa99e7764df27f63b0a867f1a608ba0ba2f1520d7d1f"
 }

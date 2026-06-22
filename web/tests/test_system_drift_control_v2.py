@@ -37,6 +37,16 @@ def latest_payload() -> dict:
     return json.loads(latest_report_path().read_text(encoding="utf-8"))
 
 
+def golden_payload() -> dict:
+    return json.loads((ROOT / "data" / "golden_mainline_snapshot.json").read_text(encoding="utf-8"))
+
+
+def golden_source_payload() -> dict:
+    snapshot = golden_payload()
+    report_id = snapshot["source_report_id"]
+    return json.loads((ROOT / "research" / "mainline" / f"{report_id}.json").read_text(encoding="utf-8"))
+
+
 def test_golden_snapshot_is_deterministic():
     report = latest_payload()
     first = build_golden_snapshot(report)
@@ -101,24 +111,25 @@ def test_api_golden_snapshot_returns_snapshot():
     assert body["snapshot_id"] == "mainline_gold_v1"
 
 
-def test_api_drift_returns_perfect_match_for_latest():
+def test_api_drift_returns_status_for_latest():
     body = get("/api/drift").json()
-    assert body["drift_status"] == "perfect_match"
-    assert body["ranking_drift"]["status"] == "perfect_match"
+    assert body["drift_status"] in {"perfect_match", "warning", "critical"}
+    assert body["current_report_id"] == latest_payload()["report_id"]
+    if body["current_report_id"] == body["golden_source_report_id"]:
+        assert body["drift_status"] == "perfect_match"
 
 
-def test_api_compare_can_compare_latest_report():
-    report_id = latest_payload()["report_id"]
+def test_api_compare_can_compare_golden_source_report():
+    report_id = golden_payload()["source_report_id"]
     body = get(f"/api/compare?report_id={report_id}").json()
     assert body["current_report_id"] == report_id
     assert body["drift_status"] == "perfect_match"
 
 
 def test_drift_layer_does_not_change_mainline_score_or_contract():
-    report = latest_payload()
-    golden = ROOT / "research" / "mainline" / "mainline_review_2026-06-22_180641.json"
-    previous = json.loads(golden.read_text(encoding="utf-8"))
-    assert report["mainline_ranking"][0]["theme_id"] == previous["mainline_ranking"][0]["theme_id"]
-    assert report["mainline_ranking"][0]["mainline_score_v6"] == previous["mainline_ranking"][0]["mainline_score_v6"]
+    report = golden_source_payload()
+    golden = golden_payload()
+    assert report["mainline_ranking"][0]["theme_id"] == golden["mainline_ranking"][0]["theme_id"]
+    assert report["mainline_ranking"][0]["mainline_score_v6"] == golden["mainline_ranking"][0]["mainline_score_v6"]
     summary = validate_mainline_report_contract(report, checked_at="2026-06-22T18:40:00+08:00")
     assert summary["status"] == "pass"

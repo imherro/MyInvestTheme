@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-22T11:30:00+08:00",
+  "updated_at": "2026-06-22T18:33:07+08:00",
   "method": "Codex/LLM extracts official-source facts; Python policy_score_v2 scoring is deterministic.",
   "signals": [
     {
@@ -77,6 +77,25 @@
       "key_points": ["十五五规划", "109项重大工程", "新质生产力", "现代化基础设施", "绿色低碳转型", "产业基础能力"],
       "beneficiary_chain": ["现代化产业体系", "产业基础", "先进制造", "绿色低碳转型", "基础设施", "能源装备", "科技创新", "产业升级", "数字化转型", "重大工程"],
       "related_industries": ["高端制造", "新能源", "半导体", "建筑材料", "基础设施"]
+    },
+    {
+      "id": "nda-2026-06-08-high-quality-datasets-action-plan",
+      "title": "国家数据局关于印发《关于推进行业高质量数据集建设行动的实施方案》的通知",
+      "source": "国家数据局",
+      "published_date": "2026-06-08",
+      "authority_level": "national_ministry",
+      "economic_scope": "cross_industry",
+      "url": "https://www.nda.gov.cn/sjj/zwgk/tzgg/0608/20260608172117399715004_pc.html",
+      "authority_score": 0.7,
+      "actionability_score": 0.5,
+      "economic_scope_score": 0.8,
+      "time_decay_score": 0.627089,
+      "policy_score_v2": 0.655418,
+      "summary": "方案围绕行业高质量数据集供给、流通、应用等关键环节，部署强基扩容、标注攻坚、提质增效、应用赋能、管理服务、价值释放六个专项行动，强化数据赋能人工智能创新发展。",
+      "evidence": "到2028年底建成一批覆盖重点领域、经过应用验证的行业高质量数据集，围绕低空经济、具身智能、智能驾驶、生物制造等创新领域加快建设。",
+      "key_points": ["高质量数据集", "人工智能+", "六个专项行动", "数据标注", "多模态数据", "低空经济", "具身智能", "智能驾驶", "生物制造"],
+      "beneficiary_chain": ["高质量数据集", "数据要素", "多模态数据", "数据标注", "智能体", "算力基础设施", "低空经济", "具身智能", "智能驾驶"],
+      "related_industries": ["人工智能", "软件服务", "数据要素", "通信", "低空经济", "智能驾驶", "高端制造"]
     }
   ]
 }

@@ -48,7 +48,8 @@ def dirty_paths() -> list[str]:
     for line in status.splitlines():
         if not line:
             continue
-        path = line[3:]
+        # Porcelain output can appear as "M path", " M path", or "?? path".
+        path = line[3:] if len(line) > 2 and line[2] == " " else line[2:]
         if " -> " in path:
             path = path.split(" -> ", 1)[1]
         paths.append(path.replace("\\", "/"))

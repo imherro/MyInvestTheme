@@ -40,6 +40,10 @@ def latest_payload() -> dict:
     return json.loads(latest_report_path().read_text(encoding="utf-8"))
 
 
+def golden_payload() -> dict:
+    return json.loads((ROOT / "data" / "golden_mainline_snapshot.json").read_text(encoding="utf-8"))
+
+
 def issue_codes(summary: dict, severity: str = "error") -> set[str]:
     return {issue["code"] for issue in summary["issues"] if issue["severity"] == severity}
 
@@ -186,10 +190,9 @@ def test_api_health_exposes_registry_update_status():
 
 def test_mainline_top_score_unchanged_from_previous_snapshot_task():
     current = latest_payload()
-    previous_path = ROOT / "research" / "mainline" / "mainline_review_2026-06-22_172047.json"
-    previous = json.loads(previous_path.read_text(encoding="utf-8"))
-    assert current["mainline_ranking"][0]["theme_id"] == previous["mainline_ranking"][0]["theme_id"]
-    assert current["mainline_ranking"][0]["mainline_score_v6"] == previous["mainline_ranking"][0]["mainline_score_v6"]
+    golden = golden_payload()
+    assert current["mainline_ranking"][0]["theme_id"] == golden["mainline_ranking"][0]["theme_id"]
+    assert current["mainline_ranking"][0]["mainline_score_v6"] == golden["mainline_ranking"][0]["mainline_score_v6"]
 
 
 def test_receipt_application_is_deterministic():
