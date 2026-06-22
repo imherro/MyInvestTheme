@@ -42,6 +42,7 @@ from policy_snapshot_integrity import (
 )
 from snapshot_registry_finalizer import SCORING_VERSION as SNAPSHOT_REGISTRY_FINALIZATION_VERSION
 from snapshot_registry_finalizer import finalize_report_artifacts_with_registry
+from reproducibility_manifest import build_pending_reproducibility_manifest
 from policy_signals import load_policy_store, policy_event_summary, policy_theme_summary, score_policy_by_theme
 
 
@@ -758,12 +759,21 @@ def _replace_data_quality_stage(payload: dict[str, Any], stage_status: dict[str,
     payload["data_quality_summary"] = build_data_quality_summary(statuses)
 
 
-def attach_contract_validation(payload: dict[str, Any], *, allow_pending_registry: bool = False) -> dict[str, Any]:
+def attach_contract_validation(
+    payload: dict[str, Any],
+    *,
+    allow_pending_registry: bool = False,
+    allow_pending_reproducibility: bool = False,
+) -> dict[str, Any]:
     _replace_data_quality_stage(
         payload,
         build_stage_status("contract_validation", "pass", True, 1, [], None),
     )
-    summary = validate_mainline_report_contract(payload, allow_pending_registry=allow_pending_registry)
+    summary = validate_mainline_report_contract(
+        payload,
+        allow_pending_registry=allow_pending_registry,
+        allow_pending_reproducibility=allow_pending_reproducibility,
+    )
     if summary["error_count"]:
         _replace_data_quality_stage(
             payload,
@@ -776,7 +786,11 @@ def attach_contract_validation(payload: dict[str, Any], *, allow_pending_registr
         payload,
         build_stage_status("contract_validation", "pass", True, 1, [], None),
     )
-    summary = validate_mainline_report_contract(payload, allow_pending_registry=allow_pending_registry)
+    summary = validate_mainline_report_contract(
+        payload,
+        allow_pending_registry=allow_pending_registry,
+        allow_pending_reproducibility=allow_pending_reproducibility,
+    )
     payload["contract_validation_summary"] = summary
     if summary["error_count"]:
         codes = ", ".join(issue["code"] for issue in summary["issues"] if issue["severity"] == "error")
@@ -1309,6 +1323,7 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
     mainline_ranking = build_mainline_ranking(theme_summary)
     canonical_mainline_summary = build_canonical_mainline_summary(theme_summary)
     stage_statuses.append(build_stage_status("canonical_mainline", "pass", True, len(mainline_ranking)))
+    stage_statuses.append(build_stage_status("reproducibility_manifest", "pass", True, 1))
     legacy_theme_ranking = build_legacy_theme_ranking(ranking)
     data_quality_summary = build_data_quality_summary(stage_statuses)
     assert_required_data_quality(data_quality_summary)
@@ -1345,6 +1360,10 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
         },
         "policy_provenance_summary": policy_provenance_summary,
         "policy_snapshot_summary": policy_snapshot_summary,
+        "reproducibility_manifest": build_pending_reproducibility_manifest(
+            {"basis_date": basis_date},
+            report_id,
+        ),
         "snapshot_registry_update_summary": {
             "scoring_version": SNAPSHOT_REGISTRY_FINALIZATION_VERSION,
             "status": "pending",
@@ -1405,7 +1424,7 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
     contract_errors = assert_canonical_mainline_contract(payload)
     if contract_errors:
         raise RuntimeError(f"Canonical mainline contract failed: {', '.join(contract_errors)}")
-    attach_contract_validation(payload, allow_pending_registry=True)
+    attach_contract_validation(payload, allow_pending_registry=True, allow_pending_reproducibility=True)
     return report_id, payload, render_markdown(payload)
 
 
@@ -1441,6 +1460,11 @@ def write_report_artifacts(report_id: str, payload: dict[str, Any], markdown: st
         md_path,
         _registry_path_for_write(),
         updated_registry,
+        run_args={
+            "basis_date": payload.get("basis_date", ""),
+            "write": True,
+            "report_id": report_id,
+        },
     )
     return json_path, md_path
 

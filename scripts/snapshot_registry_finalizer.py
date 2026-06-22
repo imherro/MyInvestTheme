@@ -8,7 +8,14 @@ from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
+from data_quality_guard import build_data_quality_summary, build_stage_status
 from mainline_contract_validator import validate_mainline_report_contract
+from reproducibility_manifest import (
+    append_reproducibility_markdown,
+    apply_reproducibility_manifest_to_payload,
+    build_reproducibility_manifest,
+    finalize_artifact_hashes_in_manifest,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -158,6 +165,29 @@ def _write_text_tmp(path: Path, text: str, temp_suffix: str) -> Path:
     return tmp_path
 
 
+def _replace_data_quality_stage(payload: dict[str, Any], stage_status: dict[str, Any]) -> dict[str, Any]:
+    result = json.loads(json.dumps(payload, ensure_ascii=False))
+    summary = result.get("data_quality_summary") or {}
+    statuses = [item for item in summary.get("stage_statuses", []) if item.get("stage") != stage_status.get("stage")]
+    statuses.append(stage_status)
+    result["data_quality_summary"] = build_data_quality_summary(statuses)
+    return result
+
+
+def _reproducibility_stage_status(manifest: dict[str, Any]) -> dict[str, Any]:
+    status = str(manifest.get("status") or "fail")
+    if status == "pass":
+        return build_stage_status("reproducibility_manifest", "pass", True, 1)
+    if status == "warning":
+        return build_stage_status("reproducibility_manifest", "degraded", True, 1, [], "reproducibility warning")
+    return build_stage_status("reproducibility_manifest", "fail", True, 0, [], "reproducibility manifest failed")
+
+
+def _render_final_markdown(payload: dict[str, Any], markdown_text: str) -> str:
+    with_receipt = render_markdown_with_final_receipt(payload, markdown_text)
+    return append_reproducibility_markdown(with_receipt, payload.get("reproducibility_manifest") or {})
+
+
 def finalize_report_artifacts_with_registry(
     payload: dict[str, Any],
     markdown_text: str,
@@ -166,6 +196,8 @@ def finalize_report_artifacts_with_registry(
     registry_path: Path,
     updated_registry: dict[str, Any],
     rules: dict[str, Any] | None = None,
+    reproducibility_rules: dict[str, Any] | None = None,
+    run_args: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     active_rules = rules or load_snapshot_registry_finalization_rules()
     temp_suffix = str(active_rules.get("atomic_write_temp_suffix") or ".tmp")
@@ -182,12 +214,47 @@ def finalize_report_artifacts_with_registry(
         markdown_path,
     )
     final_payload = apply_registry_update_receipt_to_payload(payload, receipt)
-    final_validation = validate_mainline_report_contract(final_payload, allow_pending_registry=False)
+    manifest = build_reproducibility_manifest(
+        final_payload,
+        json_path,
+        markdown_path,
+        run_args=run_args,
+        rules=reproducibility_rules,
+    )
+    final_payload = apply_reproducibility_manifest_to_payload(final_payload, manifest)
+    final_payload = _replace_data_quality_stage(final_payload, _reproducibility_stage_status(manifest))
+    checked_at = now_iso()
+    for _ in range(2):
+        provisional_validation = validate_mainline_report_contract(
+            final_payload,
+            allow_pending_registry=False,
+            checked_at=checked_at,
+        )
+        if provisional_validation.get("error_count"):
+            codes = ", ".join(
+                issue["code"] for issue in provisional_validation.get("issues", []) if issue.get("severity") == "error"
+            )
+            raise RuntimeError(f"Snapshot registry finalization contract failed: {codes}")
+        final_payload["contract_validation_summary"] = provisional_validation
+        provisional_markdown = _render_final_markdown(final_payload, markdown_text)
+        manifest = finalize_artifact_hashes_in_manifest(
+            manifest,
+            json.dumps(final_payload, ensure_ascii=False, indent=2),
+            provisional_markdown,
+        )
+        final_payload = apply_reproducibility_manifest_to_payload(final_payload, manifest)
+        final_payload = _replace_data_quality_stage(final_payload, _reproducibility_stage_status(manifest))
+
+    final_validation = validate_mainline_report_contract(
+        final_payload,
+        allow_pending_registry=False,
+        checked_at=checked_at,
+    )
     if final_validation.get("error_count"):
         codes = ", ".join(issue["code"] for issue in final_validation.get("issues", []) if issue.get("severity") == "error")
         raise RuntimeError(f"Snapshot registry finalization contract failed: {codes}")
     final_payload["contract_validation_summary"] = final_validation
-    final_markdown = render_markdown_with_final_receipt(final_payload, markdown_text)
+    final_markdown = _render_final_markdown(final_payload, markdown_text)
 
     json_tmp = json_path.with_name(json_path.name + temp_suffix)
     markdown_tmp = markdown_path.with_name(markdown_path.name + temp_suffix)

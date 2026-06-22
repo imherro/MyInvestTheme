@@ -16,6 +16,17 @@ try:
 except ModuleNotFoundError:
     from scripts.canonical_mainline import build_mainline_ranking, sort_mainline_ranking
 
+try:
+    from reproducibility_manifest import (
+        SCORING_VERSION as REPRODUCIBILITY_MANIFEST_VERSION,
+    )
+    from reproducibility_manifest import validate_reproducibility_manifest as validate_reproducibility_manifest_section
+except ModuleNotFoundError:
+    from scripts.reproducibility_manifest import (
+        SCORING_VERSION as REPRODUCIBILITY_MANIFEST_VERSION,
+    )
+    from scripts.reproducibility_manifest import validate_reproducibility_manifest as validate_reproducibility_manifest_section
+
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT_DIR = ROOT / "research" / "mainline"
@@ -788,6 +799,18 @@ def validate_data_quality_contract(report: dict[str, Any], rules: dict[str, Any]
             actual=required_failure_count,
         )
 
+    required_degraded_count = _int(summary.get("required_degraded_count"))
+    if required_degraded_count > 0:
+        add_issue(
+            issues,
+            "warning",
+            "DATA_QUALITY_REQUIRED_DEGRADED",
+            "data_quality_summary.required_degraded_count",
+            "Required data quality stage degraded but did not fail.",
+            expected=0,
+            actual=required_degraded_count,
+        )
+
     optional_failure_count = _int(summary.get("optional_failure_count"))
     if optional_failure_count > 0:
         add_issue(
@@ -1249,6 +1272,61 @@ def validate_snapshot_registry_finalization_contract(
         )
 
 
+def validate_reproducibility_manifest_contract(
+    report: dict[str, Any],
+    rules: dict[str, Any],
+    issues: list[dict[str, Any]],
+    *,
+    allow_pending_reproducibility: bool = False,
+) -> None:
+    del rules
+    manifest = report.get("reproducibility_manifest")
+    if not isinstance(manifest, dict) or not manifest:
+        add_issue(
+            issues,
+            "error",
+            "REPRODUCIBILITY_MANIFEST_MISSING",
+            "reproducibility_manifest",
+            "Written reports must include reproducibility_manifest.",
+            expected="present",
+            actual="missing",
+        )
+        return
+    status = str(manifest.get("status") or "")
+    if status == "pending" and allow_pending_reproducibility:
+        if manifest.get("scoring_version") != REPRODUCIBILITY_MANIFEST_VERSION:
+            add_issue(
+                issues,
+                "error",
+                "REPRODUCIBILITY_VERSION_MISMATCH",
+                "reproducibility_manifest.scoring_version",
+                "reproducibility manifest version mismatch.",
+                expected=REPRODUCIBILITY_MANIFEST_VERSION,
+                actual=manifest.get("scoring_version"),
+            )
+        return
+    if status == "pending" and not allow_pending_reproducibility:
+        add_issue(
+            issues,
+            "error",
+            "REPRODUCIBILITY_MANIFEST_PENDING_IN_WRITTEN_REPORT",
+            "reproducibility_manifest.status",
+            "Written reports must not retain pending reproducibility status.",
+            expected="pass or warning",
+            actual=status,
+        )
+    for issue in validate_reproducibility_manifest_section(report):
+        add_issue(
+            issues,
+            issue.get("severity", "error"),
+            issue.get("code", "REPRODUCIBILITY_MANIFEST_ERROR"),
+            issue.get("path", "reproducibility_manifest"),
+            issue.get("message", "Reproducibility manifest contract failed."),
+            expected=issue.get("expected"),
+            actual=issue.get("actual"),
+        )
+
+
 def validate_mainline_report_contract(
     report: dict[str, Any],
     rules: dict[str, Any] | None = None,
@@ -1256,6 +1334,7 @@ def validate_mainline_report_contract(
     checked_at: str | None = None,
     require_self_section: bool = False,
     allow_pending_registry: bool = False,
+    allow_pending_reproducibility: bool = False,
 ) -> dict[str, Any]:
     active_rules = rules or load_rules()
     issues: list[dict[str, Any]] = []
@@ -1273,6 +1352,7 @@ def validate_mainline_report_contract(
         "policy_provenance_contract": True,
         "policy_snapshot_contract": True,
         "snapshot_registry_finalization_contract": True,
+        "reproducibility_manifest_contract": True,
     }
     validate_required_sections(report, active_rules, issues, require_self_section=require_self_section)
     validate_version_contract(report, active_rules, issues)
@@ -1291,6 +1371,12 @@ def validate_mainline_report_contract(
         active_rules,
         issues,
         allow_pending_registry=allow_pending_registry,
+    )
+    validate_reproducibility_manifest_contract(
+        report,
+        active_rules,
+        issues,
+        allow_pending_reproducibility=allow_pending_reproducibility,
     )
 
     error_count, warning_count = _issue_counts(issues)
@@ -1312,6 +1398,7 @@ def assert_mainline_report_contract(
     checked_at: str | None = None,
     require_self_section: bool = False,
     allow_pending_registry: bool = False,
+    allow_pending_reproducibility: bool = False,
 ) -> dict[str, Any]:
     summary = validate_mainline_report_contract(
         report,
@@ -1319,6 +1406,7 @@ def assert_mainline_report_contract(
         checked_at=checked_at,
         require_self_section=require_self_section,
         allow_pending_registry=allow_pending_registry,
+        allow_pending_reproducibility=allow_pending_reproducibility,
     )
     if summary["error_count"]:
         codes = ", ".join(issue["code"] for issue in summary["issues"] if issue["severity"] == "error")

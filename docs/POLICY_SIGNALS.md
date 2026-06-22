@@ -15,7 +15,9 @@ The daily automation keeps policy research separate from market scoring.
 9. `scripts/theme_allocation.py` allocates one event's finite contribution budget across matched themes through deterministic `event_theme_allocation_v2`.
 10. `scripts/mainline_lifecycle.py` classifies each theme's current lifecycle through deterministic `mainline_lifecycle_v2`.
 11. `scripts/canonical_mainline.py` publishes the canonical default output contract through deterministic `canonical_mainline_output_v2`.
-12. `scripts/daily_mainline_update.py` commits the policy store together with any new report.
+12. `scripts/snapshot_registry_finalizer.py` writes the final registry receipt and formal report artifacts.
+13. `scripts/reproducibility_manifest.py` records Git metadata, input/config/code fingerprints, artifact hashes, runtime metadata and secret-safety status through deterministic `reproducibility_manifest_v2`.
+14. `scripts/daily_mainline_update.py` commits the policy store together with any new report.
 
 ## Official Sources
 
@@ -101,6 +103,48 @@ then atomically replace the formal JSON and Markdown artifacts
 The snapshot layer does not change `policy_score_v2`, `theme_score_v5`, `mainline_score_v6`, or `mainline_ranking`. It only protects reproducibility and auditability.
 
 If registry write or final artifact replacement fails, temporary report files are removed and the registry backup is restored when possible. Formal JSON/Markdown artifacts must not retain `registry_update_status = pending`.
+
+## Reproducibility Manifest V2
+
+`reproducibility_manifest_v2` is deterministic. It does not call an LLM, embeddings, external search, market data, or web scraping. It records the local generation context needed to audit a formal report:
+
+- Git commit, branch, dirty flag and change counts
+- Python version, platform and selected dependency versions
+- run arguments such as basis date, write mode and report id
+- required input fingerprints for `data/policy_signals.json` and `data/policy_snapshot_registry.json`
+- required config fingerprints, including scoring, lifecycle, contract, data-quality, snapshot-finalization and reproducibility rules
+- required code fingerprints for the deterministic scoring, validation, finalization and generation modules
+- JSON and Markdown artifact hashes
+- secret-safety status
+
+Configuration lives in `config/reproducibility_manifest_rules.json`.
+
+Secret-safety rule:
+
+```text
+Do not read .env
+Do not write env values
+Do not record token, key, password or secret values
+Only record env_values_included = false and forbidden_key_matches = []
+```
+
+The JSON artifact hash uses the `sha256:SELF` normalization rule:
+
+```text
+Set reproducibility_manifest.artifact_fingerprints.json_report.sha256 = "sha256:SELF"
+Set reproducibility_manifest.manifest_hash = "sha256:SELF"
+Then calculate stable JSON sha256.
+```
+
+The Markdown artifact hash uses normalized display-hash lines so the human-readable report can show the hash values without making the audit field self-referential.
+
+Manifest status:
+
+- `pass`: all required fingerprints exist, artifact hashes are present, secret safety passes, and Git metadata has no warning.
+- `warning`: Git metadata is available but the working tree is dirty, or Git metadata collection is degraded. This does not change `mainline_score_v6`.
+- `fail`: required fingerprint missing or secret safety fails. Formal report writing is blocked.
+
+Formal JSON/Markdown artifacts must not retain `reproducibility_manifest.status = pending`; pending is only allowed during dry-run report construction.
 
 ## Signal Schema
 
@@ -254,9 +298,10 @@ The report writes:
 - `policy_provenance_summary.scoring_version = policy_source_provenance_v2`
 - `policy_snapshot_summary.scoring_version = policy_snapshot_integrity_v2`
 - `snapshot_registry_update_summary.scoring_version = snapshot_registry_finalization_v2`
+- `reproducibility_manifest.scoring_version = reproducibility_manifest_v2`
 - `contract_validation_summary.scoring_version = mainline_contract_validator_v2`
 
-`mainline_contract_validator_v2` is deterministic. It reads `config/mainline_contract_rules.json` and validates required sections, version fields, policy provenance counts, rejected-policy leakage, policy snapshot integrity, snapshot registry finalization, canonical ordering, score monotonicity, score formulas, event allocation budgets, lifecycle state counts, summary counts, and legacy default-score leakage. New report generation attaches `contract_validation_summary`; any error blocks JSON and Markdown writes, while warnings are preserved in the report and Markdown.
+`mainline_contract_validator_v2` is deterministic. It reads `config/mainline_contract_rules.json` and validates required sections, version fields, policy provenance counts, rejected-policy leakage, policy snapshot integrity, snapshot registry finalization, reproducibility manifest, canonical ordering, score monotonicity, score formulas, event allocation budgets, lifecycle state counts, summary counts, and legacy default-score leakage. New report generation attaches `contract_validation_summary`; any error blocks JSON and Markdown writes, while warnings are preserved in the report and Markdown.
 
 `live_report_data_guard_v2` is deterministic. It reads `config/data_quality_rules.json` and only guards the live report generation pipeline against empty optional tables, missing columns, optional-source exceptions, or required-stage failures. It does not add scoring factors, change `mainline_score_v6`, change `mainline_ranking`, or use market data availability as a theme score input. Required stages such as policy store, policy provenance, policy snapshot integrity, policy theme summary, canonical mainline, and contract validation still block writes if they fail.
 
@@ -556,6 +601,8 @@ policy_snapshot_summary.scoring_version = policy_snapshot_integrity_v2
 snapshot_registry_update_summary.scoring_version = snapshot_registry_finalization_v2
 snapshot_registry_update_summary.status = updated | skipped | failed | pending
 policy_snapshot_summary.registry_update_status = snapshot_registry_update_summary.status
+reproducibility_manifest.scoring_version = reproducibility_manifest_v2
+reproducibility_manifest.status = pass | warning | pending
 data_quality_summary.scoring_version = live_report_data_guard_v2
 data_quality_summary.status = pass | degraded | fail
 contract_validation_summary.scoring_version = mainline_contract_validator_v2
@@ -572,6 +619,7 @@ required_sections:
   policy_provenance_summary
   policy_snapshot_summary
   snapshot_registry_update_summary
+  reproducibility_manifest
   event_cluster_summary
   policy_stance_summary
   event_theme_allocation_summary
@@ -596,6 +644,10 @@ error examples:
   written report keeps registry update pending
   registry receipt hash is missing or malformed
   registry policy count does not match policy_snapshot_summary.policies
+  written report keeps reproducibility manifest pending
+  required reproducibility fingerprint is missing
+  artifact hash is missing or malformed
+  secret safety reports env values included
   event allocation over budget
   lifecycle state count mismatch
   legacy evidence used as default score
@@ -617,6 +669,7 @@ required stages:
   policy_theme_summary
   canonical_mainline
   contract_validation
+  reproducibility_manifest
 
 optional stages:
   breadth

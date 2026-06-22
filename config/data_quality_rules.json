@@ -7,7 +7,8 @@
     "policy_snapshot_integrity",
     "policy_theme_summary",
     "canonical_mainline",
-    "contract_validation"
+    "contract_validation",
+    "reproducibility_manifest"
   ],
   "optional_stages": [
     "breadth",

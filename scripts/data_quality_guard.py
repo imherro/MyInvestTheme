@@ -86,6 +86,8 @@ def build_stage_status(
     fallback_used = (not required) and status == "degraded"
     if status == "pass":
         message = ""
+    elif required and status == "degraded":
+        message = "Required data stage degraded; report generation can continue with warning."
     elif required:
         message = "Required data stage failed; report generation must stop."
     else:
@@ -170,12 +172,13 @@ def build_data_quality_summary(stage_statuses: list[dict[str, Any]]) -> dict[str
     required = [status for status in statuses if status.get("required")]
     optional = [status for status in statuses if not status.get("required")]
     required_failure_count = sum(1 for status in required if status.get("status") == "fail")
+    required_degraded_count = sum(1 for status in required if status.get("status") == "degraded")
     optional_failure_count = sum(1 for status in optional if status.get("status") in {"degraded", "fail"})
     empty_optional_stage_count = sum(1 for status in optional if int(status.get("row_count") or 0) == 0)
     missing_column_stage_count = sum(1 for status in statuses if status.get("missing_columns"))
     if required_failure_count:
         status_value = "fail"
-    elif optional_failure_count:
+    elif required_degraded_count or optional_failure_count:
         status_value = "degraded"
     else:
         status_value = "pass"
@@ -185,6 +188,7 @@ def build_data_quality_summary(stage_statuses: list[dict[str, Any]]) -> dict[str
         "required_stage_count": len(required),
         "optional_stage_count": len(optional),
         "required_failure_count": required_failure_count,
+        "required_degraded_count": required_degraded_count,
         "optional_failure_count": optional_failure_count,
         "empty_optional_stage_count": empty_optional_stage_count,
         "missing_column_stage_count": missing_column_stage_count,

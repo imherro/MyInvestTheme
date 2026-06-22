@@ -1,0 +1,54 @@
+{
+  "version": "reproducibility_manifest_v2",
+  "hash_algorithm": "sha256",
+  "timezone": "Asia/Shanghai",
+  "fail_on_dirty_git": false,
+  "warn_on_dirty_git": true,
+  "required_input_files": [
+    "data/policy_signals.json",
+    "data/policy_snapshot_registry.json"
+  ],
+  "required_config_files": [
+    "config/policy_source_rules.json",
+    "config/policy_snapshot_rules.json",
+    "config/snapshot_registry_finalization_rules.json",
+    "config/policy_stance_rules.json",
+    "config/theme_allocation_rules.json",
+    "config/mainline_lifecycle_rules.json",
+    "config/mainline_contract_rules.json",
+    "config/data_quality_rules.json",
+    "config/reproducibility_manifest_rules.json",
+    "config/themes.json"
+  ],
+  "required_code_files": [
+    "scripts/policy_scoring.py",
+    "scripts/policy_provenance.py",
+    "scripts/policy_snapshot_integrity.py",
+    "scripts/policy_event_clustering.py",
+    "scripts/theme_relevance.py",
+    "scripts/policy_stance.py",
+    "scripts/theme_allocation.py",
+    "scripts/mainline_lifecycle.py",
+    "scripts/canonical_mainline.py",
+    "scripts/mainline_contract_validator.py",
+    "scripts/data_quality_guard.py",
+    "scripts/snapshot_registry_finalizer.py",
+    "scripts/reproducibility_manifest.py",
+    "scripts/generate_mainline_report.py"
+  ],
+  "tracked_dependency_packages": [
+    "pandas",
+    "numpy",
+    "fastapi",
+    "pytest",
+    "pydantic"
+  ],
+  "forbidden_env_key_patterns": [
+    "TOKEN",
+    "SECRET",
+    "PASSWORD",
+    "KEY",
+    "TUSHARE",
+    "BAOSTOCK"
+  ]
+}

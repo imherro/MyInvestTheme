@@ -1,7 +1,7 @@
 {
   "version": "policy_snapshot_integrity_v2",
-  "updated_at": "2026-06-22T17:38:53+08:00",
-  "last_report_id": "mainline_review_2026-06-22_173853",
+  "updated_at": "2026-06-22T18:03:45+08:00",
+  "last_report_id": "mainline_review_2026-06-22_180345",
   "policy_snapshots": [
     {
       "policy_id": "csrc-2026-04-10-gem-reform-new-quality-productivity",
@@ -18,9 +18,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-22_173853",
+      "last_seen_report_id": "mainline_review_2026-06-22_180345",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-22T17:38:53+08:00",
+      "last_seen_at": "2026-06-22T18:03:45+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -40,9 +40,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-22_173853",
+      "last_seen_report_id": "mainline_review_2026-06-22_180345",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-22T17:38:53+08:00",
+      "last_seen_at": "2026-06-22T18:03:45+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -62,9 +62,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-22_173853",
+      "last_seen_report_id": "mainline_review_2026-06-22_180345",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-22T17:38:53+08:00",
+      "last_seen_at": "2026-06-22T18:03:45+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -84,9 +84,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-22_173853",
+      "last_seen_report_id": "mainline_review_2026-06-22_180345",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-22T17:38:53+08:00",
+      "last_seen_at": "2026-06-22T18:03:45+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
