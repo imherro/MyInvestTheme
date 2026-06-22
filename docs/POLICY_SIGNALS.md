@@ -231,6 +231,51 @@ python scripts/mainline_sensitivity_engine.py --latest --theme <theme_id>
 python scripts/core_driver_detector.py --latest
 ```
 
+## System Consistency Oracle V2
+
+`system_consistency_oracle_v2` is deterministic and read-only. It does not call an LLM, embeddings, external search, market data, or web scraping. It repeats same-report deterministic projections and compares the outputs.
+
+It checks:
+
+- score divergence
+- ranking divergence
+- allocation divergence
+- lifecycle divergence
+- provenance hash divergence
+- snapshot hash divergence
+- explainability graph divergence
+
+The oracle returns a deterministic verdict:
+
+```text
+stable
+unstable
+critical
+```
+
+and root-cause attribution:
+
+```text
+none
+scoring
+ranking
+allocation
+lifecycle
+provenance
+snapshot
+explainability
+```
+
+The consistency layer does not write reports, regenerate market data, update policy stores, update snapshot registries, change scores, change ranking, or participate in contract validation, drift control, golden snapshots, reproducibility manifests, report finalization, explanation graphs, or counterfactual simulation.
+
+Read-only API and CLI:
+
+```text
+/api/consistency/oracle?runs=10
+python scripts/system_consistency_oracle.py --latest --runs 10
+python scripts/multi_run_executor.py --latest --runs 10
+```
+
 ## Signal Schema
 
 Each signal in `data/policy_signals.json` must include:

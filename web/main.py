@@ -30,6 +30,7 @@ from scripts.counterfactual_simulator import (
 )
 from scripts.mainline_sensitivity_engine import build_theme_sensitivity
 from scripts.core_driver_detector import detect_core_drivers
+from scripts.system_consistency_oracle import build_consistency_oracle
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
@@ -816,6 +817,13 @@ def api_theme_sensitivity(theme_id: str, report_id: str | None = None) -> dict[s
 def api_core_drivers(report_id: str | None = None) -> dict[str, Any]:
     effective_report_id, payload = _simulation_report(report_id)
     return {"report_id": effective_report_id, "result": detect_core_drivers(payload)}
+
+
+@app.get("/api/consistency/oracle")
+def api_consistency_oracle(runs: int = 10, report_id: str | None = None) -> dict[str, Any]:
+    effective_report_id, payload = _simulation_report(report_id)
+    run_count = max(2, min(int(runs), 50))
+    return {"report_id": effective_report_id, "result": build_consistency_oracle(payload, run_count)}
 
 
 @app.get("/api/golden-snapshot")
