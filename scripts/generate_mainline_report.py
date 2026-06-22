@@ -15,10 +15,13 @@ import numpy as np
 import pandas as pd
 import tushare as ts
 
+from policy_signals import load_policy_store, score_policy_by_theme
+
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT_DIR = ROOT / "research" / "mainline"
 TZ = ZoneInfo("Asia/Shanghai")
+POLICY_WEIGHT = 0.15
 
 
 BROAD_INDEXES = [
@@ -436,8 +439,10 @@ def theme_rows(
     etf: pd.DataFrame,
     limit_up: pd.DataFrame,
     moneyflow: pd.DataFrame,
+    policy_by_theme: dict[str, dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
+    policy_by_theme = policy_by_theme or {}
     for spec in THEMES:
         sw_match = sw[sw["name"].isin(spec.sw_names)].copy()
         ths_match = ths[ths["name"].apply(lambda x: contains_any(x, spec.ths_keywords))].copy()
@@ -462,6 +467,13 @@ def theme_rows(
         ths_score = float(top_ths["score"].mean()) if not top_ths.empty else 0.0
         etf_score = float(top_etf["score"].mean()) if not top_etf.empty else 0.0
         limit_score = min(100.0, limit_count * 8.0)
+        policy = policy_by_theme.get(spec.name, {})
+        policy_score = float(policy.get("score") or 0.0)
+        policy_details = policy.get("top_policies") or []
+        top_policy = "、".join(
+            f"{item.get('published_date', '')} {item.get('source', '')} {item.get('title', '')}"
+            for item in policy_details[:3]
+        )
 
         rows.append(
             {
@@ -472,6 +484,10 @@ def theme_rows(
                 "limit_count": limit_count,
                 "limit_score": limit_score,
                 "large_net": large_net,
+                "policy_score": policy_score,
+                "policy_evidence_count": int(policy.get("evidence_count") or 0),
+                "top_policy": top_policy,
+                "policy_details": policy_details,
                 "top_sw": join_names(sw_match.sort_values("score", ascending=False).to_dict("records"), limit=4),
                 "top_ths": join_names(top_ths.to_dict("records"), limit=5),
                 "top_etf": "、".join(
@@ -486,13 +502,14 @@ def theme_rows(
 
     df = pd.DataFrame(rows)
     df["flow_rank"] = percentile_rank(df["large_net"])
-    df["evidence_score"] = (
+    df["market_score"] = (
         0.25 * df["sw_score"]
         + 0.30 * df["ths_score"]
         + 0.25 * df["etf_score"]
         + 0.10 * df["limit_score"]
         + 0.10 * df["flow_rank"] * 100
     )
+    df["evidence_score"] = (1 - POLICY_WEIGHT) * df["market_score"] + POLICY_WEIGHT * df["policy_score"]
 
     final = []
     for _, row in df.sort_values("evidence_score", ascending=False).iterrows():
@@ -502,6 +519,7 @@ def theme_rows(
         evidence_count += 1 if row["etf_score"] > 0 else 0
         evidence_count += 1 if int(row["limit_count"]) > 0 else 0
         evidence_count += 1 if float(row["large_net"]) > 0 else 0
+        evidence_count += 1 if int(row["policy_evidence_count"]) > 0 else 0
         score = float(row["evidence_score"])
         if score >= 85:
             stage = "主线确认"
@@ -514,8 +532,16 @@ def theme_rows(
         item = row.to_dict()
         item["evidence_count"] = evidence_count
         item["stage"] = stage
-        final.append({k: (None if pd.isna(v) else v) for k, v in item.items()})
+        final.append({k: clean_json_value(v) for k, v in item.items()})
     return final
+
+
+def clean_json_value(value: Any) -> Any:
+    if isinstance(value, (list, dict)):
+        return value
+    if pd.isna(value):
+        return None
+    return value
 
 
 def clean_records(df: pd.DataFrame, limit: int, fields: list[str]) -> list[dict[str, Any]]:
@@ -536,9 +562,14 @@ def clean_records(df: pd.DataFrame, limit: int, fields: list[str]) -> list[dict[
 def conclusion_lines(theme_ranking: list[dict[str, Any]], breadth: dict[str, Any]) -> list[str]:
     top = theme_ranking[0]
     second = theme_ranking[1] if len(theme_ranking) > 1 else None
-    lines = [
-        f"第一主线是{top['theme']}，综合证据分{top['evidence_score']:.2f}，当前阶段为{top['stage']}。",
-    ]
+    if top.get("stage") == "主线确认":
+        lines = [
+            f"第一主线是{top['theme']}，综合证据分{top['evidence_score']:.2f}，当前阶段为{top['stage']}。",
+        ]
+    else:
+        lines = [
+            f"当前排序第一的是{top['theme']}，综合证据分{top['evidence_score']:.2f}，但阶段仍为{top['stage']}，尚未达到主线确认阈值。",
+        ]
     if second:
         lines.append(f"第二梯队是{second['theme']}，但需要看 ETF、涨停和资金能否继续同步确认。")
     if breadth["r20_positive_ratio"] < 30:
@@ -552,6 +583,7 @@ def conclusion_lines(theme_ranking: list[dict[str, Any]], breadth: dict[str, Any
 
 def render_markdown(payload: dict[str, Any]) -> str:
     basis = payload["basis_date"]
+    policy_summary = payload.get("policy_summary") or {}
     lines = [
         f"# A股主线研究报告（基准日 {basis}）",
         "",
@@ -568,12 +600,12 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "",
         "## 主线分层",
         "",
-        "| 主题 | 阶段 | 证据分 | 证据项 | 核心指数/概念 | ETF代理 |",
-        "| --- | --- | --- | --- | --- | --- |",
+        "| 主题 | 阶段 | 证据分 | 市场分 | 政策分 | 证据项 | 核心指数/概念 | ETF代理 |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for item in payload["theme_ranking"]:
         lines.append(
-            f"| {item['theme']} | {item['stage']} | {item['evidence_score']:.2f} | {item['evidence_count']} | {item['top_ths']} | {item['top_etf']} |"
+            f"| {item['theme']} | {item['stage']} | {item['evidence_score']:.2f} | {item['market_score']:.2f} | {item['policy_score']:.2f} | {item['evidence_count']} | {item['top_ths']} | {item['top_etf']} |"
         )
 
     lines += [
@@ -582,8 +614,11 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "",
         "- 行业/主题强度：1日分位25% + 5日分位35% + 20日分位25% + 热度分位15%。申万热度为当日成交额相对近20日均值；同花顺热度为换手率。",
         "- ETF强度：1日分位20% + 5日分位35% + 20日分位30% + 成交额分位15%。",
-        "- 主线证据分：申万映射25% + 同花顺主题30% + ETF代理25% + 涨停结构10% + 大单/特大单资金排名10%。",
+        "- 市场分：申万映射25% + 同花顺主题30% + ETF代理25% + 涨停结构10% + 大单/特大单资金排名10%。",
+        f"- 政策分：读取 `data/policy_signals.json`，按权威级别30% + 新鲜度20% + 具体度20% + 落地路径20% + 抽取置信度10% 计算；主题相关度用于缩放每条政策信号。",
+        f"- 主线证据分：市场分{(1 - policy_summary.get('policy_weight', POLICY_WEIGHT)) * 100:.0f}% + 政策分{policy_summary.get('policy_weight', POLICY_WEIGHT) * 100:.0f}%。",
         "- 阶段：85分以上为主线确认，72-85为次主线/强修复，50-72为观察线，50以下为弱势/退潮。",
+        f"- 政策库更新时间：{policy_summary.get('updated_at') or '无'}；政策信号数：{policy_summary.get('signals_count', 0)}。",
         "",
         "## 市场土壤",
         "",
@@ -637,6 +672,18 @@ def render_markdown(payload: dict[str, Any]) -> str:
 
     lines += [
         "",
+        "## 政策信号",
+        "",
+        "| 主题 | 政策分 | 政策证据 | 主要政策 |",
+        "| --- | --- | --- | --- |",
+    ]
+    for item in payload["theme_ranking"]:
+        lines.append(
+            f"| {item['theme']} | {item['policy_score']:.2f} | {item['policy_evidence_count']} | {item.get('top_policy') or '无'} |"
+        )
+
+    lines += [
+        "",
         "## 涨停结构",
         "",
         "| 行业 | 涨停数 | 平均换手 |",
@@ -662,9 +709,11 @@ def render_markdown(payload: dict[str, Any]) -> str:
         lines += [
             f"### {item['theme']}：{item['stage']}",
             f"- 证据分：{item['evidence_score']:.2f}，证据项：{item['evidence_count']}",
+            f"- 市场分：{item['market_score']:.2f}；政策分：{item['policy_score']:.2f}；政策证据：{item['policy_evidence_count']}",
             f"- 申万映射：{item['top_sw']}",
             f"- 主题指数：{item['top_ths']}",
             f"- ETF代理：{item['top_etf']}",
+            f"- 政策映射：{item.get('top_policy') or '无'}",
         ]
         if item["stage"] == "主线确认":
             lines.append("- 研究结论：价格、主题、ETF和结构资金同步度较高，是当前最清晰的主线。")
@@ -680,6 +729,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "## 数据源与可复核性",
         "",
         "- 本地：根目录 `数据源.md`、`.env`。",
+        "- 政策库：`data/policy_signals.json`，由 Codex/LLM 从官方政策源抽取结构化信号，Python 规则负责确定性打分。",
         "- Tushare：`trade_cal`、`daily`、`daily_basic`、`index_daily`、`index_classify`、`sw_daily`、`ths_index`、`ths_daily`、`fund_basic`、`fund_daily`、`limit_list_d`、`moneyflow`。",
         "- BaoStock：验证上证综指、创业板指、科创50在基准日的收盘和涨跌幅。",
         "",
@@ -711,6 +761,9 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
     window_dates = open_days[idx - 20 : idx + 1]
     d5 = open_days[idx - 5]
     d20 = open_days[idx - 20]
+    basis_date = f"{basis_raw[:4]}-{basis_raw[4:6]}-{basis_raw[6:]}"
+    policy_store = load_policy_store()
+    policy_by_theme = score_policy_by_theme(basis_date, [spec.name for spec in THEMES])
 
     breadth = stock_breadth(pro, basis_raw, d5, d20)
     broad = broad_index_data(pro, basis_raw, d5, d20)
@@ -719,9 +772,8 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
     etf = score_etf(pro, window_dates)
     limit_up, limit_top = limit_up_data(pro, basis_raw)
     moneyflow, moneyflow_top = moneyflow_data(pro, basis_raw)
-    ranking = theme_rows(sw, ths, etf, limit_up, moneyflow)
+    ranking = theme_rows(sw, ths, etf, limit_up, moneyflow, policy_by_theme)
 
-    basis_date = f"{basis_raw[:4]}-{basis_raw[4:6]}-{basis_raw[6:]}"
     now = datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S CST")
     report_id = f"mainline_review_{datetime.now(TZ).strftime('%Y-%m-%d_%H%M%S')}"
     data_sources = (ROOT / "数据源.md").read_text(encoding="utf-8") if (ROOT / "数据源.md").exists() else ""
@@ -734,6 +786,12 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
         "completeness": completeness,
         "breadth": breadth,
         "broad_indexes": broad,
+        "policy_summary": {
+            "updated_at": policy_store.get("updated_at", ""),
+            "signals_count": len(policy_store.get("signals", [])),
+            "policy_weight": POLICY_WEIGHT,
+            "scoring": "authority 30%, freshness 20%, specificity 20%, implementation path 20%, confidence 10%; theme relevance scales each signal.",
+        },
         "theme_ranking": ranking,
         "sw_top": clean_records(
             sw,

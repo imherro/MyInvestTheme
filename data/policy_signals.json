@@ -1,0 +1,127 @@
+{
+  "updated_at": "2026-06-22T11:30:00+08:00",
+  "method": "Codex/LLM extracts structured policy signals from official sources; Python scoring is deterministic.",
+  "signals": [
+    {
+      "id": "ndrc-2026-06-03-intelligent-economy",
+      "title": "发展智能经济新形态为高质量发展注入强劲动能",
+      "source": "国家发展改革委",
+      "published_date": "2026-06-03",
+      "authority_level": "national_ministry",
+      "url": "https://www.ndrc.gov.cn/wsdwhfz/202606/t20260603_1405684.html",
+      "specificity": 0.62,
+      "implementation_path": 0.56,
+      "confidence": 0.86,
+      "evidence": "强调智能经济以人工智能为底层驱动，数据为关键生产要素，算力为基础支撑，并推动智能技术与实体经济融合。",
+      "themes": [
+        {
+          "theme": "AI算力/通信",
+          "relevance": 0.95,
+          "beneficiary_chain": ["人工智能", "数据要素", "算力基础设施", "通信网络"]
+        },
+        {
+          "theme": "高端制造/机器人/军工",
+          "relevance": 0.52,
+          "beneficiary_chain": ["智能制造", "自动化改造", "工业智能化"]
+        },
+        {
+          "theme": "硬科技电子/半导体",
+          "relevance": 0.48,
+          "beneficiary_chain": ["AI芯片", "电子元件", "算力硬件"]
+        }
+      ]
+    },
+    {
+      "id": "nea-2026-05-09-ai-energy-action-plan",
+      "title": "国家能源局联合相关部门促进人工智能与能源双向赋能",
+      "source": "国家能源局",
+      "published_date": "2026-05-09",
+      "authority_level": "multi_ministry",
+      "url": "https://www.nea.gov.cn/20260509/45e5721670704d4e8555d2212211db45/c.html",
+      "specificity": 0.92,
+      "implementation_path": 0.88,
+      "confidence": 0.92,
+      "evidence": "行动方案聚焦保障算力设施能源供给、推动绿色低碳转型、促进算力电力协同，并部署29项重点任务。",
+      "themes": [
+        {
+          "theme": "AI算力/通信",
+          "relevance": 0.96,
+          "beneficiary_chain": ["算力设施", "数据中心", "算电协同", "通信网络"]
+        },
+        {
+          "theme": "新能源/电力设备",
+          "relevance": 0.90,
+          "beneficiary_chain": ["清洁能源供给", "电网调度", "储能", "电力设备"]
+        }
+      ]
+    },
+    {
+      "id": "csrc-2026-04-10-gem-reform-new-quality-productivity",
+      "title": "中国证监会发布《关于深化创业板改革更好服务新质生产力发展的意见》",
+      "source": "中国证监会",
+      "published_date": "2026-04-10",
+      "authority_level": "national_regulator",
+      "url": "https://www.csrc.gov.cn/csrc/c100028/c7625370/content.shtml",
+      "specificity": 0.82,
+      "implementation_path": 0.78,
+      "confidence": 0.88,
+      "evidence": "政策强调创业板更好服务成长型创新创业企业和新质生产力，覆盖信息技术、新能源、高端装备等战略性新兴产业。",
+      "themes": [
+        {
+          "theme": "硬科技电子/半导体",
+          "relevance": 0.78,
+          "beneficiary_chain": ["信息技术", "半导体", "硬科技融资"]
+        },
+        {
+          "theme": "新能源/电力设备",
+          "relevance": 0.74,
+          "beneficiary_chain": ["新能源", "绿色债券", "成长型企业融资"]
+        },
+        {
+          "theme": "高端制造/机器人/军工",
+          "relevance": 0.70,
+          "beneficiary_chain": ["高端装备", "先进制造", "并购融资"]
+        },
+        {
+          "theme": "创新药/医药",
+          "relevance": 0.52,
+          "beneficiary_chain": ["未盈利创新企业", "成长型创新企业"]
+        }
+      ]
+    },
+    {
+      "id": "ndrc-2026-06-01-109-major-projects-industrial-foundation",
+      "title": "透视109项重大工程：如何夯实产业基础",
+      "source": "国家发展改革委",
+      "published_date": "2026-06-01",
+      "authority_level": "national_ministry",
+      "url": "https://www.ndrc.gov.cn/wsdwhfz/202606/t20260601_1405600.html",
+      "specificity": 0.70,
+      "implementation_path": 0.72,
+      "confidence": 0.82,
+      "evidence": "围绕十五五规划109项重大工程，强调新质生产力、现代化基础设施、绿色低碳转型和产业基础能力。",
+      "themes": [
+        {
+          "theme": "高端制造/机器人/军工",
+          "relevance": 0.68,
+          "beneficiary_chain": ["现代化产业体系", "产业基础", "先进制造"]
+        },
+        {
+          "theme": "新能源/电力设备",
+          "relevance": 0.62,
+          "beneficiary_chain": ["绿色低碳转型", "基础设施", "能源装备"]
+        },
+        {
+          "theme": "硬科技电子/半导体",
+          "relevance": 0.58,
+          "beneficiary_chain": ["科技创新", "产业升级", "数字化转型"]
+        },
+        {
+          "theme": "建材/稳增长修复",
+          "relevance": 0.42,
+          "beneficiary_chain": ["现代化基础设施", "重大工程"]
+        }
+      ]
+    }
+  ]
+}

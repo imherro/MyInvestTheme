@@ -35,6 +35,7 @@
         <col class="col-theme">
         <col class="col-stage">
         <col class="col-score">
+        <col class="col-policy">
         <col class="col-evidence">
         <col class="col-etf">
       </colgroup>
@@ -44,6 +45,7 @@
           <th>主题</th>
           <th>阶段</th>
           <th>证据分</th>
+          <th>政策分</th>
           <th>证据项/拆解</th>
           <th>ETF代理</th>
         </tr>
@@ -55,10 +57,11 @@
           <td class="strong">{{ item.theme }}</td>
           <td><span class="stage">{{ item.stage }}</span></td>
           <td class="score-cell">{{ "%.2f"|format(item.evidence_score) }}</td>
+          <td class="score-cell">{{ "%.1f"|format(item.policy_score) if item.policy_score is defined and item.policy_score is not none else "无" }}</td>
           <td class="evidence-cell">
             <details class="evidence-details">
               <summary>
-                <span class="evidence-count">{{ item.evidence_count }}/5</span>
+                <span class="evidence-count">{{ item.evidence_count }}/{{ item.evidence_total }}</span>
                 <span class="evidence-action">查看</span>
               </summary>
               <div class="evidence-list">

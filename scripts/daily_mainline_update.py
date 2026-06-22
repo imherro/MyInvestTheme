@@ -17,6 +17,12 @@ from generate_mainline_report import (
     get_trade_dates,
     make_client,
 )
+from policy_signals import POLICY_PATH, validate_policy_store
+
+
+POLICY_DIRTY_PREFIXES = {
+    "data/policy_signals.json",
+}
 
 
 def run_command(args: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -35,12 +41,37 @@ def git_status_porcelain() -> str:
     return run_command(["git", "status", "--porcelain"], check=True).stdout.strip()
 
 
-def ensure_clean_worktree(*, allow_dirty: bool) -> None:
+def dirty_paths() -> list[str]:
     status = git_status_porcelain()
-    if status and not allow_dirty:
+    paths = []
+    for line in status.splitlines():
+        if not line:
+            continue
+        path = line[3:]
+        if " -> " in path:
+            path = path.split(" -> ", 1)[1]
+        paths.append(path.replace("\\", "/"))
+    return paths
+
+
+def is_allowed_policy_dirty(path: str) -> bool:
+    return path in POLICY_DIRTY_PREFIXES or path.startswith("research/policy/")
+
+
+def policy_dirty_paths() -> list[Path]:
+    return [ROOT / path for path in dirty_paths() if is_allowed_policy_dirty(path)]
+
+
+def ensure_clean_worktree(*, allow_dirty: bool) -> None:
+    paths = dirty_paths()
+    if paths and not allow_dirty:
+        unexpected = [path for path in paths if not is_allowed_policy_dirty(path)]
+        if not unexpected:
+            print(f"Policy-only worktree changes detected and will be included: {', '.join(paths)}", flush=True)
+            return
         raise RuntimeError(
             "工作区不是干净状态，自动日更已停止，避免把人工改动混进自动提交。"
-            "先提交/清理当前改动，或显式使用 --allow-dirty。"
+            f"非政策文件改动: {', '.join(unexpected)}。先提交/清理当前改动，或显式使用 --allow-dirty。"
         )
 
 
@@ -79,7 +110,14 @@ def latest_complete_basis(today: str) -> tuple[str, dict[str, Any]]:
 
 
 def commit_and_push(paths: list[Path], *, no_push: bool) -> None:
-    relative_paths = [str(path.relative_to(ROOT)) for path in paths]
+    unique_paths = []
+    seen = set()
+    for path in paths:
+        key = str(path)
+        if key not in seen:
+            seen.add(key)
+            unique_paths.append(path)
+    relative_paths = [str(path.relative_to(ROOT)) for path in unique_paths]
     run_command(["git", "add", *relative_paths])
     staged = run_command(["git", "diff", "--cached", "--name-only"]).stdout.strip()
     if not staged:
@@ -115,12 +153,19 @@ def main() -> int:
     if not args.no_git:
         ensure_clean_worktree(allow_dirty=args.allow_dirty)
 
+    policy_errors = validate_policy_store(POLICY_PATH)
+    if policy_errors:
+        raise RuntimeError("Policy signal validation failed: " + "; ".join(policy_errors))
+    current_policy_dirty = policy_dirty_paths()
+    if current_policy_dirty:
+        print("Policy changes pending: " + ", ".join(str(path.relative_to(ROOT)) for path in current_policy_dirty), flush=True)
+
     basis_date, completeness = latest_complete_basis(args.today)
     print(f"Latest complete basis date: {basis_date}", flush=True)
     print(f"Completeness: daily={completeness.get('daily_rows')} daily_basic={completeness.get('daily_basic_rows')}", flush=True)
 
     existing = existing_report_for_basis(basis_date)
-    if existing and not args.force:
+    if existing and not args.force and not current_policy_dirty:
         print(f"Skip: report for basis date {basis_date} already exists: {existing.name}", flush=True)
         return 0
 
@@ -141,7 +186,7 @@ def main() -> int:
     if args.no_git:
         print("Skip git commit/push because --no-git was set.", flush=True)
     else:
-        commit_and_push([json_path, md_path], no_push=args.no_push)
+        commit_and_push([*current_policy_dirty, json_path, md_path], no_push=args.no_push)
 
     print(f"Daily mainline update finished at {datetime.now(TZ).isoformat(timespec='seconds')}", flush=True)
     return 0

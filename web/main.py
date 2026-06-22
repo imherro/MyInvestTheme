@@ -99,10 +99,17 @@ def _moneyflow_note(item: dict[str, Any]) -> str:
     return f"大单/特大单净额 {large_net:.2f}"
 
 
+def _policy_note(item: dict[str, Any]) -> str:
+    top_policy = item.get("top_policy")
+    if top_policy:
+        return str(top_policy)
+    return "无政策映射"
+
+
 def _evidence_breakdown(item: dict[str, Any]) -> list[dict[str, Any]]:
     limit_count = int(_float_or_none(item.get("limit_count")) or 0)
     large_net = _float_or_none(item.get("large_net")) or 0
-    return [
+    rows = [
         {
             "label": "申万行业",
             "score": _float_or_none(item.get("sw_score")),
@@ -134,6 +141,16 @@ def _evidence_breakdown(item: dict[str, Any]) -> list[dict[str, Any]]:
             "note": _moneyflow_note(item),
         },
     ]
+    if "policy_score" in item or item.get("top_policy"):
+        rows.append(
+            {
+                "label": "政策信号",
+                "score": _float_or_none(item.get("policy_score")),
+                "active": int(_float_or_none(item.get("policy_evidence_count")) or 0) > 0,
+                "note": _policy_note(item),
+            }
+        )
+    return rows
 
 
 def enrich_theme_ranking(themes: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -141,6 +158,7 @@ def enrich_theme_ranking(themes: list[dict[str, Any]]) -> list[dict[str, Any]]:
     for item in themes:
         enriched_item = dict(item)
         enriched_item["evidence_breakdown"] = _evidence_breakdown(item)
+        enriched_item["evidence_total"] = len(enriched_item["evidence_breakdown"])
         enriched.append(enriched_item)
     return enriched
 
@@ -203,6 +221,8 @@ def build_score_series() -> dict[str, Any]:
                     "theme_score": item.get("ths_score"),
                     "etf_score": item.get("etf_score"),
                     "industry_score": item.get("sw_score"),
+                    "market_score": item.get("market_score"),
+                    "policy_score": item.get("policy_score"),
                     "resonance_score": _resonance_score(item),
                     "triple_confirmation": all(
                         (_float_or_none(item.get(key)) or 0) >= 75

@@ -43,13 +43,17 @@ def test_index_api_returns_homepage_content():
     assert body["theme_ranking"]
     first_theme = body["theme_ranking"][0]
     assert "evidence_breakdown" in first_theme
-    assert {item["label"] for item in first_theme["evidence_breakdown"]} == {
+    labels = {item["label"] for item in first_theme["evidence_breakdown"]}
+    assert {
         "申万行业",
         "同花顺主题",
         "ETF代理",
         "涨停结构",
         "资金排名",
-    }
+    }.issubset(labels)
+    if "policy_score" in first_theme:
+        assert "政策信号" in labels
+        assert "policy_score" in first_theme
     assert body["market"]["breadth"]
     assert body["market"]["broad_indexes"]
     assert body["score_series"]["report_count"] >= 1
@@ -80,6 +84,7 @@ def test_reports_and_score_series():
     first_point = next(item["points"][0] for item in series["themes"] if item["points"])
     assert "theme_score" in first_point
     assert "etf_score" in first_point
+    assert "policy_score" in first_point
     assert "resonance_score" in first_point
     assert "triple_confirmation" in first_point
 
@@ -90,6 +95,7 @@ def test_pages_render():
     assert "A股主线研究台" in latest.text
     assert "证据项/拆解" in latest.text
     assert "资金排名" in latest.text
+    assert "政策分" in latest.text
 
     reports = get("/reports")
     assert reports.status_code == 200

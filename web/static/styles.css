@@ -152,7 +152,7 @@ h2 {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1160px;
+  min-width: 1240px;
   table-layout: fixed;
 }
 
@@ -172,12 +172,16 @@ table {
   width: 88px;
 }
 
+.col-policy {
+  width: 80px;
+}
+
 .col-evidence {
-  width: 360px;
+  width: 380px;
 }
 
 .col-etf {
-  width: 334px;
+  width: 314px;
 }
 
 th,
@@ -369,7 +373,7 @@ th {
   }
 
   table {
-    min-width: 1160px;
+    min-width: 1240px;
   }
 
   th,
@@ -394,7 +398,7 @@ th {
   }
 
   table {
-    min-width: 1160px;
+    min-width: 1240px;
   }
 
   .etf-cell {
