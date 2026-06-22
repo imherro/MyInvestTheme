@@ -207,6 +207,21 @@ def _contract_summary(payload: dict[str, Any]) -> dict[str, Any]:
     return validate_mainline_report_contract(payload)
 
 
+def _data_quality_summary(payload: dict[str, Any]) -> dict[str, Any]:
+    summary = payload.get("data_quality_summary")
+    if isinstance(summary, dict) and summary:
+        return summary
+    return {
+        "scoring_version": "live_report_data_guard_v2",
+        "status": "missing",
+        "required_failure_count": 0,
+        "optional_failure_count": 0,
+        "empty_optional_stage_count": 0,
+        "missing_column_stage_count": 0,
+        "stage_statuses": [],
+    }
+
+
 def _legacy_theme_rows(payload: dict[str, Any]) -> list[dict[str, Any]]:
     rows = payload.get("legacy_theme_ranking") or []
     if rows:
@@ -231,6 +246,7 @@ def _with_canonical_fields(payload: dict[str, Any]) -> dict[str, Any]:
         result.setdefault("canonical_mainline_summary", build_canonical_mainline_summary(theme_summary))
     if result.get("theme_ranking"):
         result.setdefault("legacy_theme_ranking", build_legacy_theme_ranking(result.get("theme_ranking") or []))
+    result.setdefault("data_quality_summary", _data_quality_summary(result))
     result.setdefault("contract_validation_summary", _contract_summary(result))
     return result
 
@@ -248,6 +264,7 @@ def _report_summary(path: Path) -> dict[str, Any]:
     event_theme_allocation_summary = payload.get("event_theme_allocation_summary") or {}
     mainline_lifecycle_summary = payload.get("mainline_lifecycle_summary") or {}
     canonical_mainline_summary = _canonical_summary(payload)
+    data_quality_summary = _data_quality_summary(payload)
     contract_validation_summary = _contract_summary(payload)
     return {
         "report_id": _report_id(path),
@@ -262,6 +279,9 @@ def _report_summary(path: Path) -> dict[str, Any]:
         "top_mainline_lifecycle_state": top_mainline.get("lifecycle_state", ""),
         "default_score_field": DEFAULT_SCORE_FIELD if mainline_rows else "legacy_evidence_score",
         "canonical_mainline_version": canonical_mainline_summary.get("scoring_version", "") if mainline_rows else "",
+        "data_quality_status": data_quality_summary.get("status", ""),
+        "data_quality_required_failure_count": data_quality_summary.get("required_failure_count", 0),
+        "data_quality_optional_failure_count": data_quality_summary.get("optional_failure_count", 0),
         "contract_validation_status": contract_validation_summary.get("status", ""),
         "contract_validation_error_count": contract_validation_summary.get("error_count", 0),
         "contract_validation_warning_count": contract_validation_summary.get("warning_count", 0),
@@ -269,6 +289,7 @@ def _report_summary(path: Path) -> dict[str, Any]:
         "legacy_top_score": legacy_top.get("evidence_score"),
         "has_markdown": md_path.exists(),
         "canonical_mainline_summary": canonical_mainline_summary,
+        "data_quality_summary": data_quality_summary,
         "contract_validation_summary": contract_validation_summary,
         "event_cluster_summary": {
             "raw_policy_count": event_cluster_summary.get("raw_policy_count", 0),
@@ -443,6 +464,7 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
     legacy_theme_ranking = enrich_theme_ranking(_legacy_theme_rows(payload))
     legacy_top = legacy_theme_ranking[0] if legacy_theme_ranking else {}
     theme_summary = payload.get("theme_summary") or {}
+    data_quality_summary = _data_quality_summary(payload)
     contract_validation_summary = _contract_summary(payload)
     top_mainline = mainline_ranking[0] if mainline_ranking else {}
     breadth = payload.get("breadth") or {}
@@ -463,6 +485,9 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
             "top_mainline_lifecycle_state": top_mainline.get("lifecycle_state", ""),
             "default_score_field": canonical_mainline_summary.get("default_score_field", DEFAULT_SCORE_FIELD),
             "canonical_mainline_version": canonical_mainline_summary.get("scoring_version", ""),
+            "data_quality_status": data_quality_summary.get("status", ""),
+            "data_quality_required_failure_count": data_quality_summary.get("required_failure_count", 0),
+            "data_quality_optional_failure_count": data_quality_summary.get("optional_failure_count", 0),
             "contract_validation_status": contract_validation_summary.get("status", ""),
             "contract_validation_error_count": contract_validation_summary.get("error_count", 0),
             "contract_validation_warning_count": contract_validation_summary.get("warning_count", 0),
@@ -476,6 +501,7 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
         },
         "mainline_ranking": mainline_ranking,
         "canonical_mainline_summary": canonical_mainline_summary,
+        "data_quality_summary": data_quality_summary,
         "contract_validation_summary": contract_validation_summary,
         "theme_ranking": legacy_theme_ranking,
         "legacy_theme_ranking": legacy_theme_ranking,
@@ -500,6 +526,7 @@ def latest_page(request: Request) -> HTMLResponse:
     page_report = dict(payload)
     page_report["mainline_ranking"] = _mainline_rows(payload)
     page_report["canonical_mainline_summary"] = _canonical_summary(payload)
+    page_report["data_quality_summary"] = _data_quality_summary(payload)
     page_report["contract_validation_summary"] = _contract_summary(payload)
     page_report["legacy_theme_ranking"] = enrich_theme_ranking(_legacy_theme_rows(payload))
     page_report["theme_ranking"] = page_report["legacy_theme_ranking"]
@@ -542,6 +569,9 @@ def health() -> dict[str, Any]:
         "read_only": True,
         "report_count": len(reports),
         "latest_report_id": latest.get("report_id"),
+        "latest_data_quality_status": latest.get("data_quality_status"),
+        "latest_data_quality_required_failure_count": latest.get("data_quality_required_failure_count"),
+        "latest_data_quality_optional_failure_count": latest.get("data_quality_optional_failure_count"),
         "latest_contract_status": latest.get("contract_validation_status"),
         "latest_contract_error_count": latest.get("contract_validation_error_count"),
         "latest_contract_warning_count": latest.get("contract_validation_warning_count"),

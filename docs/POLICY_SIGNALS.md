@@ -173,9 +173,12 @@ The report writes:
 - `theme_summary.mainline_lifecycle_version = mainline_lifecycle_v2`
 - `canonical_mainline_summary.scoring_version = canonical_mainline_output_v2`
 - `canonical_mainline_summary.default_score_field = mainline_score_v6`
+- `data_quality_summary.scoring_version = live_report_data_guard_v2`
 - `contract_validation_summary.scoring_version = mainline_contract_validator_v2`
 
 `mainline_contract_validator_v2` is deterministic. It reads `config/mainline_contract_rules.json` and validates required sections, version fields, canonical ordering, score monotonicity, score formulas, event allocation budgets, lifecycle state counts, summary counts, and legacy default-score leakage. New report generation attaches `contract_validation_summary`; any error blocks JSON and Markdown writes, while warnings are preserved in the report and Markdown.
+
+`live_report_data_guard_v2` is deterministic. It reads `config/data_quality_rules.json` and only guards the live report generation pipeline against empty optional tables, missing columns, or optional-source exceptions. It does not add scoring factors, change `mainline_score_v6`, change `mainline_ranking`, or use market data availability as a theme score input. Required stages such as policy store, policy theme summary, canonical mainline, and contract validation still block writes if they fail.
 
 ## Policy Theme Stance V2
 
@@ -466,6 +469,8 @@ canonical_mainline_summary.scoring_version = canonical_mainline_output_v2
 canonical_mainline_summary.default_score_field = mainline_score_v6
 mainline_ranking = canonical default ranking by mainline_score_v6
 legacy_theme_ranking = market-context comparison ranking
+data_quality_summary.scoring_version = live_report_data_guard_v2
+data_quality_summary.status = pass | degraded | fail
 contract_validation_summary.scoring_version = mainline_contract_validator_v2
 contract_validation_summary.status = pass | fail
 ```
@@ -504,6 +509,38 @@ warning examples:
   zero-score inactive theme without top event contributors
   lifecycle state present with empty lifecycle_reasons
 ```
+
+Live report data guard V2:
+
+```text
+required stages:
+  policy_store
+  policy_theme_summary
+  canonical_mainline
+  contract_validation
+
+optional stages:
+  breadth
+  broad_indexes
+  sw_score
+  ths_score
+  etf_score
+  limit_up
+  moneyflow
+  baostock_check
+
+optional failure behavior:
+  empty table -> empty schema fallback
+  missing column -> default column fill or empty schema fallback
+  exception -> fallback value and degraded stage status
+
+required failure behavior:
+  raise RuntimeError
+  do not write JSON
+  do not write Markdown
+```
+
+`data_quality_summary` is written into JSON, Markdown, `/api/latest`, `/api/index`, and `/api/health`. A degraded optional market-context stage affects legacy market-context display only; canonical `mainline_score_v6` remains produced from the policy-theme scoring chain.
 
 API score-series contract:
 

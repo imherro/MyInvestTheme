@@ -21,6 +21,15 @@ from canonical_mainline import (
     build_legacy_theme_ranking,
     build_mainline_ranking,
 )
+from data_quality_guard import (
+    assert_required_data_quality,
+    build_data_quality_summary,
+    build_stage_status,
+    clean_records_safe,
+    empty_dataframe_with_columns,
+    load_data_quality_rules,
+    run_optional_stage,
+)
 from mainline_contract_validator import validate_mainline_report_contract
 from policy_signals import load_policy_store, policy_event_summary, policy_theme_summary, score_policy_by_theme
 
@@ -29,6 +38,13 @@ ROOT = Path(__file__).resolve().parents[1]
 REPORT_DIR = ROOT / "research" / "mainline"
 TZ = ZoneInfo("Asia/Shanghai")
 POLICY_WEIGHT = 0.15
+DATA_QUALITY_RULES = load_data_quality_rules()
+DATA_QUALITY_SCHEMAS = DATA_QUALITY_RULES.get("schemas", {})
+DATA_QUALITY_DEFAULTS = DATA_QUALITY_RULES.get("defaults", {})
+
+SW_TOP_FIELDS = ["ts_code", "name", "r1", "r5", "r20", "amount_ratio", "pe", "pb", "r1_rank", "r5_rank", "r20_rank", "amount_ratio_rank", "score"]
+THS_TOP_FIELDS = ["ts_code", "name", "type", "r1", "r5", "r20", "turnover_rate", "r1_rank", "r5_rank", "r20_rank", "turnover_rate_rank", "score"]
+ETF_TOP_FIELDS = ["ts_code", "name", "r1", "r5", "r20", "amount", "r1_rank", "r5_rank", "r20_rank", "amount_rank", "score"]
 
 
 BROAD_INDEXES = [
@@ -40,6 +56,32 @@ BROAD_INDEXES = [
     ("399006.SZ", "创业板指"),
     ("399001.SZ", "深证成指"),
 ]
+
+
+def default_breadth() -> dict[str, Any]:
+    return {
+        "rows": 0,
+        "up_ratio": 0.0,
+        "median_pct_chg": 0.0,
+        "gt_5_count": 0,
+        "lt_minus_5_count": 0,
+        "r5_positive_ratio": 0.0,
+        "r20_positive_ratio": 0.0,
+        "median_r5": 0.0,
+        "median_r20": 0.0,
+    }
+
+
+def empty_stage_frame(stage: str) -> pd.DataFrame:
+    return empty_dataframe_with_columns(DATA_QUALITY_SCHEMAS.get(stage, []))
+
+
+def empty_limit_up_result() -> tuple[pd.DataFrame, list[dict[str, Any]]]:
+    return empty_stage_frame("limit_up"), []
+
+
+def empty_moneyflow_result() -> tuple[pd.DataFrame, list[dict[str, Any]]]:
+    return empty_stage_frame("moneyflow"), []
 
 
 @dataclass(frozen=True)
@@ -185,6 +227,12 @@ def join_names(items: list[dict[str, Any]], limit: int = 5) -> str:
 def contains_any(text: Any, keywords: tuple[str, ...]) -> bool:
     value = "" if pd.isna(text) else str(text)
     return any(keyword in value for keyword in keywords)
+
+
+def contains_any_mask(series: pd.Series, keywords: tuple[str, ...]) -> pd.Series:
+    if series.empty:
+        return pd.Series([], index=series.index, dtype=bool)
+    return series.apply(lambda value: contains_any(value, keywords)).astype(bool)
 
 
 def get_trade_dates(pro: Any, today: str) -> list[str]:
@@ -450,21 +498,39 @@ def theme_rows(
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     policy_by_theme = policy_by_theme or {}
+    sw = empty_stage_frame("sw_score") if sw is None else sw
+    ths = empty_stage_frame("ths_score") if ths is None else ths
+    etf = empty_stage_frame("etf_score") if etf is None else etf
+    limit_up = empty_stage_frame("limit_up") if limit_up is None else limit_up
+    moneyflow = empty_stage_frame("moneyflow") if moneyflow is None else moneyflow
+    sw = sw.copy()
+    ths = ths.copy()
+    etf = etf.copy()
+    limit_up = limit_up.copy()
+    moneyflow = moneyflow.copy()
+    for frame, stage in (
+        (sw, "sw_score"),
+        (ths, "ths_score"),
+        (etf, "etf_score"),
+        (limit_up, "limit_up"),
+        (moneyflow, "moneyflow"),
+    ):
+        for column in DATA_QUALITY_SCHEMAS.get(stage, []):
+            if column not in frame.columns:
+                frame[column] = DATA_QUALITY_DEFAULTS.get(column)
     for spec in THEMES:
         sw_match = sw[sw["name"].isin(spec.sw_names)].copy()
-        ths_match = ths[ths["name"].apply(lambda x: contains_any(x, spec.ths_keywords))].copy()
-        etf_match = etf[etf["name"].apply(lambda x: contains_any(x, spec.etf_keywords))].copy()
+        ths_match = ths[contains_any_mask(ths["name"], spec.ths_keywords)].copy()
+        etf_match = etf[contains_any_mask(etf["name"], spec.etf_keywords)].copy()
 
         limit_count = 0
         if not limit_up.empty:
-            mask = limit_up["industry"].apply(lambda x: contains_any(x, spec.limit_keywords)) | limit_up["name"].apply(
-                lambda x: contains_any(x, spec.limit_keywords)
-            )
+            mask = contains_any_mask(limit_up["industry"], spec.limit_keywords) | contains_any_mask(limit_up["name"], spec.limit_keywords)
             limit_count = int(mask.sum())
 
         large_net = 0.0
         if not moneyflow.empty and "industry" in moneyflow.columns:
-            flow_mask = moneyflow["industry"].apply(lambda x: contains_any(x, spec.flow_keywords))
+            flow_mask = contains_any_mask(moneyflow["industry"], spec.flow_keywords)
             large_net = float(moneyflow.loc[flow_mask, "large_net"].sum())
 
         top_ths = ths_match.sort_values("score", ascending=False).head(8)
@@ -669,7 +735,27 @@ def matched_stance_keywords(evidence: list[dict[str, Any]], limit: int = 8) -> s
     return " / ".join(keywords) if keywords else "无"
 
 
+def _replace_data_quality_stage(payload: dict[str, Any], stage_status: dict[str, Any]) -> None:
+    summary = payload.get("data_quality_summary") or {}
+    statuses = [item for item in summary.get("stage_statuses", []) if item.get("stage") != stage_status.get("stage")]
+    statuses.append(stage_status)
+    payload["data_quality_summary"] = build_data_quality_summary(statuses)
+
+
 def attach_contract_validation(payload: dict[str, Any]) -> dict[str, Any]:
+    summary = validate_mainline_report_contract(payload)
+    if summary["error_count"]:
+        _replace_data_quality_stage(
+            payload,
+            build_stage_status("contract_validation", "fail", True, 0, [], f"{summary['error_count']} contract errors"),
+        )
+        payload["contract_validation_summary"] = summary
+        codes = ", ".join(issue["code"] for issue in summary["issues"] if issue["severity"] == "error")
+        raise RuntimeError(f"Mainline report contract failed before write: {codes}")
+    _replace_data_quality_stage(
+        payload,
+        build_stage_status("contract_validation", "pass", True, 1, [], None),
+    )
     summary = validate_mainline_report_contract(payload)
     payload["contract_validation_summary"] = summary
     if summary["error_count"]:
@@ -687,6 +773,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
     event_theme_allocation_summary = payload.get("event_theme_allocation_summary") or {}
     mainline_lifecycle_summary = payload.get("mainline_lifecycle_summary") or {}
     canonical_summary = payload.get("canonical_mainline_summary") or {}
+    data_quality_summary = payload.get("data_quality_summary") or {}
     contract_summary = payload.get("contract_validation_summary") or {}
     mainline_ranking = payload.get("mainline_ranking") or []
     legacy_theme_ranking = payload.get("legacy_theme_ranking") or payload.get("theme_ranking") or []
@@ -711,6 +798,29 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "- mainline_score_v6 = theme_score_v5 × lifecycle_quality_multiplier。",
         "- theme_score_v5 已包含政策强度、主题相关度、事件去重、政策方向性、事件-主题贡献分配。",
         "- 旧 evidence_score / market_score 仅作为兼容或市场背景观察，不参与默认主线排序。",
+        "",
+        "## 数据质量摘要",
+        "",
+        f"- 数据质量版本：{data_quality_summary.get('scoring_version', 'live_report_data_guard_v2')}",
+        f"- 状态：{data_quality_summary.get('status', 'not_run')}",
+        f"- 必需阶段失败数：{data_quality_summary.get('required_failure_count', 0)}",
+        f"- 可选阶段失败数：{data_quality_summary.get('optional_failure_count', 0)}",
+        f"- 空可选阶段数：{data_quality_summary.get('empty_optional_stage_count', 0)}",
+        f"- 缺列阶段数：{data_quality_summary.get('missing_column_stage_count', 0)}",
+        "",
+        "阶段明细：",
+    ]
+    for status in data_quality_summary.get("stage_statuses", []):
+        missing_columns = ",".join(status.get("missing_columns") or []) or "无"
+        lines.append(
+            f"- {status.get('stage', '')}：{status.get('status', '')}，row_count={status.get('row_count', 0)}，fallback_used={str(status.get('fallback_used', False)).lower()}，missing_columns={missing_columns}"
+        )
+    if data_quality_summary.get("status") == "degraded":
+        lines += [
+            "",
+            "本报告 canonical mainline_score_v6 不受可选市场背景数据缺失影响；受影响的是旧市场证据观察区。",
+        ]
+    lines += [
         "",
         "## 报告合约校验",
         "",
@@ -1021,25 +1131,74 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
     d5 = open_days[idx - 5]
     d20 = open_days[idx - 20]
     basis_date = f"{basis_raw[:4]}-{basis_raw[4:6]}-{basis_raw[6:]}"
+    stage_statuses: list[dict[str, Any]] = []
     policy_store = load_policy_store()
+    stage_statuses.append(build_stage_status("policy_store", "pass", True, len(policy_store.get("signals", []))))
     event_cluster_summary = policy_event_summary(basis_date, [spec.name for spec in THEMES])
     theme_summary = policy_theme_summary(basis_date, [spec.name for spec in THEMES])
+    stage_statuses.append(build_stage_status("policy_theme_summary", "pass", True, len(theme_summary.get("themes", []))))
     stance_summary = theme_summary.get("policy_stance_summary", {})
     event_theme_allocation_summary = theme_summary.get("event_theme_allocation_summary", {})
     mainline_lifecycle_summary = theme_summary.get("mainline_lifecycle_summary", {})
     policy_by_theme = score_policy_by_theme(basis_date, [spec.name for spec in THEMES])
 
-    breadth = stock_breadth(pro, basis_raw, d5, d20)
-    broad = broad_index_data(pro, basis_raw, d5, d20)
-    sw = score_sw(pro, window_dates)
-    ths = score_ths(pro, window_dates)
-    etf = score_etf(pro, window_dates)
-    limit_up, limit_top = limit_up_data(pro, basis_raw)
-    moneyflow, moneyflow_top = moneyflow_data(pro, basis_raw)
+    breadth, breadth_status = run_optional_stage("breadth", lambda: stock_breadth(pro, basis_raw, d5, d20), default_breadth())
+    broad, broad_status = run_optional_stage("broad_indexes", lambda: broad_index_data(pro, basis_raw, d5, d20), [])
+    sw, sw_status = run_optional_stage(
+        "sw_score",
+        lambda: score_sw(pro, window_dates),
+        empty_stage_frame("sw_score"),
+        required_columns=DATA_QUALITY_SCHEMAS.get("sw_score", []),
+        defaults=DATA_QUALITY_DEFAULTS,
+    )
+    ths, ths_status = run_optional_stage(
+        "ths_score",
+        lambda: score_ths(pro, window_dates),
+        empty_stage_frame("ths_score"),
+        required_columns=DATA_QUALITY_SCHEMAS.get("ths_score", []),
+        defaults=DATA_QUALITY_DEFAULTS,
+    )
+    etf, etf_status = run_optional_stage(
+        "etf_score",
+        lambda: score_etf(pro, window_dates),
+        empty_stage_frame("etf_score"),
+        required_columns=DATA_QUALITY_SCHEMAS.get("etf_score", []),
+        defaults=DATA_QUALITY_DEFAULTS,
+    )
+    (limit_up, limit_top), limit_status = run_optional_stage(
+        "limit_up",
+        lambda: limit_up_data(pro, basis_raw),
+        empty_limit_up_result(),
+        required_columns=DATA_QUALITY_SCHEMAS.get("limit_up", []),
+        defaults=DATA_QUALITY_DEFAULTS,
+    )
+    (moneyflow, moneyflow_top), moneyflow_status = run_optional_stage(
+        "moneyflow",
+        lambda: moneyflow_data(pro, basis_raw),
+        empty_moneyflow_result(),
+        required_columns=DATA_QUALITY_SCHEMAS.get("moneyflow", []),
+        defaults=DATA_QUALITY_DEFAULTS,
+    )
+    baostock_check_result, baostock_status = run_optional_stage("baostock_check", lambda: baostock_check(basis_raw), [])
+    stage_statuses.extend(
+        [
+            breadth_status,
+            broad_status,
+            sw_status,
+            ths_status,
+            etf_status,
+            limit_status,
+            moneyflow_status,
+            baostock_status,
+        ]
+    )
     ranking = theme_rows(sw, ths, etf, limit_up, moneyflow, policy_by_theme)
     mainline_ranking = build_mainline_ranking(theme_summary)
     canonical_mainline_summary = build_canonical_mainline_summary(theme_summary)
+    stage_statuses.append(build_stage_status("canonical_mainline", "pass", True, len(mainline_ranking)))
     legacy_theme_ranking = build_legacy_theme_ranking(ranking)
+    data_quality_summary = build_data_quality_summary(stage_statuses)
+    assert_required_data_quality(data_quality_summary)
 
     now = datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S CST")
     report_id = f"mainline_review_{datetime.now(TZ).strftime('%Y-%m-%d_%H%M%S')}"
@@ -1070,29 +1229,33 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
         "policy_stance_summary": stance_summary,
         "event_theme_allocation_summary": event_theme_allocation_summary,
         "mainline_lifecycle_summary": mainline_lifecycle_summary,
+        "data_quality_summary": data_quality_summary,
         "canonical_mainline_summary": canonical_mainline_summary,
         "mainline_ranking": mainline_ranking,
         "theme_summary": theme_summary,
         "theme_ranking": ranking,
         "legacy_theme_ranking": legacy_theme_ranking,
-        "sw_top": clean_records(
+        "sw_top": clean_records_safe(
             sw,
             20,
-            ["ts_code", "name", "r1", "r5", "r20", "amount_ratio", "pe", "pb", "r1_rank", "r5_rank", "r20_rank", "amount_ratio_rank", "score"],
+            SW_TOP_FIELDS,
+            DATA_QUALITY_DEFAULTS,
         ),
-        "ths_top": clean_records(
+        "ths_top": clean_records_safe(
             ths,
             30,
-            ["ts_code", "name", "type", "r1", "r5", "r20", "turnover_rate", "r1_rank", "r5_rank", "r20_rank", "turnover_rate_rank", "score"],
+            THS_TOP_FIELDS,
+            DATA_QUALITY_DEFAULTS,
         ),
-        "etf_top": clean_records(
+        "etf_top": clean_records_safe(
             etf,
             30,
-            ["ts_code", "name", "r1", "r5", "r20", "amount", "r1_rank", "r5_rank", "r20_rank", "amount_rank", "score"],
+            ETF_TOP_FIELDS,
+            DATA_QUALITY_DEFAULTS,
         ),
         "limit_up_top": limit_top,
         "moneyflow_top": moneyflow_top,
-        "baostock_check": baostock_check(basis_raw),
+        "baostock_check": baostock_check_result,
         "source_links": {
             "tushare_permissions": "https://tushare.pro/document/1?doc_id=108",
             "ndrc_intelligent_economy": "https://www.ndrc.gov.cn/",

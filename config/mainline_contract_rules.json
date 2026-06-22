@@ -3,6 +3,8 @@
   "round_digits": 4,
   "tolerance": 0.0001,
   "default_score_field": "mainline_score_v6",
+  "data_quality_scoring_version": "live_report_data_guard_v2",
+  "data_quality_status_values": ["pass", "degraded", "fail"],
   "required_sections": [
     "policy_summary",
     "event_cluster_summary",

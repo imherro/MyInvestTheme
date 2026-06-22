@@ -737,6 +737,69 @@ def validate_no_legacy_default_leak(report: dict[str, Any], rules: dict[str, Any
                 )
 
 
+def validate_data_quality_contract(report: dict[str, Any], rules: dict[str, Any], issues: list[dict[str, Any]]) -> None:
+    summary = report.get("data_quality_summary")
+    if not isinstance(summary, dict) or not summary:
+        add_issue(
+            issues,
+            "warning",
+            "DATA_QUALITY_SUMMARY_MISSING",
+            "data_quality_summary",
+            "Older report has no data_quality_summary.",
+            expected="present for new reports",
+            actual="missing",
+        )
+        return
+
+    expected_version = rules.get("data_quality_scoring_version", "live_report_data_guard_v2")
+    if summary.get("scoring_version") != expected_version:
+        add_issue(
+            issues,
+            "error",
+            "DATA_QUALITY_VERSION_MISMATCH",
+            "data_quality_summary.scoring_version",
+            "data_quality_summary scoring version mismatch.",
+            expected=expected_version,
+            actual=summary.get("scoring_version"),
+        )
+
+    allowed_statuses = set(rules.get("data_quality_status_values") or ["pass", "degraded", "fail"])
+    if summary.get("status") not in allowed_statuses:
+        add_issue(
+            issues,
+            "error",
+            "DATA_QUALITY_STATUS_INVALID",
+            "data_quality_summary.status",
+            "data_quality_summary status is invalid.",
+            expected=sorted(allowed_statuses),
+            actual=summary.get("status"),
+        )
+
+    required_failure_count = _int(summary.get("required_failure_count"))
+    if required_failure_count > 0:
+        add_issue(
+            issues,
+            "error",
+            "DATA_QUALITY_REQUIRED_FAILURE",
+            "data_quality_summary.required_failure_count",
+            "Required data quality stage failed.",
+            expected=0,
+            actual=required_failure_count,
+        )
+
+    optional_failure_count = _int(summary.get("optional_failure_count"))
+    if optional_failure_count > 0:
+        add_issue(
+            issues,
+            "warning",
+            "DATA_QUALITY_OPTIONAL_DEGRADED",
+            "data_quality_summary.optional_failure_count",
+            "Optional market-context data stage degraded; canonical mainline score is not adjusted.",
+            expected=0,
+            actual=optional_failure_count,
+        )
+
+
 def validate_mainline_report_contract(
     report: dict[str, Any],
     rules: dict[str, Any] | None = None,
@@ -756,6 +819,7 @@ def validate_mainline_report_contract(
         "lifecycle_contract": True,
         "counts_contract": True,
         "legacy_default_leak": True,
+        "data_quality_contract": True,
     }
     validate_required_sections(report, active_rules, issues, require_self_section=require_self_section)
     validate_version_contract(report, active_rules, issues)
@@ -766,6 +830,7 @@ def validate_mainline_report_contract(
     validate_lifecycle_contract(report, active_rules, issues)
     validate_counts_contract(report, active_rules, issues)
     validate_no_legacy_default_leak(report, active_rules, issues)
+    validate_data_quality_contract(report, active_rules, issues)
 
     error_count, warning_count = _issue_counts(issues)
     return {

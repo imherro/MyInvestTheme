@@ -34,6 +34,7 @@ Policy scoring:
 - Policy event clustering uses deterministic `policy_event_clustering_v2`; policy direction uses deterministic `policy_theme_stance_v2` from `config/policy_stance_rules.json`.
 - Event-theme allocation uses deterministic `event_theme_allocation_v2` from `config/theme_allocation_rules.json` so one policy event has a finite contribution budget across matched themes.
 - Mainline lifecycle uses deterministic `mainline_lifecycle_v2` from `config/mainline_lifecycle_rules.json` to classify themes as accelerating, sustained, emerging, single-event emerging, cooling, legacy tail, unknown, or dormant.
+- Live report data guard uses deterministic `live_report_data_guard_v2` from `config/data_quality_rules.json` to keep optional market-context stages from crashing report generation when they return empty tables or missing columns.
 - Report contract validation uses deterministic `mainline_contract_validator_v2` from `config/mainline_contract_rules.json` to check report sections, version fields, canonical ranking, score formulas, event allocation budgets, lifecycle counts, and legacy default-score leakage before a new report is written.
 - `theme_score_v2_raw` is the undeduplicated policy-theme comparison score, `theme_score_v3_dedup` is the deduplicated score before direction adjustment, `theme_score_v4_stance_adjusted` is the direction-adjusted score before allocation, `theme_score_v5` is the event-theme allocated score, and `mainline_score_v6` is the default lifecycle-adjusted policy-theme score.
 - Default canonical mainline score is `mainline_score_v6`.
@@ -73,6 +74,7 @@ The homepage endpoint returns the main content used by `/`:
 `mainline_ranking` is the canonical default mainline list. `theme_ranking` and `legacy_theme_ranking` are compatibility market-context lists and are not the default mainline ranking.
 In `score_series`, `score` and `default_score` both use `mainline_score_v6`; old market-context values are exposed only as `legacy_*` fields.
 `/api/index`, `/api/latest`, and `/api/health` expose the latest `contract_validation_summary` or status fields. Contract errors block new JSON/Markdown writes; warnings are retained for audit.
+`data_quality_summary` is also exposed by `/api/latest`, `/api/index`, and `/api/health`. Required data stages block writes if they fail; optional market-context stages can degrade with schema fallback and do not change `mainline_score_v6`.
 
 The latest report endpoint returns the newest research report artifact:
 

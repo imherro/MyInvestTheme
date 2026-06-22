@@ -1,0 +1,96 @@
+{
+  "version": "live_report_data_guard_v2",
+  "status_values": ["pass", "degraded", "fail"],
+  "required_stages": [
+    "policy_store",
+    "policy_theme_summary",
+    "canonical_mainline",
+    "contract_validation"
+  ],
+  "optional_stages": [
+    "breadth",
+    "broad_indexes",
+    "sw_score",
+    "ths_score",
+    "etf_score",
+    "limit_up",
+    "moneyflow",
+    "baostock_check"
+  ],
+  "schemas": {
+    "sw_score": [
+      "ts_code",
+      "name",
+      "r1",
+      "r5",
+      "r20",
+      "amount_ratio",
+      "pe",
+      "pb",
+      "r1_rank",
+      "r5_rank",
+      "r20_rank",
+      "amount_ratio_rank",
+      "score"
+    ],
+    "ths_score": [
+      "ts_code",
+      "name",
+      "type",
+      "r1",
+      "r5",
+      "r20",
+      "turnover_rate",
+      "r1_rank",
+      "r5_rank",
+      "r20_rank",
+      "turnover_rate_rank",
+      "score"
+    ],
+    "etf_score": [
+      "ts_code",
+      "name",
+      "r1",
+      "r5",
+      "r20",
+      "amount",
+      "r1_rank",
+      "r5_rank",
+      "r20_rank",
+      "amount_rank",
+      "score"
+    ],
+    "limit_up": [
+      "ts_code",
+      "name",
+      "industry",
+      "limit",
+      "turnover_ratio"
+    ],
+    "moneyflow": [
+      "ts_code",
+      "industry",
+      "large_net",
+      "net_mf_amount"
+    ]
+  },
+  "defaults": {
+    "name": "",
+    "type": "",
+    "ts_code": "",
+    "industry": "",
+    "limit": "",
+    "score": 0.0,
+    "r1": 0.0,
+    "r5": 0.0,
+    "r20": 0.0,
+    "amount": 0.0,
+    "amount_ratio": 0.0,
+    "turnover_rate": 0.0,
+    "turnover_ratio": 0.0,
+    "large_net": 0.0,
+    "net_mf_amount": 0.0,
+    "pe": null,
+    "pb": null
+  }
+}
