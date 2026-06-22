@@ -1,0 +1,43 @@
+{
+  "scoring_version": "mainline_contract_validator_v2",
+  "round_digits": 4,
+  "tolerance": 0.0001,
+  "default_score_field": "mainline_score_v6",
+  "required_sections": [
+    "policy_summary",
+    "event_cluster_summary",
+    "policy_stance_summary",
+    "event_theme_allocation_summary",
+    "mainline_lifecycle_summary",
+    "theme_summary",
+    "canonical_mainline_summary",
+    "mainline_ranking",
+    "legacy_theme_ranking",
+    "contract_validation_summary"
+  ],
+  "version_contract": {
+    "policy_summary.scoring_version": "policy_score_v2",
+    "event_cluster_summary.scoring_version": "policy_event_clustering_v2",
+    "policy_stance_summary.scoring_version": "policy_theme_stance_v2",
+    "event_theme_allocation_summary.scoring_version": "event_theme_allocation_v2",
+    "mainline_lifecycle_summary.scoring_version": "mainline_lifecycle_v2",
+    "theme_summary.scoring_version": "mainline_score_v6_lifecycle_adjusted",
+    "theme_summary.base_relevance_version": "theme_relevance_v2",
+    "theme_summary.event_clustering_version": "policy_event_clustering_v2",
+    "theme_summary.policy_stance_version": "policy_theme_stance_v2",
+    "theme_summary.event_theme_allocation_version": "event_theme_allocation_v2",
+    "theme_summary.mainline_lifecycle_version": "mainline_lifecycle_v2",
+    "canonical_mainline_summary.scoring_version": "canonical_mainline_output_v2",
+    "canonical_mainline_summary.default_score_field": "mainline_score_v6"
+  },
+  "valid_lifecycle_states": [
+    "accelerating",
+    "sustained",
+    "emerging",
+    "single_event_emerging",
+    "cooling",
+    "legacy_tail",
+    "undated_unknown",
+    "dormant"
+  ]
+}

@@ -173,6 +173,9 @@ The report writes:
 - `theme_summary.mainline_lifecycle_version = mainline_lifecycle_v2`
 - `canonical_mainline_summary.scoring_version = canonical_mainline_output_v2`
 - `canonical_mainline_summary.default_score_field = mainline_score_v6`
+- `contract_validation_summary.scoring_version = mainline_contract_validator_v2`
+
+`mainline_contract_validator_v2` is deterministic. It reads `config/mainline_contract_rules.json` and validates required sections, version fields, canonical ordering, score monotonicity, score formulas, event allocation budgets, lifecycle state counts, summary counts, and legacy default-score leakage. New report generation attaches `contract_validation_summary`; any error blocks JSON and Markdown writes, while warnings are preserved in the report and Markdown.
 
 ## Policy Theme Stance V2
 
@@ -463,9 +466,44 @@ canonical_mainline_summary.scoring_version = canonical_mainline_output_v2
 canonical_mainline_summary.default_score_field = mainline_score_v6
 mainline_ranking = canonical default ranking by mainline_score_v6
 legacy_theme_ranking = market-context comparison ranking
+contract_validation_summary.scoring_version = mainline_contract_validator_v2
+contract_validation_summary.status = pass | fail
 ```
 
 `legacy_evidence_score`, `evidence_score`, and `market_score` are market-context comparison fields only. They are not the canonical mainline ranking score and must not be used for the default one-line conclusion, homepage top mainline, or API default score.
+
+Report contract validator V2:
+
+```text
+required_sections:
+  policy_summary
+  event_cluster_summary
+  policy_stance_summary
+  event_theme_allocation_summary
+  mainline_lifecycle_summary
+  theme_summary
+  canonical_mainline_summary
+  mainline_ranking
+  legacy_theme_ranking
+  contract_validation_summary
+
+error examples:
+  missing required section
+  version mismatch
+  canonical top mismatch
+  mainline_ranking not sorted by mainline_score_v6
+  mainline_score_v6 > theme_score_v5
+  score formula mismatch
+  event allocation over budget
+  lifecycle state count mismatch
+  legacy evidence used as default score
+
+warning examples:
+  legacy_theme_ranking present
+  theme_ranking retained for legacy compatibility
+  zero-score inactive theme without top event contributors
+  lifecycle state present with empty lifecycle_reasons
+```
 
 API score-series contract:
 

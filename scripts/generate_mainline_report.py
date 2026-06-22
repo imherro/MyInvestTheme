@@ -21,6 +21,7 @@ from canonical_mainline import (
     build_legacy_theme_ranking,
     build_mainline_ranking,
 )
+from mainline_contract_validator import validate_mainline_report_contract
 from policy_signals import load_policy_store, policy_event_summary, policy_theme_summary, score_policy_by_theme
 
 
@@ -668,6 +669,15 @@ def matched_stance_keywords(evidence: list[dict[str, Any]], limit: int = 8) -> s
     return " / ".join(keywords) if keywords else "无"
 
 
+def attach_contract_validation(payload: dict[str, Any]) -> dict[str, Any]:
+    summary = validate_mainline_report_contract(payload)
+    payload["contract_validation_summary"] = summary
+    if summary["error_count"]:
+        codes = ", ".join(issue["code"] for issue in summary["issues"] if issue["severity"] == "error")
+        raise RuntimeError(f"Mainline report contract failed before write: {codes}")
+    return summary
+
+
 def render_markdown(payload: dict[str, Any]) -> str:
     basis = payload["basis_date"]
     policy_summary = payload.get("policy_summary") or {}
@@ -677,6 +687,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
     event_theme_allocation_summary = payload.get("event_theme_allocation_summary") or {}
     mainline_lifecycle_summary = payload.get("mainline_lifecycle_summary") or {}
     canonical_summary = payload.get("canonical_mainline_summary") or {}
+    contract_summary = payload.get("contract_validation_summary") or {}
     mainline_ranking = payload.get("mainline_ranking") or []
     legacy_theme_ranking = payload.get("legacy_theme_ranking") or payload.get("theme_ranking") or []
     lines = [
@@ -701,6 +712,15 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "- theme_score_v5 已包含政策强度、主题相关度、事件去重、政策方向性、事件-主题贡献分配。",
         "- 旧 evidence_score / market_score 仅作为兼容或市场背景观察，不参与默认主线排序。",
         "",
+        "## 报告合约校验",
+        "",
+        f"- 校验版本：{contract_summary.get('scoring_version', 'mainline_contract_validator_v2')}",
+        f"- 校验状态：{contract_summary.get('status', 'not_run')}",
+        f"- Error 数：{contract_summary.get('error_count', 0)}",
+        f"- Warning 数：{contract_summary.get('warning_count', 0)}",
+        f"- 校验时间：{contract_summary.get('checked_at', '')}",
+        f"- 已检查模块：{', '.join(key for key, value in (contract_summary.get('checked_sections') or {}).items() if value) or '无'}",
+        "",
         "## 主线分层",
         "",
         "| 主题 | mainline_score_v6 | 生命周期 | theme_score_v5 | 30日分数 | 90日分数 | 事件数 | 来源机构数 | 主要支撑事件 |",
@@ -711,6 +731,12 @@ def render_markdown(payload: dict[str, Any]) -> str:
         lines.append(
             f"| {item.get('theme_name', '')} | {item.get('mainline_score_v6', 0):.4f} | {item.get('lifecycle_state', '')} | {item.get('theme_score_v5', 0):.4f} | {item.get('score_30d', 0):.4f} | {item.get('score_90d', 0):.4f} | {item.get('matched_allocated_event_count', 0)} | {item.get('source_org_count_90d', 0)} | {top_events} |"
         )
+
+    contract_warnings = [issue for issue in contract_summary.get("issues", []) if issue.get("severity") == "warning"][:10]
+    if contract_warnings:
+        lines += ["", "### 合约校验Warning样本"]
+        for issue in contract_warnings:
+            lines.append(f"- {issue.get('code', '')}：{issue.get('path', '')}；{issue.get('message', '')}")
 
     lines += [
         "",
@@ -1077,6 +1103,7 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
     contract_errors = assert_canonical_mainline_contract(payload)
     if contract_errors:
         raise RuntimeError(f"Canonical mainline contract failed: {', '.join(contract_errors)}")
+    attach_contract_validation(payload)
     return report_id, payload, render_markdown(payload)
 
 

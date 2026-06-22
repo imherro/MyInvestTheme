@@ -34,11 +34,19 @@ Policy scoring:
 - Policy event clustering uses deterministic `policy_event_clustering_v2`; policy direction uses deterministic `policy_theme_stance_v2` from `config/policy_stance_rules.json`.
 - Event-theme allocation uses deterministic `event_theme_allocation_v2` from `config/theme_allocation_rules.json` so one policy event has a finite contribution budget across matched themes.
 - Mainline lifecycle uses deterministic `mainline_lifecycle_v2` from `config/mainline_lifecycle_rules.json` to classify themes as accelerating, sustained, emerging, single-event emerging, cooling, legacy tail, unknown, or dormant.
+- Report contract validation uses deterministic `mainline_contract_validator_v2` from `config/mainline_contract_rules.json` to check report sections, version fields, canonical ranking, score formulas, event allocation budgets, lifecycle counts, and legacy default-score leakage before a new report is written.
 - `theme_score_v2_raw` is the undeduplicated policy-theme comparison score, `theme_score_v3_dedup` is the deduplicated score before direction adjustment, `theme_score_v4_stance_adjusted` is the direction-adjusted score before allocation, `theme_score_v5` is the event-theme allocated score, and `mainline_score_v6` is the default lifecycle-adjusted policy-theme score.
 - Default canonical mainline score is `mainline_score_v6`.
 - `mainline_score_v6 = theme_score_v5 * lifecycle_quality_multiplier`.
 - `legacy_evidence_score` is a market-context comparison field and is not the canonical mainline ranking score.
 - See `docs/POLICY_SIGNALS.md` for the extraction schema and scoring rules.
+
+Validate report contract:
+
+```powershell
+python scripts/mainline_contract_validator.py --latest
+python scripts/mainline_contract_validator.py --path research/mainline/mainline_review_2026-06-22_155506.json
+```
 
 Open:
 
@@ -53,6 +61,7 @@ The homepage endpoint returns the main content used by `/`:
 
 - `latest_report`
 - `canonical_mainline_summary`
+- `contract_validation_summary`
 - `mainline_ranking`
 - `theme_ranking`
 - `legacy_theme_ranking`
@@ -63,6 +72,7 @@ The homepage endpoint returns the main content used by `/`:
 
 `mainline_ranking` is the canonical default mainline list. `theme_ranking` and `legacy_theme_ranking` are compatibility market-context lists and are not the default mainline ranking.
 In `score_series`, `score` and `default_score` both use `mainline_score_v6`; old market-context values are exposed only as `legacy_*` fields.
+`/api/index`, `/api/latest`, and `/api/health` expose the latest `contract_validation_summary` or status fields. Contract errors block new JSON/Markdown writes; warnings are retained for audit.
 
 The latest report endpoint returns the newest research report artifact:
 
