@@ -18,6 +18,14 @@ Generate latest research:
 python scripts/generate_mainline_report.py --write
 ```
 
+Daily after-close update:
+
+```powershell
+python scripts/daily_mainline_update.py
+```
+
+The daily updater is idempotent: if the latest complete Tushare trading date already has a report, it exits without creating a duplicate. The Codex recurring automation runs this command after market close.
+
 Open:
 
 - Latest research: http://127.0.0.1:8012/
