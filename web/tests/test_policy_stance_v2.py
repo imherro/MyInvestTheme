@@ -238,4 +238,4 @@ def test_api_latest_exposes_policy_stance_versions():
     result = response.json()["result"]
 
     assert result["policy_stance_summary"]["scoring_version"] == "policy_theme_stance_v2"
-    assert result["theme_summary"]["scoring_version"] == "theme_score_v4_stance_adjusted"
+    assert result["theme_summary"]["policy_stance_version"] == "policy_theme_stance_v2"

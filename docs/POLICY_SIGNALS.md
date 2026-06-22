@@ -10,7 +10,8 @@ The daily automation keeps policy research separate from market scoring.
 4. `scripts/theme_relevance.py` maps policy signals to mainline themes through deterministic `theme_relevance_v2` rules from `config/themes.json`.
 5. `scripts/policy_event_clustering.py` clusters duplicate policy signals into deterministic policy events.
 6. `scripts/policy_stance.py` identifies whether each policy supports, mildly supports, neutrally mixes, mildly restricts, or restricts each matched theme.
-7. `scripts/daily_mainline_update.py` commits the policy store together with any new report.
+7. `scripts/theme_allocation.py` allocates one event's finite contribution budget across matched themes through deterministic `event_theme_allocation_v2`.
+8. `scripts/daily_mainline_update.py` commits the policy store together with any new report.
 
 ## Official Sources
 
@@ -162,10 +163,11 @@ deduplication_effect =
 The report writes:
 
 - `event_cluster_summary.scoring_version = policy_event_clustering_v2`
-- `theme_summary.scoring_version = theme_score_v4_stance_adjusted`
+- `theme_summary.scoring_version = theme_score_v5_allocated`
 - `theme_summary.base_relevance_version = theme_relevance_v2`
 - `theme_summary.event_clustering_version = policy_event_clustering_v2`
 - `theme_summary.policy_stance_version = policy_theme_stance_v2`
+- `theme_summary.event_theme_allocation_version = event_theme_allocation_v2`
 
 ## Policy Theme Stance V2
 
@@ -243,13 +245,89 @@ stance_adjusted_cluster_contribution =
 theme_score_v3_dedup =
   sum(pre_stance_cluster_contribution for matched event clusters)
 
-theme_score_v4 =
+theme_score_v4_stance_adjusted =
   sum(stance_adjusted_cluster_contribution for matched event clusters)
 
 stance_adjustment_effect =
-  max(theme_score_v3_dedup - theme_score_v4, 0.0)
+  max(theme_score_v3_dedup - theme_score_v4_stance_adjusted, 0.0)
 ```
 
-`theme_score_v4` is the default policy-theme score used by new reports. `theme_score_v3_dedup` remains the deduplicated before-stance comparison field. `theme_score_v2_raw` remains the undeduplicated comparison field.
+`theme_score_v4_stance_adjusted` is the direction-adjusted comparison score before event-theme allocation. `theme_score_v3_dedup` remains the deduplicated before-stance comparison field. `theme_score_v2_raw` remains the undeduplicated comparison field.
 
 Policy direction is only a mainline research input. It does not generate trading, position, account, order, backtest or execution advice.
+
+## Event Theme Allocation V2
+
+Event-theme allocation is deterministic and does not use LLM scoring, embeddings, manual allocation scores, market prices, funds flow, trading data or external sentiment libraries. It only consumes the event contributors already produced by `theme_score_v4_stance_adjusted`.
+
+Configuration lives in `config/theme_allocation_rules.json`:
+
+- `version = event_theme_allocation_v2`
+- `allocation_method = proportional_budget_cap`
+- `event_budget_cap_ratio = 1.0`
+- `min_allocated_contribution_threshold = 0.0001`
+- `allocation_role_thresholds.co_primary_min_share = 0.30`
+- `allocation_role_thresholds.secondary_min_share = 0.15`
+
+For each event-theme pair:
+
+```text
+raw_stance_adjusted_cluster_contribution =
+  cluster_policy_score_v2 *
+  cluster_relevance_score_v2 *
+  direction_multiplier
+```
+
+For each event cluster:
+
+```text
+event_contribution_budget =
+  cluster_policy_score_v2 * event_budget_cap_ratio
+
+raw_contribution_sum_v4 =
+  sum(raw_stance_adjusted_cluster_contribution for same event)
+```
+
+If `raw_contribution_sum_v4 <= event_contribution_budget`, allocation does not reduce the event. If `raw_contribution_sum_v4 > event_contribution_budget`, the event is capped and each theme receives a proportional share:
+
+```text
+allocation_share =
+  raw_stance_adjusted_cluster_contribution / raw_contribution_sum_v4
+
+allocated_cluster_contribution =
+  event_contribution_budget * allocation_share
+```
+
+Zero raw contribution is handled without division by zero:
+
+```text
+allocation_share = 0.0
+allocated_cluster_contribution = 0.0
+allocation_capped = False
+```
+
+Allocation roles are assigned within each event after sorting by allocated contribution, allocation share, relevance and theme id:
+
+```text
+rank 1                    -> primary
+allocation_share >= 0.30  -> co_primary
+allocation_share >= 0.15  -> secondary
+otherwise                 -> peripheral
+```
+
+Theme score after allocation:
+
+```text
+theme_score_v5 =
+  sum(allocated_cluster_contribution)
+
+theme_score_v4_stance_adjusted =
+  sum(raw_stance_adjusted_cluster_contribution)
+
+allocation_adjustment_effect =
+  max(theme_score_v4_stance_adjusted - theme_score_v5, 0.0)
+```
+
+`theme_score_v5` is the default policy-theme score used by new reports. `theme_score_v4_stance_adjusted`, `theme_score_v3_dedup`, and `theme_score_v2_raw` remain comparison fields.
+
+The allocation layer is only a mainline research input. It does not generate trading, position, account, order, backtest or execution advice.

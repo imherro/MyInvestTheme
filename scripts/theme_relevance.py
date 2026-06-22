@@ -8,6 +8,11 @@ from typing import Any
 from policy_scoring import policy_score_components
 from policy_event_clustering import compute_cluster_policy_score_v2
 from policy_stance import build_policy_stance_summary, compute_cluster_theme_stance, compute_policy_theme_stance_v2
+from theme_allocation import (
+    allocate_event_theme_contributions,
+    build_allocated_theme_summary,
+    build_event_theme_claim_rows,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -520,10 +525,11 @@ def build_deduped_theme_summary(
                 "avg_cluster_policy_score_v2": avg_cluster_policy,
                 "avg_cluster_stance_score_v2": avg_cluster_stance,
                 "top_event_contributors": event_contributors[:3],
+                "all_event_contributors": event_contributors,
             }
         )
 
-    return {
+    v4_summary = {
         "scoring_version": "theme_score_v4_stance_adjusted",
         "base_relevance_version": "theme_relevance_v2",
         "event_clustering_version": "policy_event_clustering_v2",
@@ -532,3 +538,5 @@ def build_deduped_theme_summary(
         "policy_stance_summary": build_policy_stance_summary(policy_theme_stance_rows, cluster_theme_stance_rows),
         "themes": sort_theme_summary_v4_rows(rows),
     }
+    allocation_summary = allocate_event_theme_contributions(build_event_theme_claim_rows(v4_summary))
+    return build_allocated_theme_summary(v4_summary, allocation_summary)

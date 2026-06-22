@@ -33,7 +33,8 @@ def test_latest_report_contract():
     assert body["result"]["theme_ranking"]
     assert body["result"].get("event_cluster_summary", {}).get("scoring_version") == "policy_event_clustering_v2"
     assert body["result"].get("policy_stance_summary", {}).get("scoring_version") == "policy_theme_stance_v2"
-    assert body["result"].get("theme_summary", {}).get("scoring_version") == "theme_score_v4_stance_adjusted"
+    assert body["result"].get("event_theme_allocation_summary", {}).get("scoring_version") == "event_theme_allocation_v2"
+    assert body["result"].get("theme_summary", {}).get("scoring_version") == "theme_score_v5_allocated"
 
 
 def test_index_api_returns_homepage_content():
@@ -46,12 +47,17 @@ def test_index_api_returns_homepage_content():
     assert body["theme_ranking"]
     assert body["event_cluster_summary"]["scoring_version"] == "policy_event_clustering_v2"
     assert body["policy_stance_summary"]["scoring_version"] == "policy_theme_stance_v2"
-    assert body["theme_summary"]["scoring_version"] == "theme_score_v4_stance_adjusted"
+    assert body["event_theme_allocation_summary"]["scoring_version"] == "event_theme_allocation_v2"
+    assert body["theme_summary"]["scoring_version"] == "theme_score_v5_allocated"
+    assert "theme_score_v5" in body["reports"][0]["top_themes"][0]
+    assert "theme_score_v4_stance_adjusted" in body["reports"][0]["top_themes"][0]
     assert "theme_score_v4" in body["reports"][0]["top_themes"][0]
     assert "theme_score_v3_dedup" in body["reports"][0]["top_themes"][0]
     assert "theme_score_v3" in body["reports"][0]["top_themes"][0]
     assert "theme_score_v2_raw" in body["reports"][0]["top_themes"][0]
+    assert "allocation_adjustment_effect" in body["reports"][0]["top_themes"][0]
     assert "matched_event_cluster_count" in body["reports"][0]["top_themes"][0]
+    assert "matched_allocated_event_count" in body["reports"][0]["top_themes"][0]
     assert "deduplication_effect" in body["reports"][0]["top_themes"][0]
     assert "stance_adjustment_effect" in body["reports"][0]["top_themes"][0]
     first_theme = body["theme_ranking"][0]
@@ -98,10 +104,13 @@ def test_reports_and_score_series():
     assert "theme_score" in first_point
     assert "etf_score" in first_point
     assert "policy_score" in first_point
+    assert "theme_score_v5" in first_point
+    assert "theme_score_v4_stance_adjusted" in first_point
     assert "theme_score_v4" in first_point
     assert "theme_score_v3_dedup" in first_point
     assert "theme_score_v3" in first_point
     assert "theme_score_v2_raw" in first_point
+    assert "allocation_adjustment_effect" in first_point
     assert "deduplication_effect" in first_point
     assert "stance_adjustment_effect" in first_point
     assert "resonance_score" in first_point

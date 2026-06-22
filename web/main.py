@@ -171,6 +171,7 @@ def _report_summary(path: Path) -> dict[str, Any]:
     event_cluster_summary = payload.get("event_cluster_summary") or {}
     theme_summary = payload.get("theme_summary") or {}
     policy_stance_summary = payload.get("policy_stance_summary") or {}
+    event_theme_allocation_summary = payload.get("event_theme_allocation_summary") or {}
     return {
         "report_id": _report_id(path),
         "generated_at": payload.get("generated_at", ""),
@@ -192,23 +193,36 @@ def _report_summary(path: Path) -> dict[str, Any]:
             "neutral_or_mixed_count": policy_stance_summary.get("neutral_or_mixed_count", 0),
             "restrictive_count": policy_stance_summary.get("restrictive_count", 0),
         },
+        "event_theme_allocation_summary": {
+            "scoring_version": event_theme_allocation_summary.get("scoring_version", ""),
+            "event_theme_claim_count": event_theme_allocation_summary.get("event_theme_claim_count", 0),
+            "multi_theme_event_count": event_theme_allocation_summary.get("multi_theme_event_count", 0),
+            "capped_event_count": event_theme_allocation_summary.get("capped_event_count", 0),
+            "allocation_reduction_effect": event_theme_allocation_summary.get("allocation_reduction_effect", 0.0),
+        },
         "theme_summary": {
             "scoring_version": theme_summary.get("scoring_version", ""),
             "policy_stance_version": theme_summary.get("policy_stance_version", ""),
+            "event_theme_allocation_version": theme_summary.get("event_theme_allocation_version", ""),
         },
         "top_themes": [
             {
                 "theme_id": item.get("theme_id", ""),
                 "theme_name": item.get("theme", ""),
                 "theme": item.get("theme", ""),
+                "theme_score_v5": item.get("theme_score_v5"),
+                "theme_score_v4_stance_adjusted": item.get("theme_score_v4_stance_adjusted"),
                 "theme_score_v4": item.get("theme_score_v4"),
                 "theme_score_v3_dedup": item.get("theme_score_v3_dedup"),
                 "theme_score_v3": item.get("theme_score_v3"),
                 "theme_score_v2_raw": item.get("theme_score_v2_raw"),
+                "allocation_adjustment_effect": item.get("allocation_adjustment_effect"),
                 "matched_event_cluster_count": item.get("matched_event_cluster_count"),
+                "matched_allocated_event_count": item.get("matched_allocated_event_count"),
                 "matched_policy_count_raw": item.get("matched_policy_count_raw"),
                 "deduplication_effect": item.get("deduplication_effect"),
                 "stance_adjustment_effect": item.get("stance_adjustment_effect"),
+                "primary_event_count": item.get("primary_event_count"),
                 "supportive_cluster_count": item.get("supportive_cluster_count"),
                 "restrictive_cluster_count": item.get("restrictive_cluster_count"),
             }
@@ -260,14 +274,20 @@ def build_score_series() -> dict[str, Any]:
                     "industry_score": item.get("sw_score"),
                     "market_score": item.get("market_score"),
                     "policy_score": item.get("policy_score"),
+                    "theme_score_v5": item.get("theme_score_v5"),
+                    "theme_score_v4_stance_adjusted": item.get("theme_score_v4_stance_adjusted"),
                     "theme_score_v4": item.get("theme_score_v4"),
                     "theme_score_v3_dedup": item.get("theme_score_v3_dedup"),
                     "theme_score_v3": item.get("theme_score_v3"),
                     "theme_score_v2_raw": item.get("theme_score_v2_raw"),
+                    "allocation_adjustment_effect": item.get("allocation_adjustment_effect"),
                     "matched_event_cluster_count": item.get("matched_event_cluster_count"),
+                    "matched_allocated_event_count": item.get("matched_allocated_event_count"),
                     "matched_policy_count_raw": item.get("matched_policy_count_raw"),
                     "deduplication_effect": item.get("deduplication_effect"),
                     "stance_adjustment_effect": item.get("stance_adjustment_effect"),
+                    "primary_event_count": item.get("primary_event_count"),
+                    "avg_allocation_share": item.get("avg_allocation_share"),
                     "supportive_cluster_count": item.get("supportive_cluster_count"),
                     "restrictive_cluster_count": item.get("restrictive_cluster_count"),
                     "avg_cluster_stance_score_v2": item.get("avg_cluster_stance_score_v2"),
@@ -307,6 +327,7 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
         "theme_ranking": themes,
         "event_cluster_summary": payload.get("event_cluster_summary") or {},
         "policy_stance_summary": payload.get("policy_stance_summary") or {},
+        "event_theme_allocation_summary": payload.get("event_theme_allocation_summary") or {},
         "theme_summary": payload.get("theme_summary") or {},
         "market": {
             "breadth": breadth,
