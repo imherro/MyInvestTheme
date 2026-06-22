@@ -162,8 +162,10 @@ def test_pages_render():
     latest = get("/")
     assert latest.status_code == 200
     assert "A股主线研究台" in latest.text
-    assert "政策主线分数曲线" in latest.text
-    assert "折线=mainline_score_v6" in latest.text
+    assert "政策主线分 vs 市场热度观察分" in latest.text
+    assert "绿色实线=政策主线分" in latest.text
+    assert "橙色虚线=市场热度观察分" in latest.text
+    assert "点大小/外圈" not in latest.text
     assert "mainline_score_v6" in latest.text
     assert "证据项/拆解" in latest.text
     assert "资金排名" in latest.text
@@ -179,6 +181,12 @@ def test_pages_render():
     reports = get("/reports")
     assert reports.status_code == 200
     assert "历次研究结果" in reports.text
+
+    app_js = get("/static/app.js")
+    assert app_js.status_code == 200
+    assert "绿色实线=政策主线分" in app_js.text
+    assert "橙色虚线=市场热度观察分" in app_js.text
+    assert "点大小/外圈" not in app_js.text
 
 
 def test_index_table_column_contract():

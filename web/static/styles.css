@@ -372,11 +372,111 @@ th {
   border-radius: 8px;
   background: #fbfcfd;
   overflow: auto;
+  padding: 14px 16px;
 }
 
-.chart svg {
-  min-width: 900px;
+.dual-chart {
+  min-width: 920px;
+  display: grid;
+  gap: 8px;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-line {
+  width: 28px;
+  height: 0;
+  border-top: 3px solid var(--brand);
+  display: inline-block;
+}
+
+.legend-line.market {
+  border-top-color: #b54708;
+  border-top-style: dashed;
+}
+
+.spark-list {
+  display: grid;
+}
+
+.spark-row {
+  display: grid;
+  grid-template-columns: 170px minmax(460px, 1fr) 190px;
+  gap: 14px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.spark-row:last-child {
+  border-bottom: 0;
+}
+
+.spark-meta,
+.spark-values {
+  min-width: 0;
+}
+
+.spark-meta strong {
   display: block;
+  font-size: 14px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.spark-meta span {
+  display: block;
+  color: var(--muted);
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.spark-plot svg {
+  width: 100%;
+  min-width: 460px;
+  display: block;
+}
+
+.spark-values {
+  display: grid;
+  gap: 5px;
+  font-size: 12px;
+}
+
+.spark-values div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.spark-values span {
+  color: var(--muted);
+}
+
+.spark-values strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.spark-values em {
+  color: var(--brand-dark);
+  font-style: normal;
+  font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .chart-empty,
