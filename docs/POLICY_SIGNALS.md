@@ -12,7 +12,8 @@ The daily automation keeps policy research separate from market scoring.
 6. `scripts/policy_stance.py` identifies whether each policy supports, mildly supports, neutrally mixes, mildly restricts, or restricts each matched theme.
 7. `scripts/theme_allocation.py` allocates one event's finite contribution budget across matched themes through deterministic `event_theme_allocation_v2`.
 8. `scripts/mainline_lifecycle.py` classifies each theme's current lifecycle through deterministic `mainline_lifecycle_v2`.
-9. `scripts/daily_mainline_update.py` commits the policy store together with any new report.
+9. `scripts/canonical_mainline.py` publishes the canonical default output contract through deterministic `canonical_mainline_output_v2`.
+10. `scripts/daily_mainline_update.py` commits the policy store together with any new report.
 
 ## Official Sources
 
@@ -170,6 +171,8 @@ The report writes:
 - `theme_summary.policy_stance_version = policy_theme_stance_v2`
 - `theme_summary.event_theme_allocation_version = event_theme_allocation_v2`
 - `theme_summary.mainline_lifecycle_version = mainline_lifecycle_v2`
+- `canonical_mainline_summary.scoring_version = canonical_mainline_output_v2`
+- `canonical_mainline_summary.default_score_field = mainline_score_v6`
 
 ## Policy Theme Stance V2
 
@@ -428,3 +431,38 @@ mainline_score_v6 =
 `mainline_score_v6` is the default policy-theme score used by new reports. It is capped so it cannot exceed `theme_score_v5`. `theme_score_v5`, `theme_score_v4_stance_adjusted`, `theme_score_v3_dedup`, and `theme_score_v2_raw` remain comparison fields.
 
 The lifecycle layer is only a mainline research input. It does not generate trading, position, account, order, backtest or execution advice.
+
+## Canonical Mainline Output V2
+
+The default report, API and homepage ranking is `mainline_ranking`, produced by deterministic `canonical_mainline_output_v2`.
+
+Final canonical chain:
+
+```text
+policy_score_v2
+-> relevance_score_v2
+-> policy_event_clustering_v2
+-> policy_theme_stance_v2
+-> event_theme_allocation_v2
+-> mainline_lifecycle_v2
+-> mainline_score_v6
+-> mainline_ranking
+-> canonical_mainline_summary
+```
+
+Default canonical mainline score:
+
+```text
+mainline_score_v6 = theme_score_v5 * lifecycle_quality_multiplier
+```
+
+Report-level fields:
+
+```text
+canonical_mainline_summary.scoring_version = canonical_mainline_output_v2
+canonical_mainline_summary.default_score_field = mainline_score_v6
+mainline_ranking = canonical default ranking by mainline_score_v6
+legacy_theme_ranking = market-context comparison ranking
+```
+
+`legacy_evidence_score`, `evidence_score`, and `market_score` are market-context comparison fields only. They are not the canonical mainline ranking score and must not be used for the default one-line conclusion, homepage top mainline, or API default score.

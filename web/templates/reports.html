@@ -11,7 +11,7 @@
     <article class="report-row">
       <div>
         <h2>{{ report.basis_date }} · {{ report.top_theme }}</h2>
-        <p>{{ report.report_id }} · {{ report.generated_at }} · {{ report.top_stage }} · {{ "%.2f"|format(report.top_score) if report.top_score is not none else "" }}</p>
+        <p>{{ report.report_id }} · {{ report.generated_at }} · {{ report.top_stage }} · {{ "%.4f"|format(report.top_score) if report.default_score_field == "mainline_score_v6" and report.top_score is not none else report.top_score }} · {{ report.default_score_field }}</p>
       </div>
       <div class="actions">
         <a class="button" href="/reports/{{ report.report_id }}">打开</a>

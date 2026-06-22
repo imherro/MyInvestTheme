@@ -42,8 +42,23 @@
     return score === null ? "无" : score.toFixed(1);
   }
 
+  function formatMainlineScore(value) {
+    const score = numberOrNull(value);
+    return score === null ? "无" : score.toFixed(4);
+  }
+
+  function defaultScore(point) {
+    return numberOrNull(point.default_score ?? point.score);
+  }
+
+  function plotScore(point) {
+    const score = defaultScore(point);
+    if (score === null) return null;
+    return point.default_score_field === "mainline_score_v6" ? score * 100 : score;
+  }
+
   function drawScoreChart(container, payload) {
-    const themes = (payload.themes || []).filter((item) => (item.points || []).some((p) => numberOrNull(p.score) !== null));
+    const themes = (payload.themes || []).filter((item) => (item.points || []).some((p) => plotScore(p) !== null));
     if (!themes.length) {
       container.innerHTML = '<div class="chart-empty">暂无曲线数据。</div>';
       return;
@@ -74,22 +89,23 @@
     themes.forEach((theme, index) => {
       const color = palette[index % palette.length];
       const points = theme.points
-        .map((p) => ({ ...p, score: numberOrNull(p.score) }))
-        .filter((p) => p.score !== null);
-      const path = points.map((p, pointIndex) => `${pointIndex === 0 ? "M" : "L"} ${xFor(p.x).toFixed(2)} ${yFor(p.score).toFixed(2)}`).join(" ");
+        .map((p) => ({ ...p, plot_score: plotScore(p) }))
+        .filter((p) => p.plot_score !== null);
+      const path = points.map((p, pointIndex) => `${pointIndex === 0 ? "M" : "L"} ${xFor(p.x).toFixed(2)} ${yFor(p.plot_score).toFixed(2)}`).join(" ");
       lines.push(`<path d="${path}" fill="none" stroke="${color}" stroke-width="2.4" />`);
       points.forEach((p) => {
         const stroke = pointStroke(p);
         const title = [
           `${theme.theme} ${p.x}`,
-          `证据分 ${formatScore(p.evidence_score ?? p.score)}`,
+          `mainline_score_v6 ${formatMainlineScore(p.mainline_score_v6 ?? p.default_score)}`,
+          `旧证据分 ${formatScore(p.legacy_evidence_score ?? p.evidence_score)}`,
           `主题分 ${formatScore(p.theme_score)}`,
           `ETF分 ${formatScore(p.etf_score)}`,
           `共振 ${p.triple_confirmation ? "三强共振" : "未共振"}`,
           p.stage,
         ].join(" / ");
         lines.push(
-          `<circle cx="${xFor(p.x)}" cy="${yFor(p.score)}" r="${pointRadius(p).toFixed(1)}" fill="${color}" fill-opacity="${pointOpacity(p).toFixed(2)}" stroke="${stroke.color}" stroke-width="${stroke.width}"><title>${title}</title></circle>`
+          `<circle cx="${xFor(p.x)}" cy="${yFor(p.plot_score)}" r="${pointRadius(p).toFixed(1)}" fill="${color}" fill-opacity="${pointOpacity(p).toFixed(2)}" stroke="${stroke.color}" stroke-width="${stroke.width}"><title>${title}</title></circle>`
         );
       });
       const ly = pad.top + index * 24;

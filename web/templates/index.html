@@ -15,8 +15,8 @@
     <strong>{{ report_id }}</strong>
   </div>
   <div class="metric">
-    <span>全市场上涨比例</span>
-    <strong>{{ "%.2f"|format(report.breadth.up_ratio) }}%</strong>
+    <span>V6第一主线</span>
+    <strong>{{ report.canonical_mainline_summary.top_mainline.theme_name if report.canonical_mainline_summary.top_mainline is defined else "" }}</strong>
   </div>
 </section>
 
@@ -33,6 +33,51 @@
       <colgroup>
         <col class="col-rank">
         <col class="col-theme">
+        <col class="col-score">
+        <col class="col-stage">
+        <col class="col-score">
+        <col class="col-score">
+        <col class="col-policy">
+        <col class="col-evidence">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>排序</th>
+          <th>主题</th>
+          <th>mainline_score_v6</th>
+          <th>生命周期</th>
+          <th>theme_score_v5</th>
+          <th>30日/90日</th>
+          <th>主要支撑事件</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in report.mainline_ranking %}
+        <tr>
+          <td>{{ item.rank }}</td>
+          <td class="strong">{{ item.theme_name }}</td>
+          <td class="score-cell">{{ "%.4f"|format(item.mainline_score_v6) }}</td>
+          <td><span class="stage">{{ item.lifecycle_state }}</span></td>
+          <td class="score-cell">{{ "%.4f"|format(item.theme_score_v5) }}</td>
+          <td class="score-cell">{{ "%.4f"|format(item.score_30d) }} / {{ "%.4f"|format(item.score_90d) }}</td>
+          <td class="muted etf-cell">{{ "、".join(item.top_event_ids[:3]) if item.top_event_ids else "无" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section-band">
+  <div class="section-head">
+    <h2>旧市场证据观察（非默认主线排序）</h2>
+    <span class="hint">旧 evidence_score / market_score 仅作背景观察</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <colgroup>
+        <col class="col-rank">
+        <col class="col-theme">
         <col class="col-stage">
         <col class="col-score">
         <col class="col-policy">
@@ -41,19 +86,19 @@
       </colgroup>
       <thead>
         <tr>
-          <th>排序</th>
+          <th>旧排序</th>
           <th>主题</th>
-          <th>阶段</th>
-          <th>证据分</th>
+          <th>旧阶段</th>
+          <th>旧证据分</th>
           <th>政策分</th>
           <th>证据项/拆解</th>
           <th>ETF代理</th>
         </tr>
       </thead>
       <tbody>
-        {% for item in report.theme_ranking %}
+        {% for item in report.legacy_theme_ranking %}
         <tr>
-          <td>{{ loop.index }}</td>
+          <td>{{ item.rank }}</td>
           <td class="strong">{{ item.theme }}</td>
           <td><span class="stage">{{ item.stage }}</span></td>
           <td class="score-cell">{{ "%.2f"|format(item.evidence_score) }}</td>

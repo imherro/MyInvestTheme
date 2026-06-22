@@ -16,7 +16,7 @@
   </div>
   <div class="metric">
     <span>主题数</span>
-    <strong>{{ report.theme_ranking|length }}</strong>
+    <strong>{{ report.mainline_ranking|length if report.mainline_ranking is defined else report.theme_ranking|length }}</strong>
   </div>
 </section>
 

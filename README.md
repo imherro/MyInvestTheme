@@ -35,7 +35,9 @@ Policy scoring:
 - Event-theme allocation uses deterministic `event_theme_allocation_v2` from `config/theme_allocation_rules.json` so one policy event has a finite contribution budget across matched themes.
 - Mainline lifecycle uses deterministic `mainline_lifecycle_v2` from `config/mainline_lifecycle_rules.json` to classify themes as accelerating, sustained, emerging, single-event emerging, cooling, legacy tail, unknown, or dormant.
 - `theme_score_v2_raw` is the undeduplicated policy-theme comparison score, `theme_score_v3_dedup` is the deduplicated score before direction adjustment, `theme_score_v4_stance_adjusted` is the direction-adjusted score before allocation, `theme_score_v5` is the event-theme allocated score, and `mainline_score_v6` is the default lifecycle-adjusted policy-theme score.
-- Mainline score is `market_score * 85% + policy_score * 15%`.
+- Default canonical mainline score is `mainline_score_v6`.
+- `mainline_score_v6 = theme_score_v5 * lifecycle_quality_multiplier`.
+- `legacy_evidence_score` is a market-context comparison field and is not the canonical mainline ranking score.
 - See `docs/POLICY_SIGNALS.md` for the extraction schema and scoring rules.
 
 Open:
@@ -50,11 +52,16 @@ Open:
 The homepage endpoint returns the main content used by `/`:
 
 - `latest_report`
+- `canonical_mainline_summary`
+- `mainline_ranking`
 - `theme_ranking`
+- `legacy_theme_ranking`
 - `market`
 - `score_series`
 - `reports`
 - `markdown`
+
+`mainline_ranking` is the canonical default mainline list. `theme_ranking` and `legacy_theme_ranking` are compatibility market-context lists and are not the default mainline ranking.
 
 The latest report endpoint returns the newest research report artifact:
 

@@ -15,6 +15,12 @@ import numpy as np
 import pandas as pd
 import tushare as ts
 
+from canonical_mainline import (
+    assert_canonical_mainline_contract,
+    build_canonical_mainline_summary,
+    build_legacy_theme_ranking,
+    build_mainline_ranking,
+)
 from policy_signals import load_policy_store, policy_event_summary, policy_theme_summary, score_policy_by_theme
 
 
@@ -607,19 +613,24 @@ def clean_records(df: pd.DataFrame, limit: int, fields: list[str]) -> list[dict[
     return out
 
 
-def conclusion_lines(theme_ranking: list[dict[str, Any]], breadth: dict[str, Any]) -> list[str]:
-    top = theme_ranking[0]
-    second = theme_ranking[1] if len(theme_ranking) > 1 else None
-    if top.get("stage") == "主线确认":
-        lines = [
-            f"第一主线是{top['theme']}，综合证据分{top['evidence_score']:.2f}，当前阶段为{top['stage']}。",
+def conclusion_lines(canonical_summary: dict[str, Any], mainline_ranking: list[dict[str, Any]], breadth: dict[str, Any]) -> list[str]:
+    top = canonical_summary.get("top_mainline") or {}
+    second = mainline_ranking[1] if len(mainline_ranking) > 1 else None
+    lines = []
+    if top:
+        event_ids = "、".join(top.get("top_event_ids") or []) or "无"
+        lines += [
+            f"当前政策主线排序第一的是{top.get('theme_name', '')}，mainline_score_v6为{top.get('mainline_score_v6', 0):.4f}，生命周期状态为{top.get('lifecycle_state', '')}。",
+            f"该主线的theme_score_v5为{top.get('theme_score_v5', 0):.4f}，30日分数为{top.get('score_30d', 0):.4f}，90日分数为{top.get('score_90d', 0):.4f}。",
+            f"主要支撑事件包括：{event_ids}。",
+            "本报告默认主线排序口径为mainline_score_v6，不使用旧evidence_score作为默认主线排序。",
         ]
     else:
-        lines = [
-            f"当前排序第一的是{top['theme']}，综合证据分{top['evidence_score']:.2f}，但阶段仍为{top['stage']}，尚未达到主线确认阈值。",
-        ]
+        lines.append("当前没有可排序的政策主线。")
     if second:
-        lines.append(f"第二梯队是{second['theme']}，但需要看 ETF、涨停和资金能否继续同步确认。")
+        lines.append(
+            f"第二梯队是{second.get('theme_name', '')}，mainline_score_v6为{second.get('mainline_score_v6', 0):.4f}，生命周期状态为{second.get('lifecycle_state', '')}。"
+        )
     if breadth["r20_positive_ratio"] < 30:
         lines.append("全市场20日正收益股票比例仍低，说明行情仍偏结构性，不是全面普涨。")
     elif breadth["r20_positive_ratio"] >= 40:
@@ -665,6 +676,9 @@ def render_markdown(payload: dict[str, Any]) -> str:
     policy_stance_summary = payload.get("policy_stance_summary") or {}
     event_theme_allocation_summary = payload.get("event_theme_allocation_summary") or {}
     mainline_lifecycle_summary = payload.get("mainline_lifecycle_summary") or {}
+    canonical_summary = payload.get("canonical_mainline_summary") or {}
+    mainline_ranking = payload.get("mainline_ranking") or []
+    legacy_theme_ranking = payload.get("legacy_theme_ranking") or payload.get("theme_ranking") or []
     lines = [
         f"# A股主线研究报告（基准日 {basis}）",
         "",
@@ -676,17 +690,26 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "## 一句话结论",
         "",
     ]
-    lines += [f"- {line}" for line in conclusion_lines(payload["theme_ranking"], payload["breadth"])]
+    lines += [f"- {line}" for line in conclusion_lines(canonical_summary, mainline_ranking, payload["breadth"])]
     lines += [
+        "",
+        "## 默认主线口径",
+        "",
+        f"- 默认主线输出版本：{canonical_summary.get('scoring_version', 'canonical_mainline_output_v2')}",
+        f"- 默认排序字段：{canonical_summary.get('default_score_field', 'mainline_score_v6')}",
+        "- mainline_score_v6 = theme_score_v5 × lifecycle_quality_multiplier。",
+        "- theme_score_v5 已包含政策强度、主题相关度、事件去重、政策方向性、事件-主题贡献分配。",
+        "- 旧 evidence_score / market_score 仅作为兼容或市场背景观察，不参与默认主线排序。",
         "",
         "## 主线分层",
         "",
-        "| 主题 | 阶段 | 证据分 | 市场分 | 政策分 | 证据项 | 核心指数/概念 | ETF代理 |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| 主题 | mainline_score_v6 | 生命周期 | theme_score_v5 | 30日分数 | 90日分数 | 事件数 | 来源机构数 | 主要支撑事件 |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
-    for item in payload["theme_ranking"]:
+    for item in mainline_ranking:
+        top_events = "；".join(item.get("top_event_ids", [])[:2]) or "无"
         lines.append(
-            f"| {item['theme']} | {item['stage']} | {item['evidence_score']:.2f} | {item['market_score']:.2f} | {item['policy_score']:.2f} | {item['evidence_count']} | {item['top_ths']} | {item['top_etf']} |"
+            f"| {item.get('theme_name', '')} | {item.get('mainline_score_v6', 0):.4f} | {item.get('lifecycle_state', '')} | {item.get('theme_score_v5', 0):.4f} | {item.get('score_30d', 0):.4f} | {item.get('score_90d', 0):.4f} | {item.get('matched_allocated_event_count', 0)} | {item.get('source_org_count_90d', 0)} | {top_events} |"
         )
 
     lines += [
@@ -695,10 +718,11 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "",
         "- 行业/主题强度：1日分位25% + 5日分位35% + 20日分位25% + 热度分位15%。申万热度为当日成交额相对近20日均值；同花顺热度为换手率。",
         "- ETF强度：1日分位20% + 5日分位35% + 20日分位30% + 成交额分位15%。",
-        "- 市场分：申万映射25% + 同花顺主题30% + ETF代理25% + 涨停结构10% + 大单/特大单资金排名10%。",
+        "- 旧市场证据分：申万映射25% + 同花顺主题30% + ETF代理25% + 涨停结构10% + 大单/特大单资金排名10%，仅作为市场背景观察。",
         f"- 政策分：读取 `data/policy_signals.json`，按政策评分V2计算：权威级别35% + 行动性25% + 经济覆盖面20% + 时间衰减20%；`theme_relevance_v2` 计算政策-主题相关度，`policy_event_clustering_v2` 做事件去重，`policy_theme_stance_v2` 对监管/约束政策做方向性折扣，`event_theme_allocation_v2` 对同一政策事件的多主题贡献做预算分配，`mainline_lifecycle_v2` 识别主线生命周期。",
-        f"- 主线证据分：市场分{(1 - policy_summary.get('policy_weight', POLICY_WEIGHT)) * 100:.0f}% + 政策分{policy_summary.get('policy_weight', POLICY_WEIGHT) * 100:.0f}%。",
-        "- 阶段：85分以上为主线确认，72-85为次主线/强修复，50-72为观察线，50以下为弱势/退潮。",
+        "- 默认主线分：mainline_score_v6 = theme_score_v5 × lifecycle_quality_multiplier。",
+        f"- 旧证据分兼容口径：旧市场证据分{(1 - policy_summary.get('policy_weight', POLICY_WEIGHT)) * 100:.0f}% + 政策分{policy_summary.get('policy_weight', POLICY_WEIGHT) * 100:.0f}%，不参与默认主线排序。",
+        "- 旧阶段：85分以上为主线确认，72-85为次主线/强修复，50-72为观察线，50以下为弱势/退潮，仅用于旧市场证据观察。",
         f"- 政策库更新时间：{policy_summary.get('updated_at') or '无'}；政策信号数：{policy_summary.get('signals_count', 0)}；政策-主题相关度阈值：{policy_summary.get('min_relevance_threshold', 0.25)}；去重后事件数：{event_cluster_summary.get('cluster_count', 0)}。",
         "",
         "## 市场土壤",
@@ -755,12 +779,13 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "",
         "## 政策信号",
         "",
-        "| 主题 | 政策分 | 政策证据 | 主要政策 |",
-        "| --- | --- | --- | --- |",
+        "| 主题 | mainline_score_v6 | theme_score_v5 | 分配后事件数 | 主要支撑事件 |",
+        "| --- | --- | --- | --- | --- |",
     ]
-    for item in payload["theme_ranking"]:
+    for item in mainline_ranking:
+        top_events = "；".join(item.get("top_event_ids", [])[:3]) or "无"
         lines.append(
-            f"| {item['theme']} | {item['policy_score']:.2f} | {item['policy_evidence_count']} | {item.get('top_policy') or '无'} |"
+            f"| {item.get('theme_name', '')} | {item.get('mainline_score_v6', 0):.4f} | {item.get('theme_score_v5', 0):.4f} | {item.get('matched_allocated_event_count', 0)} | {top_events} |"
         )
 
     lines += [
@@ -908,8 +933,12 @@ def render_markdown(payload: dict[str, Any]) -> str:
     for item in payload["moneyflow_top"][:20]:
         lines.append(f"| {item['industry']} | {item['large_net']:.2f} | {item['net']:.2f} | {item['count']} |")
 
-    lines += ["", "## 分主题判断", ""]
-    for item in payload["theme_ranking"]:
+    lines += ["", "## 旧市场证据观察（非默认主线排序）", ""]
+    lines += [
+        "说明：本节保留旧 evidence_score / market_score 口径用于市场背景观察，不参与默认主线排序。",
+        "",
+    ]
+    for item in legacy_theme_ranking:
         lines += [
             f"### {item['theme']}：{item['stage']}",
             f"- 证据分：{item['evidence_score']:.2f}，证据项：{item['evidence_count']}",
@@ -920,13 +949,13 @@ def render_markdown(payload: dict[str, Any]) -> str:
             f"- 政策映射：{item.get('top_policy') or '无'}",
         ]
         if item["stage"] == "主线确认":
-            lines.append("- 研究结论：价格、主题、ETF和结构资金同步度较高，是当前最清晰的主线。")
+            lines.append("- 市场观察：价格、主题、ETF和结构资金同步度较高，但本节不是默认主线排序。")
         elif item["stage"] == "次主线/强修复":
-            lines.append("- 研究结论：有较强修复或轮动机会，但仍需要 ETF、涨停扩散或资金继续确认。")
+            lines.append("- 市场观察：有较强修复或轮动迹象，但本节不是默认主线排序。")
         elif item["stage"] == "观察线":
-            lines.append("- 研究结论：存在局部强度，但证据链尚未完整闭环，按观察或轮动处理。")
+            lines.append("- 市场观察：存在局部强度，但证据链尚未完整闭环。")
         else:
-            lines.append("- 研究结论：当前数据不支持作为主线，仍偏弱势或退潮。")
+            lines.append("- 市场观察：当前旧证据分偏弱。")
         lines.append("")
 
     lines += [
@@ -982,6 +1011,9 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
     limit_up, limit_top = limit_up_data(pro, basis_raw)
     moneyflow, moneyflow_top = moneyflow_data(pro, basis_raw)
     ranking = theme_rows(sw, ths, etf, limit_up, moneyflow, policy_by_theme)
+    mainline_ranking = build_mainline_ranking(theme_summary)
+    canonical_mainline_summary = build_canonical_mainline_summary(theme_summary)
+    legacy_theme_ranking = build_legacy_theme_ranking(ranking)
 
     now = datetime.now(TZ).strftime("%Y-%m-%d %H:%M:%S CST")
     report_id = f"mainline_review_{datetime.now(TZ).strftime('%Y-%m-%d_%H%M%S')}"
@@ -1012,8 +1044,11 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
         "policy_stance_summary": stance_summary,
         "event_theme_allocation_summary": event_theme_allocation_summary,
         "mainline_lifecycle_summary": mainline_lifecycle_summary,
+        "canonical_mainline_summary": canonical_mainline_summary,
+        "mainline_ranking": mainline_ranking,
         "theme_summary": theme_summary,
         "theme_ranking": ranking,
+        "legacy_theme_ranking": legacy_theme_ranking,
         "sw_top": clean_records(
             sw,
             20,
@@ -1039,6 +1074,9 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
             "csrc_gem_reform": "https://www.csrc.gov.cn/",
         },
     }
+    contract_errors = assert_canonical_mainline_contract(payload)
+    if contract_errors:
+        raise RuntimeError(f"Canonical mainline contract failed: {', '.join(contract_errors)}")
     return report_id, payload, render_markdown(payload)
 
 
@@ -1058,7 +1096,7 @@ def main() -> None:
         print(json_path)
         print(md_path)
     else:
-        print(json.dumps({"report_id": report_id, "basis_date": payload["basis_date"], "top": payload["theme_ranking"][:3]}, ensure_ascii=False, indent=2))
+        print(json.dumps({"report_id": report_id, "basis_date": payload["basis_date"], "top": payload["mainline_ranking"][:3]}, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

@@ -36,6 +36,9 @@ def test_latest_report_contract():
     assert body["result"].get("event_theme_allocation_summary", {}).get("scoring_version") == "event_theme_allocation_v2"
     assert body["result"].get("mainline_lifecycle_summary", {}).get("scoring_version") == "mainline_lifecycle_v2"
     assert body["result"].get("theme_summary", {}).get("scoring_version") == "mainline_score_v6_lifecycle_adjusted"
+    assert body["result"].get("canonical_mainline_summary", {}).get("scoring_version") == "canonical_mainline_output_v2"
+    assert body["result"].get("canonical_mainline_summary", {}).get("default_score_field") == "mainline_score_v6"
+    assert body["result"].get("mainline_ranking", [])[0]["mainline_score_v6"] is not None
 
 
 def test_index_api_returns_homepage_content():
@@ -47,9 +50,17 @@ def test_index_api_returns_homepage_content():
     assert body["latest_report"]["basis_date"]
     assert body["latest_report"]["theme_scoring_version"] == "mainline_score_v6_lifecycle_adjusted"
     assert body["latest_report"]["mainline_lifecycle_version"] == "mainline_lifecycle_v2"
-    assert body["latest_report"]["top_mainline_theme_v6"]
-    assert body["latest_report"]["top_mainline_score_v6"] is not None
+    assert body["latest_report"]["canonical_mainline_version"] == "canonical_mainline_output_v2"
+    assert body["latest_report"]["default_score_field"] == "mainline_score_v6"
+    assert body["latest_report"]["top_mainline_theme"]
+    assert body["latest_report"]["top_theme"] == body["latest_report"]["top_mainline_theme"]
+    assert body["latest_report"]["top_mainline_score"] is not None
+    assert body["latest_report"]["top_mainline_theme_v6"] == body["latest_report"]["top_mainline_theme"]
+    assert body["latest_report"]["top_mainline_score_v6"] == body["latest_report"]["top_mainline_score"]
     assert body["latest_report"]["top_mainline_lifecycle_state"]
+    assert body["mainline_ranking"]
+    assert body["canonical_mainline_summary"]["scoring_version"] == "canonical_mainline_output_v2"
+    assert body["legacy_theme_ranking"]
     assert body["theme_ranking"]
     assert body["event_cluster_summary"]["scoring_version"] == "policy_event_clustering_v2"
     assert body["policy_stance_summary"]["scoring_version"] == "policy_theme_stance_v2"
@@ -72,7 +83,9 @@ def test_index_api_returns_homepage_content():
     assert "lifecycle_quality_multiplier" in body["reports"][0]["top_themes"][0]
     assert "score_30d" in body["reports"][0]["top_themes"][0]
     assert "score_90d" in body["reports"][0]["top_themes"][0]
-    first_theme = body["theme_ranking"][0]
+    first_mainline = body["mainline_ranking"][0]
+    assert first_mainline["theme_name"] == body["latest_report"]["top_mainline_theme"]
+    first_theme = body["legacy_theme_ranking"][0]
     assert "evidence_breakdown" in first_theme
     labels = {item["label"] for item in first_theme["evidence_breakdown"]}
     assert {
@@ -116,6 +129,9 @@ def test_reports_and_score_series():
     assert "theme_score" in first_point
     assert "etf_score" in first_point
     assert "policy_score" in first_point
+    assert "default_score" in first_point
+    assert "default_score_field" in first_point
+    assert "legacy_evidence_score" in first_point
     assert "mainline_score_v6" in first_point
     assert "theme_score_v5" in first_point
     assert "theme_score_v4_stance_adjusted" in first_point
@@ -138,6 +154,7 @@ def test_pages_render():
     latest = get("/")
     assert latest.status_code == 200
     assert "A股主线研究台" in latest.text
+    assert "mainline_score_v6" in latest.text
     assert "证据项/拆解" in latest.text
     assert "资金排名" in latest.text
     assert "政策分" in latest.text
