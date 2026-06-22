@@ -7,6 +7,7 @@ from typing import Any
 
 from policy_scoring import policy_score_components
 from policy_event_clustering import compute_cluster_policy_score_v2
+from policy_stance import build_policy_stance_summary, compute_cluster_theme_stance, compute_policy_theme_stance_v2
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -172,6 +173,21 @@ def sort_theme_summary_v3_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any
             -row["avg_cluster_relevance_score_v2"],
             -row["avg_cluster_policy_score_v2"],
             row["theme_id"],
+        ),
+    )
+
+
+def sort_theme_summary_v4_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return sorted(
+        rows,
+        key=lambda row: (
+            -float(row.get("theme_score_v4") or 0.0),
+            -int(row.get("matched_event_cluster_count") or 0),
+            -int(row.get("supportive_cluster_count") or 0),
+            -float(row.get("avg_cluster_stance_score_v2") or 0.0),
+            -float(row.get("avg_cluster_relevance_score_v2") or 0.0),
+            -float(row.get("avg_cluster_policy_score_v2") or 0.0),
+            row.get("theme_id", ""),
         ),
     )
 
@@ -348,6 +364,8 @@ def build_deduped_theme_summary(
             cluster_by_policy[str(policy_id)] = cluster
 
     rows: list[dict[str, Any]] = []
+    policy_theme_stance_rows: list[dict[str, Any]] = []
+    cluster_theme_stance_rows: list[dict[str, Any]] = []
     for theme in themes:
         raw_contributors: list[dict[str, Any]] = []
         for policy_id, policy in policies_by_id.items():
@@ -357,6 +375,15 @@ def build_deduped_theme_summary(
                 continue
             policy_components = policy_score_components(policy, basis)
             policy_score = round(policy_components["policy_score_v2"], 4)
+            stance = compute_policy_theme_stance_v2(policy, theme)
+            stance_row = {
+                **stance,
+                "policy_id": policy_id,
+                "relevance_score_v2": relevance_score,
+                "policy_score_v2": policy_score,
+                "published_date": policy.get("published_date", policy.get("publish_date", "")),
+            }
+            policy_theme_stance_rows.append(stance_row)
             raw_contributors.append(
                 {
                     "policy_id": policy_id,
@@ -373,6 +400,13 @@ def build_deduped_theme_summary(
                     "negative_filter_score": relevance["negative_filter_score"],
                     "base_relevance": relevance["base_relevance"],
                     "matched_evidence": relevance["matched_evidence"],
+                    "support_score": stance_row["support_score"],
+                    "constraint_score": stance_row["constraint_score"],
+                    "stance_score_v2": stance_row["stance_score_v2"],
+                    "stance_label": stance_row["stance_label"],
+                    "direction_multiplier": stance_row["direction_multiplier"],
+                    "stance_evidence": stance_row["stance_evidence"],
+                    "stance_profile": stance_row["stance_profile"],
                     **policy_components,
                     "policy_score_v2": policy_score,
                 }
@@ -395,6 +429,11 @@ def build_deduped_theme_summary(
             cluster_policy_score = compute_cluster_policy_score_v2(cluster, policies_by_id)
             selected = sorted(members, key=lambda row: (-row["relevance_score_v2"], row["policy_id"]))[0]
             cluster_relevance = selected["relevance_score_v2"]
+            cluster_stance = compute_cluster_theme_stance(cluster, members)
+            cluster_theme_stance_rows.append(cluster_stance)
+            pre_stance_contribution = compute_theme_contribution(cluster_policy_score, cluster_relevance)
+            direction_multiplier = float(cluster_stance.get("direction_multiplier") or 0.0)
+            adjusted_contribution = round(pre_stance_contribution * min(direction_multiplier, 1.0), 4)
             event_contributors.append(
                 {
                     "event_cluster_id": cluster_id,
@@ -409,18 +448,30 @@ def build_deduped_theme_summary(
                     "cluster_size": cluster.get("cluster_size", 0),
                     "cluster_policy_score_v2": cluster_policy_score,
                     "cluster_relevance_score_v2": cluster_relevance,
-                    "cluster_contribution": compute_theme_contribution(cluster_policy_score, cluster_relevance),
+                    "cluster_support_score": cluster_stance.get("cluster_support_score", 0.0),
+                    "cluster_constraint_score": cluster_stance.get("cluster_constraint_score", 0.0),
+                    "cluster_stance_score_v2": cluster_stance.get("cluster_stance_score_v2", 0.0),
+                    "cluster_stance_label": cluster_stance.get("cluster_stance_label", "neutral_or_mixed"),
+                    "direction_multiplier": direction_multiplier,
+                    "pre_stance_cluster_contribution": pre_stance_contribution,
+                    "stance_adjusted_cluster_contribution": adjusted_contribution,
+                    "stance_adjustment_effect": round(max(pre_stance_contribution - adjusted_contribution, 0.0), 4),
+                    "cluster_contribution": pre_stance_contribution,
                     "selected_relevance_policy_id": selected["policy_id"],
+                    "selected_stance_policy_id": cluster_stance.get("selected_stance_policy_id", ""),
                     "cluster_reason": cluster.get("cluster_reason", []),
                     "metrics": cluster.get("metrics", {}),
                     "top_matched_evidence": selected.get("matched_evidence", []),
+                    "top_stance_evidence": cluster_stance.get("top_stance_evidence", []),
                 }
             )
 
-        event_contributors.sort(key=lambda row: (-row["cluster_contribution"], row["event_cluster_id"]))
+        event_contributors.sort(key=lambda row: (-row["stance_adjusted_cluster_contribution"], row["event_cluster_id"]))
         theme_score_v2_raw = round(sum(row["contribution"] for row in raw_contributors), 4)
-        theme_score_v3 = round(sum(row["cluster_contribution"] for row in event_contributors), 4)
-        deduplication_effect = round(max(theme_score_v2_raw - theme_score_v3, 0.0), 4)
+        theme_score_v3_dedup = round(sum(row["pre_stance_cluster_contribution"] for row in event_contributors), 4)
+        theme_score_v4 = round(sum(row["stance_adjusted_cluster_contribution"] for row in event_contributors), 4)
+        deduplication_effect = round(max(theme_score_v2_raw - theme_score_v3_dedup, 0.0), 4)
+        stance_adjustment_effect = round(max(theme_score_v3_dedup - theme_score_v4, 0.0), 4)
         event_count = len(event_contributors)
         avg_cluster_relevance = (
             round(sum(row["cluster_relevance_score_v2"] for row in event_contributors) / event_count, 4)
@@ -432,25 +483,52 @@ def build_deduped_theme_summary(
             if event_count
             else 0.0
         )
+        avg_cluster_stance = (
+            round(sum(row["cluster_stance_score_v2"] for row in event_contributors) / event_count, 4)
+            if event_count
+            else 0.0
+        )
+        label_counts = {
+            "supportive": 0,
+            "mildly_supportive": 0,
+            "neutral_or_mixed": 0,
+            "mildly_restrictive": 0,
+            "restrictive": 0,
+        }
+        for contributor in event_contributors:
+            label = contributor.get("cluster_stance_label", "neutral_or_mixed")
+            if label in label_counts:
+                label_counts[label] += 1
         rows.append(
             {
                 "theme_id": theme.get("theme_id", ""),
                 "theme_name": theme.get("theme_name", ""),
-                "theme_score_v3": theme_score_v3,
+                "theme_score_v4": theme_score_v4,
+                "theme_score_v3_dedup": theme_score_v3_dedup,
+                "theme_score_v3": theme_score_v3_dedup,
                 "theme_score_v2_raw": theme_score_v2_raw,
                 "matched_event_cluster_count": event_count,
                 "matched_policy_count_raw": len(raw_contributors),
                 "deduplication_effect": deduplication_effect,
+                "stance_adjustment_effect": stance_adjustment_effect,
+                "supportive_cluster_count": label_counts["supportive"],
+                "mildly_supportive_cluster_count": label_counts["mildly_supportive"],
+                "neutral_or_mixed_cluster_count": label_counts["neutral_or_mixed"],
+                "mildly_restrictive_cluster_count": label_counts["mildly_restrictive"],
+                "restrictive_cluster_count": label_counts["restrictive"],
                 "avg_cluster_relevance_score_v2": avg_cluster_relevance,
                 "avg_cluster_policy_score_v2": avg_cluster_policy,
+                "avg_cluster_stance_score_v2": avg_cluster_stance,
                 "top_event_contributors": event_contributors[:3],
             }
         )
 
     return {
-        "scoring_version": "theme_score_v3_event_dedup",
+        "scoring_version": "theme_score_v4_stance_adjusted",
         "base_relevance_version": "theme_relevance_v2",
         "event_clustering_version": "policy_event_clustering_v2",
+        "policy_stance_version": "policy_theme_stance_v2",
         "min_relevance_threshold": min_threshold,
-        "themes": sort_theme_summary_v3_rows(rows),
+        "policy_stance_summary": build_policy_stance_summary(policy_theme_stance_rows, cluster_theme_stance_rows),
+        "themes": sort_theme_summary_v4_rows(rows),
     }

@@ -1,0 +1,98 @@
+{
+  "version": "policy_theme_stance_v2",
+  "default_stance_profile": "growth_support",
+  "supportive_action_keywords": [
+    "支持",
+    "鼓励",
+    "推动",
+    "推进",
+    "加快",
+    "促进",
+    "提升",
+    "培育",
+    "发展",
+    "扩大",
+    "推广",
+    "建设",
+    "实施",
+    "完善",
+    "优化",
+    "加强",
+    "引导"
+  ],
+  "implementation_support_keywords": [
+    "资金",
+    "投资",
+    "预算",
+    "专项资金",
+    "补贴",
+    "贴息",
+    "税收优惠",
+    "政府采购",
+    "项目",
+    "工程",
+    "示范区",
+    "试点",
+    "清单",
+    "行动计划"
+  ],
+  "restrictive_action_keywords": [
+    "禁止",
+    "限制",
+    "压降",
+    "严控",
+    "不得",
+    "暂停",
+    "叫停",
+    "清理",
+    "整治",
+    "整改",
+    "规范整顿",
+    "从严监管",
+    "处罚",
+    "查处"
+  ],
+  "risk_constraint_keywords": [
+    "风险提示",
+    "防范风险",
+    "化解风险",
+    "违规",
+    "违法",
+    "过剩",
+    "泡沫",
+    "乱象",
+    "隐患"
+  ],
+  "positive_phrase_overrides": [
+    "规范发展",
+    "健康发展",
+    "高质量发展",
+    "有序发展",
+    "支持发展",
+    "促进发展",
+    "推动发展"
+  ],
+  "negative_phrase_overrides": [
+    "专项整治",
+    "清理整顿",
+    "从严监管",
+    "依法查处",
+    "严厉打击",
+    "风险提示",
+    "限制新增",
+    "压降规模"
+  ],
+  "label_thresholds": {
+    "supportive": 0.45,
+    "mildly_supportive": 0.15,
+    "neutral_lower": -0.15,
+    "mildly_restrictive": -0.45
+  },
+  "direction_multipliers": {
+    "supportive": 1.0,
+    "mildly_supportive": 0.75,
+    "neutral_or_mixed": 0.5,
+    "mildly_restrictive": 0.25,
+    "restrictive": 0.0
+  }
+}

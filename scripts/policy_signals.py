@@ -56,6 +56,10 @@ def policy_theme_summary(basis_date: str, theme_names: list[str], path: Path = P
     return build_deduped_theme_summary(signals, themes, clusters, basis, min_threshold=MIN_RELEVANCE_THRESHOLD)
 
 
+def policy_stance_summary(basis_date: str, theme_names: list[str], path: Path = POLICY_PATH) -> dict[str, Any]:
+    return policy_theme_summary(basis_date, theme_names, path).get("policy_stance_summary", {})
+
+
 def policy_event_summary(basis_date: str, theme_names: list[str], path: Path = POLICY_PATH) -> dict[str, Any]:
     basis = parse_date(basis_date)
     if basis is None:
@@ -84,13 +88,22 @@ def score_policy_by_theme(basis_date: str, theme_names: list[str], path: Path = 
             "score": 0.0,
             "evidence_count": 0,
             "top_policies": [],
+            "theme_score_v4": 0.0,
+            "theme_score_v3_dedup": 0.0,
             "theme_score_v3": 0.0,
             "theme_score_v2_raw": 0.0,
             "matched_event_cluster_count": 0,
             "matched_policy_count_raw": 0,
             "deduplication_effect": 0.0,
+            "stance_adjustment_effect": 0.0,
+            "supportive_cluster_count": 0,
+            "mildly_supportive_cluster_count": 0,
+            "neutral_or_mixed_cluster_count": 0,
+            "mildly_restrictive_cluster_count": 0,
+            "restrictive_cluster_count": 0,
             "avg_cluster_relevance_score_v2": 0.0,
             "avg_cluster_policy_score_v2": 0.0,
+            "avg_cluster_stance_score_v2": 0.0,
         }
         for theme in theme_names
     }
@@ -103,15 +116,26 @@ def score_policy_by_theme(basis_date: str, theme_names: list[str], path: Path = 
         event_contributors = theme_item.get("top_event_contributors") or contributors
         result[theme].update(
             {
-                "score": min(100.0, float(theme_item.get("theme_score_v3") or 0.0) * 100),
+                "theme_id": theme_item.get("theme_id", ""),
+                "theme_name": theme_item.get("theme_name", theme),
+                "score": min(100.0, float(theme_item.get("theme_score_v4") or 0.0) * 100),
                 "evidence_count": int(theme_item.get("matched_event_cluster_count") or 0),
+                "theme_score_v4": theme_item.get("theme_score_v4", 0.0),
+                "theme_score_v3_dedup": theme_item.get("theme_score_v3_dedup", theme_item.get("theme_score_v3", 0.0)),
                 "theme_score_v3": theme_item.get("theme_score_v3", 0.0),
                 "theme_score_v2_raw": theme_item.get("theme_score_v2_raw", 0.0),
                 "matched_event_cluster_count": int(theme_item.get("matched_event_cluster_count") or 0),
                 "matched_policy_count_raw": int(theme_item.get("matched_policy_count_raw") or 0),
                 "deduplication_effect": theme_item.get("deduplication_effect", 0.0),
+                "stance_adjustment_effect": theme_item.get("stance_adjustment_effect", 0.0),
+                "supportive_cluster_count": int(theme_item.get("supportive_cluster_count") or 0),
+                "mildly_supportive_cluster_count": int(theme_item.get("mildly_supportive_cluster_count") or 0),
+                "neutral_or_mixed_cluster_count": int(theme_item.get("neutral_or_mixed_cluster_count") or 0),
+                "mildly_restrictive_cluster_count": int(theme_item.get("mildly_restrictive_cluster_count") or 0),
+                "restrictive_cluster_count": int(theme_item.get("restrictive_cluster_count") or 0),
                 "avg_cluster_relevance_score_v2": theme_item.get("avg_cluster_relevance_score_v2", 0.0),
                 "avg_cluster_policy_score_v2": theme_item.get("avg_cluster_policy_score_v2", 0.0),
+                "avg_cluster_stance_score_v2": theme_item.get("avg_cluster_stance_score_v2", 0.0),
                 "top_policies": [
                     {
                         "id": row.get("primary_policy_id", row.get("policy_id", "")),
@@ -120,10 +144,13 @@ def score_policy_by_theme(basis_date: str, theme_names: list[str], path: Path = 
                         "source": row.get("source", ""),
                         "published_date": row.get("published_date", ""),
                         "url": row.get("url", ""),
-                        "score": float(row.get("cluster_contribution", row.get("contribution", 0.0)) or 0.0) * 100,
+                        "score": float(row.get("stance_adjusted_cluster_contribution", row.get("contribution", 0.0)) or 0.0) * 100,
                         "base_score": float(row.get("cluster_policy_score_v2", row.get("policy_score_v2", 0.0)) or 0.0) * 100,
                         "relevance_score_v2": row.get("cluster_relevance_score_v2", row.get("relevance_score_v2", 0.0)),
-                        "contribution": row.get("cluster_contribution", row.get("contribution", 0.0)),
+                        "contribution": row.get("stance_adjusted_cluster_contribution", row.get("contribution", 0.0)),
+                        "pre_stance_cluster_contribution": row.get("pre_stance_cluster_contribution", 0.0),
+                        "stance_adjusted_cluster_contribution": row.get("stance_adjusted_cluster_contribution", 0.0),
+                        "stance_adjustment_effect": row.get("stance_adjustment_effect", 0.0),
                         "keyword_score": row.get("keyword_score", 0.0),
                         "beneficiary_score": row.get("beneficiary_score", 0.0),
                         "policy_objective_score": row.get("policy_objective_score", 0.0),
@@ -133,6 +160,13 @@ def score_policy_by_theme(basis_date: str, theme_names: list[str], path: Path = 
                         "cluster_policy_score_v2": row.get("cluster_policy_score_v2", 0.0),
                         "cluster_relevance_score_v2": row.get("cluster_relevance_score_v2", 0.0),
                         "cluster_contribution": row.get("cluster_contribution", 0.0),
+                        "cluster_support_score": row.get("cluster_support_score", 0.0),
+                        "cluster_constraint_score": row.get("cluster_constraint_score", 0.0),
+                        "cluster_stance_score_v2": row.get("cluster_stance_score_v2", 0.0),
+                        "cluster_stance_label": row.get("cluster_stance_label", ""),
+                        "direction_multiplier": row.get("direction_multiplier", 0.0),
+                        "selected_stance_policy_id": row.get("selected_stance_policy_id", ""),
+                        "top_stance_evidence": row.get("top_stance_evidence", []),
                         "cluster_size": row.get("cluster_size", 1),
                         "member_policy_ids": row.get("member_policy_ids", []),
                         "cluster_reason": row.get("cluster_reason", []),

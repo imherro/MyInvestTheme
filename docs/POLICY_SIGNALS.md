@@ -9,7 +9,8 @@ The daily automation keeps policy research separate from market scoring.
 3. `scripts/generate_mainline_report.py` reads the policy store and recalculates `policy_score_v2` deterministically for the report basis date.
 4. `scripts/theme_relevance.py` maps policy signals to mainline themes through deterministic `theme_relevance_v2` rules from `config/themes.json`.
 5. `scripts/policy_event_clustering.py` clusters duplicate policy signals into deterministic policy events.
-6. `scripts/daily_mainline_update.py` commits the policy store together with any new report.
+6. `scripts/policy_stance.py` identifies whether each policy supports, mildly supports, neutrally mixes, mildly restricts, or restricts each matched theme.
+7. `scripts/daily_mainline_update.py` commits the policy store together with any new report.
 
 ## Official Sources
 
@@ -146,21 +147,109 @@ For each theme:
 cluster_relevance_score_v2 =
   max(relevance_score_v2 of member policies for this theme)
 
-cluster_contribution =
+pre_stance_cluster_contribution =
   cluster_policy_score_v2 * cluster_relevance_score_v2
 
-theme_score_v3 =
-  sum(cluster_contribution for matched event clusters)
+theme_score_v3_dedup =
+  sum(pre_stance_cluster_contribution for matched event clusters)
 
 deduplication_effect =
-  max(theme_score_v2_raw - theme_score_v3, 0.0)
+  max(theme_score_v2_raw - theme_score_v3_dedup, 0.0)
 ```
 
-`theme_score_v3` is the default deduplicated policy-theme score used by new reports. `theme_score_v2_raw` remains as a comparison field.
+`theme_score_v3_dedup` is the deduplicated policy-theme comparison score before direction adjustment. It is not the default score for new policy-theme ranking after `policy_theme_stance_v2`.
 
 The report writes:
 
 - `event_cluster_summary.scoring_version = policy_event_clustering_v2`
-- `theme_summary.scoring_version = theme_score_v3_event_dedup`
+- `theme_summary.scoring_version = theme_score_v4_stance_adjusted`
 - `theme_summary.base_relevance_version = theme_relevance_v2`
 - `theme_summary.event_clustering_version = policy_event_clustering_v2`
+- `theme_summary.policy_stance_version = policy_theme_stance_v2`
+
+## Policy Theme Stance V2
+
+Policy direction is deterministic and does not use LLM scoring, embeddings, market prices, funds flow or external sentiment libraries. It only reads the policy text fields already stored for research:
+
+- `title`
+- `summary`
+- `policy_text`
+- `key_points`
+- `beneficiary_chain`
+- `related_industries`
+
+Configuration lives in `config/policy_stance_rules.json`. Theme-specific optional fields live in `config/themes.json`:
+
+- `stance_profile`, default `growth_support`
+- `theme_specific_supportive_keywords`, default `[]`
+- `theme_specific_restrictive_keywords`, default `[]`
+
+Stance is calculated only inside sentences that contain the theme context. Theme context keywords come from:
+
+- `core_keywords`
+- `industry_keywords`
+- `beneficiary_keywords`
+- `policy_objectives`
+- `theme_specific_supportive_keywords`
+- `theme_specific_restrictive_keywords`
+
+Scoring:
+
+```text
+support_score =
+  supportive_action_keywords * 0.20 +
+  implementation_support_keywords * 0.15 +
+  positive_phrase_overrides * 0.25 +
+  theme_specific_supportive_keywords * 0.20
+
+constraint_score =
+  restrictive_action_keywords * 0.25 +
+  risk_constraint_keywords * 0.15 +
+  negative_phrase_overrides * 0.30 +
+  theme_specific_restrictive_keywords * 0.25
+
+stance_score_v2 = support_score - constraint_score
+```
+
+Each unique keyword is counted at most once per policy-theme pair. Scores are capped at 1.0 and rounded to four decimals.
+
+Direction mapping:
+
+```text
+stance_score_v2 >=  0.45 -> supportive          -> direction_multiplier 1.00
+stance_score_v2 >=  0.15 -> mildly_supportive   -> direction_multiplier 0.75
+stance_score_v2 >  -0.15 -> neutral_or_mixed     -> direction_multiplier 0.50
+stance_score_v2 >  -0.45 -> mildly_restrictive  -> direction_multiplier 0.25
+otherwise                -> restrictive         -> direction_multiplier 0.00
+```
+
+Cluster stance aggregation preserves restrictive information inside duplicate-policy clusters:
+
+```text
+cluster_support_score = max(member.support_score)
+cluster_constraint_score = max(member.constraint_score)
+cluster_stance_score_v2 = cluster_support_score - cluster_constraint_score
+```
+
+Policy-theme contribution is now:
+
+```text
+pre_stance_cluster_contribution =
+  cluster_policy_score_v2 * cluster_relevance_score_v2
+
+stance_adjusted_cluster_contribution =
+  pre_stance_cluster_contribution * direction_multiplier
+
+theme_score_v3_dedup =
+  sum(pre_stance_cluster_contribution for matched event clusters)
+
+theme_score_v4 =
+  sum(stance_adjusted_cluster_contribution for matched event clusters)
+
+stance_adjustment_effect =
+  max(theme_score_v3_dedup - theme_score_v4, 0.0)
+```
+
+`theme_score_v4` is the default policy-theme score used by new reports. `theme_score_v3_dedup` remains the deduplicated before-stance comparison field. `theme_score_v2_raw` remains the undeduplicated comparison field.
+
+Policy direction is only a mainline research input. It does not generate trading, position, account, order, backtest or execution advice.

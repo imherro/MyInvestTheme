@@ -477,6 +477,7 @@ def theme_rows(
 
         rows.append(
             {
+                "theme_id": policy.get("theme_id", ""),
                 "theme": spec.name,
                 "sw_score": sw_score,
                 "ths_score": ths_score,
@@ -486,13 +487,22 @@ def theme_rows(
                 "large_net": large_net,
                 "policy_score": policy_score,
                 "policy_evidence_count": int(policy.get("evidence_count") or 0),
+                "theme_score_v4": float(policy.get("theme_score_v4") or 0.0),
+                "theme_score_v3_dedup": float(policy.get("theme_score_v3_dedup") or policy.get("theme_score_v3") or 0.0),
                 "theme_score_v3": float(policy.get("theme_score_v3") or 0.0),
                 "theme_score_v2_raw": float(policy.get("theme_score_v2_raw") or 0.0),
                 "matched_event_cluster_count": int(policy.get("matched_event_cluster_count") or 0),
                 "matched_policy_count_raw": int(policy.get("matched_policy_count_raw") or 0),
                 "deduplication_effect": float(policy.get("deduplication_effect") or 0.0),
+                "stance_adjustment_effect": float(policy.get("stance_adjustment_effect") or 0.0),
+                "supportive_cluster_count": int(policy.get("supportive_cluster_count") or 0),
+                "mildly_supportive_cluster_count": int(policy.get("mildly_supportive_cluster_count") or 0),
+                "neutral_or_mixed_cluster_count": int(policy.get("neutral_or_mixed_cluster_count") or 0),
+                "mildly_restrictive_cluster_count": int(policy.get("mildly_restrictive_cluster_count") or 0),
+                "restrictive_cluster_count": int(policy.get("restrictive_cluster_count") or 0),
                 "avg_cluster_relevance_score_v2": float(policy.get("avg_cluster_relevance_score_v2") or 0.0),
                 "avg_cluster_policy_score_v2": float(policy.get("avg_cluster_policy_score_v2") or 0.0),
+                "avg_cluster_stance_score_v2": float(policy.get("avg_cluster_stance_score_v2") or 0.0),
                 "top_policy": top_policy,
                 "policy_details": policy_details,
                 "top_sw": join_names(sw_match.sort_values("score", ascending=False).to_dict("records"), limit=4),
@@ -602,11 +612,26 @@ def matched_keywords(evidence: list[dict[str, Any]], limit: int = 8) -> str:
     return " / ".join(keywords) if keywords else "无"
 
 
+def matched_stance_keywords(evidence: list[dict[str, Any]], limit: int = 8) -> str:
+    keywords = []
+    seen = set()
+    for item in evidence:
+        keyword = str(item.get("stance_keyword") or item.get("keyword") or "")
+        if not keyword or keyword in seen:
+            continue
+        seen.add(keyword)
+        keywords.append(keyword)
+        if len(keywords) >= limit:
+            break
+    return " / ".join(keywords) if keywords else "无"
+
+
 def render_markdown(payload: dict[str, Any]) -> str:
     basis = payload["basis_date"]
     policy_summary = payload.get("policy_summary") or {}
     theme_summary = payload.get("theme_summary") or {}
     event_cluster_summary = payload.get("event_cluster_summary") or {}
+    policy_stance_summary = payload.get("policy_stance_summary") or {}
     lines = [
         f"# A股主线研究报告（基准日 {basis}）",
         "",
@@ -638,7 +663,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "- 行业/主题强度：1日分位25% + 5日分位35% + 20日分位25% + 热度分位15%。申万热度为当日成交额相对近20日均值；同花顺热度为换手率。",
         "- ETF强度：1日分位20% + 5日分位35% + 20日分位30% + 成交额分位15%。",
         "- 市场分：申万映射25% + 同花顺主题30% + ETF代理25% + 涨停结构10% + 大单/特大单资金排名10%。",
-        f"- 政策分：读取 `data/policy_signals.json`，按政策评分V2计算：权威级别35% + 行动性25% + 经济覆盖面20% + 时间衰减20%；`theme_relevance_v2` 计算政策-主题相关度，`policy_event_clustering_v2` 做事件去重。",
+        f"- 政策分：读取 `data/policy_signals.json`，按政策评分V2计算：权威级别35% + 行动性25% + 经济覆盖面20% + 时间衰减20%；`theme_relevance_v2` 计算政策-主题相关度，`policy_event_clustering_v2` 做事件去重，`policy_theme_stance_v2` 对监管/约束政策做方向性折扣。",
         f"- 主线证据分：市场分{(1 - policy_summary.get('policy_weight', POLICY_WEIGHT)) * 100:.0f}% + 政策分{policy_summary.get('policy_weight', POLICY_WEIGHT) * 100:.0f}%。",
         "- 阶段：85分以上为主线确认，72-85为次主线/强修复，50-72为观察线，50以下为弱势/退潮。",
         f"- 政策库更新时间：{policy_summary.get('updated_at') or '无'}；政策信号数：{policy_summary.get('signals_count', 0)}；政策-主题相关度阈值：{policy_summary.get('min_relevance_threshold', 0.25)}；去重后事件数：{event_cluster_summary.get('cluster_count', 0)}。",
@@ -718,40 +743,58 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- 标题相似度阈值：{event_cluster_summary.get('title_similarity_threshold', 0.65)}",
         f"- 关键词重叠阈值：{event_cluster_summary.get('keyword_overlap_threshold', 0.45)}",
         "",
-        "## 政策-主题事件贡献V3",
+        "## 政策方向性摘要",
         "",
-        f"- 版本：{theme_summary.get('scoring_version', 'theme_score_v3_event_dedup')}",
+        f"- 方向性评分版本：{policy_stance_summary.get('scoring_version', 'policy_theme_stance_v2')}",
+        f"- 默认 stance profile：{policy_stance_summary.get('default_stance_profile', 'growth_support')}",
+        f"- policy-theme pair 数：{policy_stance_summary.get('policy_theme_pair_count', 0)}",
+        f"- cluster-theme pair 数：{policy_stance_summary.get('cluster_theme_pair_count', 0)}",
+        f"- 扶持事件数：{policy_stance_summary.get('supportive_count', 0)}",
+        f"- 温和扶持事件数：{policy_stance_summary.get('mildly_supportive_count', 0)}",
+        f"- 中性/混合事件数：{policy_stance_summary.get('neutral_or_mixed_count', 0)}",
+        f"- 温和约束事件数：{policy_stance_summary.get('mildly_restrictive_count', 0)}",
+        f"- 明确约束事件数：{policy_stance_summary.get('restrictive_count', 0)}",
+        "",
+        "## 政策-主题事件贡献V4",
+        "",
+        f"- 版本：{theme_summary.get('scoring_version', 'theme_score_v4_stance_adjusted')}",
         f"- 基础相关度版本：{theme_summary.get('base_relevance_version', 'theme_relevance_v2')}",
         f"- 事件去重版本：{theme_summary.get('event_clustering_version', 'policy_event_clustering_v2')}",
+        f"- 政策方向性版本：{theme_summary.get('policy_stance_version', 'policy_theme_stance_v2')}",
         f"- 最低匹配阈值：{theme_summary.get('min_relevance_threshold', 0.25)}",
         "",
-        "| 主线 | theme_score_v3 | theme_score_v2_raw | 去重影响 | 匹配事件数 | 原始匹配政策数 | 主要支撑事件 |",
-        "| --- | --- | --- | --- | --- | --- | --- |",
+        "| 主线 | theme_score_v4 | theme_score_v3_dedup | theme_score_v2_raw | 去重影响 | 方向性调整 | 匹配事件数 | 扶持事件 | 约束事件 | 主要支撑事件 |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for theme in theme_summary.get("themes", []):
         top_titles = "；".join(item.get("event_cluster_id", "") for item in theme.get("top_event_contributors", [])[:2]) or "无"
         lines.append(
-            f"| {theme.get('theme_name', '')} | {theme.get('theme_score_v3', 0):.4f} | {theme.get('theme_score_v2_raw', 0):.4f} | {theme.get('deduplication_effect', 0):.4f} | {theme.get('matched_event_cluster_count', 0)} | {theme.get('matched_policy_count_raw', 0)} | {top_titles} |"
+            f"| {theme.get('theme_name', '')} | {theme.get('theme_score_v4', 0):.4f} | {theme.get('theme_score_v3_dedup', theme.get('theme_score_v3', 0)):.4f} | {theme.get('theme_score_v2_raw', 0):.4f} | {theme.get('deduplication_effect', 0):.4f} | {theme.get('stance_adjustment_effect', 0):.4f} | {theme.get('matched_event_cluster_count', 0)} | {theme.get('supportive_cluster_count', 0)} | {theme.get('mildly_restrictive_cluster_count', 0) + theme.get('restrictive_cluster_count', 0)} | {top_titles} |"
         )
 
     for theme in theme_summary.get("themes", []):
         lines += [
             "",
             f"### {theme.get('theme_name', '')}",
-            f"- theme_score_v3：{theme.get('theme_score_v3', 0):.4f}",
+            f"- theme_score_v4：{theme.get('theme_score_v4', 0):.4f}",
+            f"- theme_score_v3_dedup：{theme.get('theme_score_v3_dedup', theme.get('theme_score_v3', 0)):.4f}",
             f"- theme_score_v2_raw：{theme.get('theme_score_v2_raw', 0):.4f}",
             f"- 去重影响：{theme.get('deduplication_effect', 0):.4f}",
+            f"- 方向性调整影响：{theme.get('stance_adjustment_effect', 0):.4f}",
             f"- 匹配事件数：{theme.get('matched_event_cluster_count', 0)}",
             f"- 原始匹配政策数：{theme.get('matched_policy_count_raw', 0)}",
             f"- 平均事件相关度：{theme.get('avg_cluster_relevance_score_v2', 0):.4f}",
             f"- 平均事件政策强度：{theme.get('avg_cluster_policy_score_v2', 0):.4f}",
+            f"- 平均事件方向性：{theme.get('avg_cluster_stance_score_v2', 0):.4f}",
+            f"- 扶持事件数：{theme.get('supportive_cluster_count', 0)}",
+            f"- 约束事件数：{theme.get('mildly_restrictive_cluster_count', 0) + theme.get('restrictive_cluster_count', 0)}",
         ]
         contributors = theme.get("top_event_contributors", [])[:3]
         if contributors:
             lines.append("- 主要支撑事件：")
             for index, contributor in enumerate(contributors, start=1):
                 lines.append(
-                    f"  {index}. {contributor.get('event_cluster_id', '')}；primary_policy_id={contributor.get('primary_policy_id', '')}；cluster_policy_score_v2={contributor.get('cluster_policy_score_v2', 0):.4f}；cluster_relevance_score_v2={contributor.get('cluster_relevance_score_v2', 0):.4f}；cluster_contribution={contributor.get('cluster_contribution', 0):.4f}；cluster_size={contributor.get('cluster_size', 0)}；member_policy_ids={', '.join(contributor.get('member_policy_ids', []))}；去重原因={', '.join(contributor.get('cluster_reason', [])) or '无'}；命中证据：{matched_keywords(contributor.get('top_matched_evidence', []))}"
+                    f"  {index}. {contributor.get('event_cluster_id', '')}；primary_policy_id={contributor.get('primary_policy_id', '')}；cluster_policy_score_v2={contributor.get('cluster_policy_score_v2', 0):.4f}；cluster_relevance_score_v2={contributor.get('cluster_relevance_score_v2', 0):.4f}；cluster_stance_score_v2={contributor.get('cluster_stance_score_v2', 0):.4f}；cluster_stance_label={contributor.get('cluster_stance_label', '')}；direction_multiplier={contributor.get('direction_multiplier', 0):.4f}；方向性调整前贡献={contributor.get('pre_stance_cluster_contribution', 0):.4f}；方向性调整后贡献={contributor.get('stance_adjusted_cluster_contribution', 0):.4f}；selected_stance_policy_id={contributor.get('selected_stance_policy_id', '')}；cluster_size={contributor.get('cluster_size', 0)}；member_policy_ids={', '.join(contributor.get('member_policy_ids', []))}；去重原因={', '.join(contributor.get('cluster_reason', [])) or '无'}；命中证据：{matched_keywords(contributor.get('top_matched_evidence', []))}；方向性证据：{matched_stance_keywords(contributor.get('top_stance_evidence', []))}"
                 )
         else:
             lines.append("- 主要支撑事件：无")
@@ -839,6 +882,7 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
     policy_store = load_policy_store()
     event_cluster_summary = policy_event_summary(basis_date, [spec.name for spec in THEMES])
     theme_summary = policy_theme_summary(basis_date, [spec.name for spec in THEMES])
+    stance_summary = theme_summary.get("policy_stance_summary", {})
     policy_by_theme = score_policy_by_theme(basis_date, [spec.name for spec in THEMES])
 
     breadth = stock_breadth(pro, basis_raw, d5, d20)
@@ -869,10 +913,12 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
             "scoring_version": "policy_score_v2",
             "theme_relevance_version": "theme_relevance_v2",
             "event_clustering_version": "policy_event_clustering_v2",
+            "policy_stance_version": "policy_theme_stance_v2",
             "min_relevance_threshold": theme_summary.get("min_relevance_threshold", 0.25),
-            "scoring": "authority_score 35%, actionability_score 25%, economic_scope_score 20%, time_decay_score 20%; theme_relevance_v2 scales each signal.",
+            "scoring": "authority_score 35%, actionability_score 25%, economic_scope_score 20%, time_decay_score 20%; theme_relevance_v2 maps signals; policy_event_clustering_v2 deduplicates events; policy_theme_stance_v2 applies non-boosting direction multipliers.",
         },
         "event_cluster_summary": event_cluster_summary,
+        "policy_stance_summary": stance_summary,
         "theme_summary": theme_summary,
         "theme_ranking": ranking,
         "sw_top": clean_records(

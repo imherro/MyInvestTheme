@@ -32,7 +32,8 @@ def test_latest_report_contract():
     assert body["report_id"].startswith("mainline_review_")
     assert body["result"]["theme_ranking"]
     assert body["result"].get("event_cluster_summary", {}).get("scoring_version") == "policy_event_clustering_v2"
-    assert body["result"].get("theme_summary", {}).get("scoring_version") == "theme_score_v3_event_dedup"
+    assert body["result"].get("policy_stance_summary", {}).get("scoring_version") == "policy_theme_stance_v2"
+    assert body["result"].get("theme_summary", {}).get("scoring_version") == "theme_score_v4_stance_adjusted"
 
 
 def test_index_api_returns_homepage_content():
@@ -44,11 +45,15 @@ def test_index_api_returns_homepage_content():
     assert body["latest_report"]["basis_date"]
     assert body["theme_ranking"]
     assert body["event_cluster_summary"]["scoring_version"] == "policy_event_clustering_v2"
-    assert body["theme_summary"]["scoring_version"] == "theme_score_v3_event_dedup"
+    assert body["policy_stance_summary"]["scoring_version"] == "policy_theme_stance_v2"
+    assert body["theme_summary"]["scoring_version"] == "theme_score_v4_stance_adjusted"
+    assert "theme_score_v4" in body["reports"][0]["top_themes"][0]
+    assert "theme_score_v3_dedup" in body["reports"][0]["top_themes"][0]
     assert "theme_score_v3" in body["reports"][0]["top_themes"][0]
     assert "theme_score_v2_raw" in body["reports"][0]["top_themes"][0]
     assert "matched_event_cluster_count" in body["reports"][0]["top_themes"][0]
     assert "deduplication_effect" in body["reports"][0]["top_themes"][0]
+    assert "stance_adjustment_effect" in body["reports"][0]["top_themes"][0]
     first_theme = body["theme_ranking"][0]
     assert "evidence_breakdown" in first_theme
     labels = {item["label"] for item in first_theme["evidence_breakdown"]}
@@ -93,9 +98,12 @@ def test_reports_and_score_series():
     assert "theme_score" in first_point
     assert "etf_score" in first_point
     assert "policy_score" in first_point
+    assert "theme_score_v4" in first_point
+    assert "theme_score_v3_dedup" in first_point
     assert "theme_score_v3" in first_point
     assert "theme_score_v2_raw" in first_point
     assert "deduplication_effect" in first_point
+    assert "stance_adjustment_effect" in first_point
     assert "resonance_score" in first_point
     assert "triple_confirmation" in first_point
 
