@@ -36,6 +36,7 @@ from scripts.system_consistency_oracle import build_consistency_oracle
 ROOT_DIR = Path(__file__).resolve().parents[1]
 REPORT_DIR = ROOT_DIR / "research" / "mainline"
 REPORT_ID_RE = re.compile(r"^mainline_review_\d{4}-\d{2}-\d{2}_\d{6}$")
+REPORT_ID_TIME_RE = re.compile(r"^mainline_review_(\d{4})-(\d{2})-(\d{2})_(\d{2})(\d{2})(\d{2})$")
 
 app = FastAPI(
     title="A股主线研究台",
@@ -84,6 +85,14 @@ def _parse_generated_at(value: str | None) -> str:
     if not value:
         return ""
     return value.replace(" CST", "")
+
+
+def _score_series_x_label(report_id: str, payload: dict[str, Any]) -> str:
+    match = REPORT_ID_TIME_RE.match(report_id)
+    if match:
+        _, month, day, hour, minute, second = match.groups()
+        return f"{month}-{day} {hour}:{minute}:{second}"
+    return _parse_generated_at(payload.get("generated_at")) or payload.get("basis_date", "")
 
 
 def _float_or_none(value: Any) -> float | None:
@@ -486,7 +495,7 @@ def build_score_series() -> dict[str, Any]:
     reports = list_reports()
     for summary in reversed(reports):
         payload = load_report(summary["report_id"])
-        x = payload.get("basis_date") or _parse_generated_at(payload.get("generated_at"))
+        x = _score_series_x_label(summary["report_id"], payload)
         legacy_by_theme = _legacy_by_theme(payload)
         mainline_rows = _mainline_rows(payload)
         source_rows = mainline_rows or _legacy_theme_rows(payload)

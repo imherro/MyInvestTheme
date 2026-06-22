@@ -115,10 +115,10 @@
     const qualityLegendY = height - 40;
     const qualityLegendX = pad.left + 8;
     legend.push(`<circle cx="${qualityLegendX}" cy="${qualityLegendY}" r="8" fill="#0f766e" fill-opacity="0.9" stroke="#111827" stroke-width="3" />`);
-    legend.push(`<text x="${qualityLegendX + 16}" y="${qualityLegendY + 4}" font-size="12" fill="#475467">大点+粗外圈=证据/主题/ETF共振</text>`);
+    legend.push(`<text x="${qualityLegendX + 16}" y="${qualityLegendY + 4}" font-size="12" fill="#475467">折线=政策主线分；大点+粗外圈=市场热度共振</text>`);
 
     container.innerHTML = `
-      <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="主线分数曲线">
+      <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="政策主线分数曲线">
         <rect x="0" y="0" width="${width}" height="${height}" fill="#fbfcfd" />
         ${axis.join("")}
         <line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${pad.top + plotH}" stroke="#98a2b3" />

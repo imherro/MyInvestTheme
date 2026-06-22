@@ -126,7 +126,10 @@ def test_reports_and_score_series():
     series = series_response.json()
     assert series["report_count"] >= 1
     assert any(item["points"] for item in series["themes"])
-    first_point = next(item["points"][0] for item in series["themes"] if item["points"])
+    first_theme_points = next(item["points"] for item in series["themes"] if item["points"])
+    first_point = first_theme_points[0]
+    assert all(point["x"] != point["basis_date"] for point in first_theme_points)
+    assert len({point["x"] for point in first_theme_points}) == len(first_theme_points)
     assert "theme_score" in first_point
     assert "etf_score" in first_point
     assert "policy_score" in first_point
@@ -159,6 +162,8 @@ def test_pages_render():
     latest = get("/")
     assert latest.status_code == 200
     assert "A股主线研究台" in latest.text
+    assert "政策主线分数曲线" in latest.text
+    assert "折线=mainline_score_v6" in latest.text
     assert "mainline_score_v6" in latest.text
     assert "证据项/拆解" in latest.text
     assert "资金排名" in latest.text
