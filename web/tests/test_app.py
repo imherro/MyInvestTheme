@@ -167,6 +167,9 @@ def test_pages_render():
     assert "热度阶段优先级" in latest.text
     assert "accelerating" in latest.text
     assert "政策主线靠前且市场热度靠前" in latest.text
+    assert latest.text.count('class="hint"') == 2
+    assert "方法：policy_score_v2" not in latest.text
+    assert "方法：市场热度分" not in latest.text
 
     reports = get("/reports")
     assert reports.status_code == 200
