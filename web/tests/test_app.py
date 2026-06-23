@@ -211,6 +211,7 @@ def test_pages_render():
     assert "持续有效" in latest.text
     assert "政策主线靠前且市场热度靠前" in latest.text
     assert latest.text.count('class="hint"') == 2
+    assert "trend-legend-score-sort-20260623" in latest.text
     reports = get("/reports")
     assert reports.status_code == 200
     assert "历次研究结果" in reports.text
@@ -221,6 +222,9 @@ def test_pages_render():
     assert "时间走势" in app_js.text
     assert "政策主线分历史变化" in app_js.text
     assert "市场热度观察分历史变化" in app_js.text
+    assert "legendThemes" in app_js.text
+    assert "latestChartScore" in app_js.text
+    assert "右侧说明按本图最新分数降序排列" in app_js.text
     assert "颜色=主题" in app_js.text
     assert "点大小/外圈" not in app_js.text
 

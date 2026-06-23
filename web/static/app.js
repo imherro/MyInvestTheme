@@ -56,6 +56,14 @@
     return policyScore(latestPoint(theme.points || [])) ?? -1;
   }
 
+  function latestChartScore(theme, scoreAccessor) {
+    return scoreAccessor(latestPoint(theme.points || []));
+  }
+
+  function scoreSortValue(value) {
+    return value === null ? -1 : value;
+  }
+
   function themeColor(index) {
     return THEME_COLORS[index % THEME_COLORS.length];
   }
@@ -105,6 +113,10 @@
     for (let value = 0; value <= yMax; value += 20) axisTicks.push(value);
     if (axisTicks[axisTicks.length - 1] !== yMax) axisTicks.push(yMax);
     const labelStep = Math.max(1, Math.ceil(labels.length / 6));
+    const legendThemes = [...themes].sort((a, b) => {
+      const scoreDiff = scoreSortValue(latestChartScore(b, scoreAccessor)) - scoreSortValue(latestChartScore(a, scoreAccessor));
+      return scoreDiff || String(a.theme || "").localeCompare(String(b.theme || ""), "zh-Hans-CN");
+    });
 
     return `
       <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(title)}">
@@ -122,13 +134,13 @@
         <line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${pad.top + plotH}" stroke="#98a2b3" />
         <line x1="${pad.left}" y1="${pad.top + plotH}" x2="${pad.left + plotW}" y2="${pad.top + plotH}" stroke="#98a2b3" />
         ${themes.map((theme, index) => {
-          const color = themeColor(index);
+          const color = theme.color || themeColor(index);
           const points = theme.points || [];
           return `<path d="${pathFor(points, scoreAccessor, xFor, yFor)}" fill="none" stroke="${color}" stroke-width="2.4" />${circlesFor(points, scoreAccessor, xFor, yFor, color, label, theme.theme)}`;
         }).join("")}
-        ${themes.map((theme, index) => {
+        ${legendThemes.map((theme, index) => {
           const y = pad.top + index * 24;
-          const color = themeColor(index);
+          const color = theme.color || themeColor(index);
           const latest = scoreAccessor(latestPoint(theme.points || []));
           return `<line x1="${pad.left + plotW + 22}" y1="${y}" x2="${pad.left + plotW + 42}" y2="${y}" stroke="${color}" stroke-width="3" /><text x="${pad.left + plotW + 50}" y="${y + 4}" font-size="12" fill="#172033">${escapeHtml(theme.theme)} ${formatScore(latest)}</text>`;
         }).join("")}
@@ -169,7 +181,8 @@
       }))
       .filter((theme) => theme.points.length)
       .sort((a, b) => latestPolicyScore(b) - latestPolicyScore(a))
-      .slice(0, 8);
+      .slice(0, 8)
+      .map((theme, index) => ({ ...theme, color: themeColor(index) }));
 
     if (!themes.length) {
       container.innerHTML = '<div class="chart-empty">暂无曲线数据。</div>';
@@ -200,7 +213,7 @@
         </div>
         <div class="chart-subhead">
           <strong>时间走势</strong>
-          <span>分开看政策主线分和市场热度观察分，便于比较不同主题强弱</span>
+          <span>分开看政策主线分和市场热度观察分；每张图右侧说明按本图最新分数降序排列</span>
         </div>
         <div class="trend-list">
           <div class="trend-card">${renderTrendChart(themes, labels, policyScore, "政策主线分历史变化", "政策主线分", yMax)}</div>
