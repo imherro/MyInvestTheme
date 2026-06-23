@@ -211,6 +211,7 @@ def test_pages_render():
     assert "持续有效" in latest.text
     assert "政策主线靠前且市场热度靠前" in latest.text
     assert latest.text.count('class="hint"') == 2
+    assert "cycle-stage-style-20260623" in latest.text
     assert "trend-legend-score-sort-20260623" in latest.text
     reports = get("/reports")
     assert reports.status_code == 200
