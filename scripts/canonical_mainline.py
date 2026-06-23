@@ -7,6 +7,18 @@ try:
     from mainline_lifecycle import LIFECYCLE_PRIORITY
 except ModuleNotFoundError:
     from scripts.mainline_lifecycle import LIFECYCLE_PRIORITY
+try:
+    from mainline_cycle_stage import (
+        SCORING_VERSION as CYCLE_STAGE_VERSION,
+        build_cycle_stage_summary,
+        classify_mainline_cycle_stage,
+    )
+except ModuleNotFoundError:
+    from scripts.mainline_cycle_stage import (
+        SCORING_VERSION as CYCLE_STAGE_VERSION,
+        build_cycle_stage_summary,
+        classify_mainline_cycle_stage,
+    )
 
 
 SCORING_VERSION = "canonical_mainline_output_v2"
@@ -46,7 +58,7 @@ def _top_event_ids(row: dict[str, Any]) -> list[str]:
 
 
 def _mainline_row(row: dict[str, Any]) -> dict[str, Any]:
-    return {
+    item = {
         "theme_id": row.get("theme_id", ""),
         "theme_name": _theme_name(row),
         "mainline_score_v6": round4(row.get("mainline_score_v6")),
@@ -90,6 +102,8 @@ def _mainline_row(row: dict[str, Any]) -> dict[str, Any]:
         "top_event_ids": _top_event_ids(row),
         "top_event_contributors": list(row.get("top_event_contributors") or []),
     }
+    item.update(classify_mainline_cycle_stage(item))
+    return item
 
 
 def sort_mainline_ranking(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -118,6 +132,7 @@ def build_mainline_ranking(theme_summary: dict[str, Any]) -> list[dict[str, Any]
 
 def build_canonical_mainline_summary(theme_summary: dict[str, Any]) -> dict[str, Any]:
     ranking = build_mainline_ranking(theme_summary)
+    cycle_stage_summary = build_cycle_stage_summary(ranking)
     state_counts: dict[str, int] = {
         "accelerating": 0,
         "sustained": 0,
@@ -142,6 +157,9 @@ def build_canonical_mainline_summary(theme_summary: dict[str, Any]) -> dict[str,
             "theme_score_v5": top.get("theme_score_v5"),
             "lifecycle_state": top.get("lifecycle_state", ""),
             "lifecycle_quality_multiplier": top.get("lifecycle_quality_multiplier"),
+            "cycle_stage": top.get("cycle_stage", ""),
+            "cycle_stage_label": top.get("cycle_stage_label", ""),
+            "cycle_time_window": top.get("cycle_time_window", ""),
             "score_30d": top.get("score_30d"),
             "score_90d": top.get("score_90d"),
             "matched_allocated_event_count": top.get("matched_allocated_event_count"),
@@ -158,6 +176,8 @@ def build_canonical_mainline_summary(theme_summary: dict[str, Any]) -> dict[str,
         "theme_count": len(ranking),
         "top_mainline": top_mainline,
         "state_counts": state_counts,
+        "mainline_cycle_stage_version": CYCLE_STAGE_VERSION,
+        "cycle_stage_summary": cycle_stage_summary,
     }
 
 

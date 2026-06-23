@@ -32,8 +32,10 @@
             <span>policy_score_v2 → theme_relevance_v2 → event allocation → lifecycle，得到 mainline_score_v6。</span>
             <strong>生命周期优先级</strong>
             <span>accelerating &gt; sustained &gt; emerging &gt; single_event_emerging &gt; cooling &gt; legacy_tail &gt; undated_unknown &gt; dormant。</span>
+            <strong>周期阶段优先级</strong>
+            <span>主升扩散期 &gt; 启动确认期 &gt; 政策孕育期 &gt; 高位拥挤期 &gt; 降温退潮期 &gt; 旧线残余期 &gt; 未形成主线。</span>
             <strong>使用建议</strong>
-            <span>先用政策主线定候选方向；优先关注 accelerating 和 sustained；emerging 等市场确认；cooling 与 legacy_tail 不宜作为新开核心依据。</span>
+            <span>先用政策主线定候选方向；生命周期看政策状态，周期阶段看交易主线大致位置；启动确认期和主升扩散期优先，降温退潮期与旧线残余期不宜作为新开核心依据。</span>
           </span>
         </span>
       </div>
@@ -50,6 +52,7 @@
         <col class="col-theme">
         <col class="col-score">
         <col class="col-stage">
+        <col class="col-cycle">
         <col class="col-score">
         <col class="col-score">
         <col class="col-evidence">
@@ -60,6 +63,7 @@
           <th>主题</th>
           <th>mainline_score_v6</th>
           <th>生命周期</th>
+          <th>周期阶段</th>
           <th>theme_score_v5</th>
           <th>30日/90日</th>
           <th>主要支撑事件</th>
@@ -72,6 +76,12 @@
           <td class="strong">{{ item.theme_name }}</td>
           <td class="score-cell">{{ "%.4f"|format(item.mainline_score_v6) }}</td>
           <td><span class="stage">{{ item.lifecycle_state }}</span></td>
+          <td>
+            <span class="cycle-stage" title="{{ item.cycle_stage_reason }}">
+              {{ item.cycle_stage_label or item.cycle_stage }}
+            </span>
+            <span class="cycle-window">{{ item.cycle_time_window }}</span>
+          </td>
           <td class="score-cell">{{ "%.4f"|format(item.theme_score_v5) }}</td>
           <td class="score-cell">{{ "%.4f"|format(item.score_30d) }} / {{ "%.4f"|format(item.score_90d) }}</td>
           <td class="muted etf-cell">{{ "、".join(item.top_event_ids[:3]) if item.top_event_ids else "无" }}</td>

@@ -163,6 +163,8 @@ def test_canonical_summary_top_mainline_is_correct():
     canonical = build_canonical_mainline_summary(summary)
     assert canonical["top_mainline"]["theme_name"] == "AI算力/通信"
     assert canonical["default_score_field"] == "mainline_score_v6"
+    assert canonical["mainline_cycle_stage_version"] == "mainline_cycle_stage_v1"
+    assert canonical["top_mainline"]["cycle_stage_label"]
 
 
 def test_markdown_conclusion_does_not_use_legacy_evidence_top():
@@ -177,6 +179,7 @@ def test_markdown_mainline_table_uses_v6_fields():
     mainline = section(markdown, "## 政策主线")
     assert "mainline_score_v6" in mainline
     assert "生命周期" in mainline
+    assert "周期阶段" in mainline
     assert "theme_score_v5" in mainline
     assert "30日分数" in mainline
     assert "90日分数" in mainline
@@ -188,6 +191,8 @@ def test_api_latest_exposes_canonical_mainline_summary():
     assert body["canonical_mainline_summary"]["scoring_version"] == "canonical_mainline_output_v2"
     assert body["canonical_mainline_summary"]["default_score_field"] == "mainline_score_v6"
     assert body["mainline_ranking"][0]["mainline_score_v6"] is not None
+    assert body["mainline_ranking"][0]["cycle_stage_label"]
+    assert body["mainline_cycle_stage_summary"]["scoring_version"] == "mainline_cycle_stage_v1"
 
 
 def test_api_index_default_top_mainline_uses_v6():
@@ -195,6 +200,7 @@ def test_api_index_default_top_mainline_uses_v6():
     assert payload["latest_report"]["top_mainline_theme"] == payload["mainline_ranking"][0]["theme_name"]
     assert payload["latest_report"]["top_theme"] == payload["latest_report"]["top_mainline_theme"]
     assert payload["latest_report"]["default_score_field"] == "mainline_score_v6"
+    assert payload["latest_report"]["top_mainline_cycle_stage"]
 
 
 def test_score_series_uses_mainline_score_as_default_score():
@@ -208,6 +214,7 @@ def test_score_series_uses_mainline_score_as_default_score():
         assert "legacy_evidence_score" in point
         assert "legacy_market_score" in point
         assert "legacy_policy_score" in point
+        assert "cycle_stage_label" in point
 
 
 def test_api_reports_summary_uses_canonical_top():
