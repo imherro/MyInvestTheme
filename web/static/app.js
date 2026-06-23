@@ -1,6 +1,7 @@
 (function () {
   const POLICY_COLOR = "#0f766e";
   const MARKET_COLOR = "#b54708";
+  const THEME_COLORS = ["#0f766e", "#b42318", "#175cd3", "#7a5af8", "#b54708", "#067647", "#c11574", "#475467"];
 
   function numberOrNull(value) {
     const num = Number(value);
@@ -55,6 +56,10 @@
     return policyScore(latestPoint(theme.points || [])) ?? -1;
   }
 
+  function themeColor(index) {
+    return THEME_COLORS[index % THEME_COLORS.length];
+  }
+
   function judgement(policy, market) {
     if (policy === null || market === null) return "数据不足";
     if (policy >= 50 && market >= 72) return "政策强 + 市场确认";
@@ -72,12 +77,13 @@
       .join(" ");
   }
 
-  function circlesFor(points, scoreAccessor, xFor, yFor, color, label) {
+  function circlesFor(points, scoreAccessor, xFor, yFor, color, label, themeName) {
     return points
       .map((point) => ({ point, score: scoreAccessor(point) }))
       .filter((item) => item.score !== null)
       .map((item) => {
         const title = [
+          themeName,
           `${item.point.x}`,
           `${label} ${formatScore(item.score)}`,
           `报告 ${item.point.report_id}`,
@@ -87,56 +93,46 @@
       .join("");
   }
 
-  function renderMiniChart(theme, labels, yMax) {
-    const width = 620;
-    const height = 128;
-    const pad = { left: 34, right: 12, top: 12, bottom: 26 };
+  function renderTrendChart(themes, labels, scoreAccessor, title, label, yMax) {
+    const width = Math.max(1020, labels.length * 76 + 260);
+    const height = 360;
+    const pad = { left: 48, right: 230, top: 34, bottom: 48 };
     const plotW = width - pad.left - pad.right;
     const plotH = height - pad.top - pad.bottom;
     const xFor = (label) => pad.left + (labels.length <= 1 ? plotW / 2 : (labels.indexOf(label) / (labels.length - 1)) * plotW);
     const yFor = (score) => pad.top + (1 - clamp(score, 0, yMax) / yMax) * plotH;
-    const mid = yMax / 2;
-    const points = theme.points || [];
-    const policyPath = pathFor(points, policyScore, xFor, yFor);
-    const marketPath = pathFor(points, marketScore, xFor, yFor);
-    const firstLabel = labels[0] || "";
-    const lastLabel = labels[labels.length - 1] || "";
+    const axisTicks = [];
+    for (let value = 0; value <= yMax; value += 20) axisTicks.push(value);
+    if (axisTicks[axisTicks.length - 1] !== yMax) axisTicks.push(yMax);
+    const labelStep = Math.max(1, Math.ceil(labels.length / 6));
 
     return `
-      <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(theme.theme)} 政策主线分与市场热度观察分">
+      <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(title)}">
         <rect x="0" y="0" width="${width}" height="${height}" fill="#fbfcfd" />
-        ${[0, mid, yMax].map((value) => {
+        <text x="${pad.left}" y="18" font-size="14" font-weight="700" fill="#172033">${escapeHtml(title)}</text>
+        ${axisTicks.map((value) => {
           const y = yFor(value);
           return `<line x1="${pad.left}" y1="${y}" x2="${pad.left + plotW}" y2="${y}" stroke="#e4e7ec" /><text x="${pad.left - 8}" y="${y + 4}" text-anchor="end" font-size="11" fill="#667085">${Math.round(value)}</text>`;
         }).join("")}
+        ${labels.map((timeLabel, index) => {
+          if (index !== 0 && index !== labels.length - 1 && index % labelStep !== 0) return "";
+          const x = xFor(timeLabel);
+          return `<text x="${x}" y="${height - 16}" text-anchor="middle" font-size="11" fill="#667085">${escapeHtml(timeLabel)}</text>`;
+        }).join("")}
         <line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${pad.top + plotH}" stroke="#98a2b3" />
         <line x1="${pad.left}" y1="${pad.top + plotH}" x2="${pad.left + plotW}" y2="${pad.top + plotH}" stroke="#98a2b3" />
-        <path d="${policyPath}" fill="none" stroke="${POLICY_COLOR}" stroke-width="2.6" />
-        <path d="${marketPath}" fill="none" stroke="${MARKET_COLOR}" stroke-width="2.4" stroke-dasharray="6 4" />
-        ${circlesFor(points, policyScore, xFor, yFor, POLICY_COLOR, "政策主线分")}
-        ${circlesFor(points, marketScore, xFor, yFor, MARKET_COLOR, "市场热度观察分")}
-        <text x="${pad.left}" y="${height - 6}" font-size="11" fill="#667085">${escapeHtml(firstLabel)}</text>
-        <text x="${pad.left + plotW}" y="${height - 6}" text-anchor="end" font-size="11" fill="#667085">${escapeHtml(lastLabel)}</text>
+        ${themes.map((theme, index) => {
+          const color = themeColor(index);
+          const points = theme.points || [];
+          return `<path d="${pathFor(points, scoreAccessor, xFor, yFor)}" fill="none" stroke="${color}" stroke-width="2.4" />${circlesFor(points, scoreAccessor, xFor, yFor, color, label, theme.theme)}`;
+        }).join("")}
+        ${themes.map((theme, index) => {
+          const y = pad.top + index * 24;
+          const color = themeColor(index);
+          const latest = scoreAccessor(latestPoint(theme.points || []));
+          return `<line x1="${pad.left + plotW + 22}" y1="${y}" x2="${pad.left + plotW + 42}" y2="${y}" stroke="${color}" stroke-width="3" /><text x="${pad.left + plotW + 50}" y="${y + 4}" font-size="12" fill="#172033">${escapeHtml(theme.theme)} ${formatScore(latest)}</text>`;
+        }).join("")}
       </svg>`;
-  }
-
-  function renderThemeRow(theme, labels, yMax) {
-    const latest = latestPoint(theme.points || []);
-    const policy = policyScore(latest);
-    const market = marketScore(latest);
-    return `
-      <div class="spark-row">
-        <div class="spark-meta">
-          <strong>${escapeHtml(theme.theme)}</strong>
-          <span>${escapeHtml(latest.x || "")}</span>
-        </div>
-        <div class="spark-plot">${renderMiniChart(theme, labels, yMax)}</div>
-        <div class="spark-values">
-          <div><span>政策主线分</span><strong>${formatScore(policy)}</strong></div>
-          <div><span>市场热度分</span><strong>${formatScore(market)}</strong></div>
-          <em>${escapeHtml(judgement(policy, market))}</em>
-        </div>
-      </div>`;
   }
 
   function renderStrengthRow(theme, scaleMax) {
@@ -192,8 +188,7 @@
     container.innerHTML = `
       <div class="dual-chart">
         <div class="chart-legend">
-          <span><i class="legend-line policy"></i>绿色实线=政策主线分 mainline_score_v6 × 100</span>
-          <span><i class="legend-line market"></i>橙色虚线=市场热度观察分</span>
+          <span>颜色=主题，同一主题在两张图里颜色一致</span>
           <span>横轴=报告生成时间，显示最新政策主线分前 8 个主题</span>
         </div>
         <div class="strength-board">
@@ -205,10 +200,11 @@
         </div>
         <div class="chart-subhead">
           <strong>时间走势</strong>
-          <span>同一主题内比较政策线和热度线是否同向</span>
+          <span>分开看政策主线分和市场热度观察分，便于比较不同主题强弱</span>
         </div>
-        <div class="spark-list">
-          ${themes.map((theme) => renderThemeRow(theme, labels, yMax)).join("")}
+        <div class="trend-list">
+          <div class="trend-card">${renderTrendChart(themes, labels, policyScore, "政策主线分历史变化", "政策主线分", yMax)}</div>
+          <div class="trend-card">${renderTrendChart(themes, labels, marketScore, "市场热度观察分历史变化", "市场热度观察分", yMax)}</div>
         </div>
       </div>`;
   }

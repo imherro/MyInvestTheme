@@ -164,7 +164,7 @@ def test_pages_render():
     assert "A股主线研究台" in latest.text
     assert "政策主线分 vs 市场热度观察分" in latest.text
     assert "上方看当前强弱对比" in latest.text
-    assert "下方看时间走势" in latest.text
+    assert "下方分两张图看不同主题的历史强弱变化" in latest.text
     assert "点大小/外圈" not in latest.text
     assert "mainline_score_v6" in latest.text
     assert "证据项/拆解" in latest.text
@@ -175,9 +175,6 @@ def test_pages_render():
     assert "accelerating" in latest.text
     assert "政策主线靠前且市场热度靠前" in latest.text
     assert latest.text.count('class="hint"') == 2
-    assert "方法：policy_score_v2" not in latest.text
-    assert "方法：市场热度分" not in latest.text
-
     reports = get("/reports")
     assert reports.status_code == 200
     assert "历次研究结果" in reports.text
@@ -186,8 +183,9 @@ def test_pages_render():
     assert app_js.status_code == 200
     assert "最新强弱对比" in app_js.text
     assert "时间走势" in app_js.text
-    assert "绿色实线=政策主线分" in app_js.text
-    assert "橙色虚线=市场热度观察分" in app_js.text
+    assert "政策主线分历史变化" in app_js.text
+    assert "市场热度观察分历史变化" in app_js.text
+    assert "颜色=主题" in app_js.text
     assert "点大小/外圈" not in app_js.text
 
 

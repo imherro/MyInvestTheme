@@ -502,73 +502,21 @@ th {
   font-weight: 700;
 }
 
-.spark-list {
+.trend-list {
   display: grid;
+  gap: 12px;
 }
 
-.spark-row {
-  display: grid;
-  grid-template-columns: 170px minmax(460px, 1fr) 190px;
-  gap: 14px;
-  align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--line);
+.trend-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  overflow: auto;
 }
 
-.spark-row:last-child {
-  border-bottom: 0;
-}
-
-.spark-meta,
-.spark-values {
-  min-width: 0;
-}
-
-.spark-meta strong {
+.trend-card svg {
+  min-width: 1020px;
   display: block;
-  font-size: 14px;
-  line-height: 1.35;
-  overflow-wrap: anywhere;
-}
-
-.spark-meta span {
-  display: block;
-  color: var(--muted);
-  margin-top: 4px;
-  font-size: 12px;
-}
-
-.spark-plot svg {
-  width: 100%;
-  min-width: 460px;
-  display: block;
-}
-
-.spark-values {
-  display: grid;
-  gap: 5px;
-  font-size: 12px;
-}
-
-.spark-values div {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.spark-values span {
-  color: var(--muted);
-}
-
-.spark-values strong {
-  font-variant-numeric: tabular-nums;
-}
-
-.spark-values em {
-  color: var(--brand-dark);
-  font-style: normal;
-  font-weight: 700;
-  overflow-wrap: anywhere;
 }
 
 .chart-empty,
