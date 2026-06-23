@@ -187,6 +187,9 @@ def test_pages_render():
     assert "下方分两张图看不同主题的历史强弱变化" in latest.text
     assert "点大小/外圈" not in latest.text
     assert "mainline_score_v6" in latest.text
+    assert "主线分" in latest.text
+    assert "主题分" in latest.text
+    assert "政策贡献" in latest.text
     assert "周期阶段" in latest.text
     assert "周期阶段优先级" in latest.text
     assert "距90天复核" in latest.text
@@ -217,7 +220,7 @@ def test_pages_render():
 def test_index_table_column_contract():
     latest = get("/")
     assert latest.status_code == 200
-    tables = re.findall(r"<table>.*?</table>", latest.text, flags=re.S)
+    tables = re.findall(r"<table(?:\s+[^>]*)?>.*?</table>", latest.text, flags=re.S)
     assert len(tables) >= 2
     for table in tables[:2]:
         assert table.count("<col ") == table.count("<th>")

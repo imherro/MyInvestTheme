@@ -241,7 +241,7 @@ table {
 }
 
 .col-score {
-  width: 88px;
+  width: 112px;
 }
 
 .col-policy {
@@ -268,6 +268,25 @@ th {
   color: var(--muted);
   font-weight: 600;
   background: var(--surface-2);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.th-main {
+  display: block;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.th-sub {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font: 600 11px/1.2 Consolas, "Segoe UI", Arial, sans-serif;
+  overflow-wrap: anywhere;
 }
 
 .strong {
