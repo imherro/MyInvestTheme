@@ -75,7 +75,7 @@
             <span class="th-main">30/90日</span>
             <span class="th-sub">政策贡献</span>
           </th>
-          <th>主要支撑事件</th>
+          <th>政策依据</th>
         </tr>
       </thead>
       <tbody>
@@ -93,7 +93,36 @@
           </td>
           <td class="score-cell">{{ "%.4f"|format(item.theme_score_v5) }}</td>
           <td class="score-cell">{{ "%.4f"|format(item.score_30d) }} / {{ "%.4f"|format(item.score_90d) }}</td>
-          <td class="muted etf-cell">{{ "、".join(item.top_event_ids[:3]) if item.top_event_ids else "无" }}</td>
+          <td class="support-cell">
+            {% if item.supporting_events %}
+            <details class="support-details">
+              <summary>
+                <span class="support-count">{{ item.supporting_event_count }}条</span>
+                <span class="support-summary">{{ item.supporting_event_summary }}</span>
+              </summary>
+              <div class="support-list">
+                {% for event in item.supporting_events[:3] %}
+                <div class="support-item">
+                  {% if event.url %}
+                  <a class="support-title" href="{{ event.url }}" target="_blank" rel="noopener noreferrer">{{ event.title }}</a>
+                  {% else %}
+                  <span class="support-title">{{ event.title }}</span>
+                  {% endif %}
+                  <div class="support-meta">
+                    {% if event.event_activity_date %}<span>{{ event.event_activity_date }}</span>{% endif %}
+                    {% if event.source %}<span>{{ event.source }}</span>{% endif %}
+                    {% if event.age_label %}<span>{{ event.age_label }}</span>{% endif %}
+                    {% if event.role_label %}<span>{{ event.role_label }}</span>{% endif %}
+                    {% if event.contribution_label %}<span>{{ event.contribution_label }}</span>{% endif %}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </details>
+            {% else %}
+            <span class="muted">无明确政策依据</span>
+            {% endif %}
+          </td>
         </tr>
         {% endfor %}
       </tbody>

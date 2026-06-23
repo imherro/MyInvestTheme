@@ -233,15 +233,73 @@ def _rows_with_cycle_event_source(rows: list[dict[str, Any]], payload: dict[str,
     return result
 
 
+def _event_role_label(value: Any) -> str:
+    return {
+        "primary": "主导",
+        "co_primary": "共同主导",
+        "secondary": "次级",
+        "peripheral": "边缘",
+    }.get(str(value or ""), "")
+
+
+def _event_support_items(row: dict[str, Any]) -> list[dict[str, Any]]:
+    items = []
+    for event in row.get("top_event_contributors") or []:
+        if not isinstance(event, dict):
+            continue
+        title = str(event.get("primary_policy_title") or event.get("title") or "").strip()
+        if not title:
+            title = "未命名政策事件"
+        age_number = _float_or_none(event.get("age_days"))
+        age_days = int(age_number) if age_number is not None else None
+        contribution = _float_or_none(event.get("allocated_cluster_contribution"))
+        items.append(
+            {
+                "title": title,
+                "url": str(event.get("url") or event.get("source_url") or "").strip(),
+                "source": str(event.get("source") or event.get("source_org") or "").strip(),
+                "event_activity_date": str(event.get("event_activity_date") or "").strip(),
+                "age_days": age_days,
+                "age_label": f"距基准日{age_days}天" if age_days is not None else "",
+                "role_label": _event_role_label(event.get("allocation_role")),
+                "contribution": contribution,
+                "contribution_label": f"贡献 {contribution:.4f}" if contribution is not None else "",
+            }
+        )
+    return sorted(
+        items,
+        key=lambda item: (
+            -(item.get("contribution") or 0),
+            item.get("age_days") if item.get("age_days") is not None else 9999,
+            item.get("title") or "",
+        ),
+    )
+
+
+def _rows_with_supporting_events(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    result = []
+    for row in rows or []:
+        item = dict(row)
+        supporting_events = _event_support_items(item)
+        item["supporting_events"] = supporting_events
+        item["supporting_event_count"] = len(supporting_events)
+        item["supporting_event_summary"] = supporting_events[0]["title"] if supporting_events else "无明确政策依据"
+        result.append(item)
+    return result
+
+
 def _mainline_rows(payload: dict[str, Any]) -> list[dict[str, Any]]:
     rows = payload.get("mainline_ranking") or []
     if rows:
-        return enrich_mainline_rows_with_cycle_stage(
+        enriched = enrich_mainline_rows_with_cycle_stage(
             _rows_with_cycle_event_source(rows, payload), _legacy_theme_rows(payload)
         )
+        return _rows_with_supporting_events(enriched)
     theme_summary = payload.get("theme_summary") or {}
     if theme_summary.get("themes"):
-        return enrich_mainline_rows_with_cycle_stage(build_mainline_ranking(theme_summary), _legacy_theme_rows(payload))
+        return _rows_with_supporting_events(
+            enrich_mainline_rows_with_cycle_stage(build_mainline_ranking(theme_summary), _legacy_theme_rows(payload))
+        )
     return []
 
 
@@ -554,6 +612,9 @@ def _report_summary(path: Path) -> dict[str, Any]:
                 "cycle_review_remaining_days": item.get("cycle_review_remaining_days"),
                 "cycle_timing_label": item.get("cycle_timing_label"),
                 "cycle_stage_reason": item.get("cycle_stage_reason"),
+                "supporting_events": item.get("supporting_events") or [],
+                "supporting_event_count": item.get("supporting_event_count", 0),
+                "supporting_event_summary": item.get("supporting_event_summary", ""),
                 "score_30d": item.get("score_30d"),
                 "score_90d": item.get("score_90d"),
                 "event_count_30d": item.get("event_count_30d"),
