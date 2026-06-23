@@ -197,10 +197,48 @@ def enrich_theme_ranking(themes: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return enriched
 
 
+def _theme_summary_by_key(payload: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    result: dict[str, dict[str, Any]] = {}
+    for theme in (payload.get("theme_summary") or {}).get("themes") or []:
+        if not isinstance(theme, dict):
+            continue
+        for key in (theme.get("theme_id"), theme.get("theme_name"), theme.get("theme")):
+            text = str(key or "").strip()
+            if text:
+                result[text] = theme
+    return result
+
+
+def _rows_with_cycle_event_source(rows: list[dict[str, Any]], payload: dict[str, Any]) -> list[dict[str, Any]]:
+    theme_by_key = _theme_summary_by_key(payload)
+    result = []
+    for row in rows or []:
+        if not isinstance(row, dict):
+            continue
+        item = dict(row)
+        if not item.get("cycle_event_age_details") and not item.get("all_event_contributors"):
+            source = (
+                theme_by_key.get(str(item.get("theme_id") or ""))
+                or theme_by_key.get(str(item.get("theme_name") or ""))
+                or theme_by_key.get(str(item.get("theme") or ""))
+            )
+            if source:
+                item["_cycle_event_contributors"] = list(
+                    source.get("all_event_contributors")
+                    or source.get("lifecycle_event_details")
+                    or source.get("top_event_contributors")
+                    or []
+                )
+        result.append(item)
+    return result
+
+
 def _mainline_rows(payload: dict[str, Any]) -> list[dict[str, Any]]:
     rows = payload.get("mainline_ranking") or []
     if rows:
-        return enrich_mainline_rows_with_cycle_stage(rows, _legacy_theme_rows(payload))
+        return enrich_mainline_rows_with_cycle_stage(
+            _rows_with_cycle_event_source(rows, payload), _legacy_theme_rows(payload)
+        )
     theme_summary = payload.get("theme_summary") or {}
     if theme_summary.get("themes"):
         return enrich_mainline_rows_with_cycle_stage(build_mainline_ranking(theme_summary), _legacy_theme_rows(payload))
@@ -234,6 +272,12 @@ def _canonical_summary(payload: dict[str, Any]) -> dict[str, Any]:
                     "cycle_stage_label",
                     "cycle_stage_priority",
                     "cycle_time_window",
+                    "cycle_reference_window",
+                    "cycle_review_window_days",
+                    "cycle_elapsed_days",
+                    "cycle_recent_reinforcement_days",
+                    "cycle_review_remaining_days",
+                    "cycle_timing_label",
                     "cycle_stage_reason",
                     "cycle_stage_advice",
                     "cycle_stage_scoring_version",
@@ -358,7 +402,7 @@ def _with_canonical_fields(payload: dict[str, Any]) -> dict[str, Any]:
         result.setdefault("legacy_theme_ranking", build_legacy_theme_ranking(result.get("theme_ranking") or []))
     result["mainline_ranking"] = _mainline_rows(result)
     result["canonical_mainline_summary"] = _canonical_summary(result)
-    result.setdefault("mainline_cycle_stage_summary", build_cycle_stage_summary(result.get("mainline_ranking") or []))
+    result["mainline_cycle_stage_summary"] = build_cycle_stage_summary(result.get("mainline_ranking") or [])
     result.setdefault("data_quality_summary", _data_quality_summary(result))
     result.setdefault("policy_provenance_summary", _policy_provenance_summary(result))
     result.setdefault("policy_snapshot_summary", _policy_snapshot_summary(result))
@@ -406,6 +450,8 @@ def _report_summary(path: Path) -> dict[str, Any]:
         "top_mainline_lifecycle_state_label": top_mainline.get("lifecycle_state_label", ""),
         "top_mainline_cycle_stage_code": top_mainline.get("cycle_stage", ""),
         "top_mainline_cycle_time_window": top_mainline.get("cycle_time_window", ""),
+        "top_mainline_cycle_timing_label": top_mainline.get("cycle_timing_label", ""),
+        "top_mainline_cycle_review_remaining_days": top_mainline.get("cycle_review_remaining_days"),
         "default_score_field": DEFAULT_SCORE_FIELD if mainline_rows else "legacy_evidence_score",
         "canonical_mainline_version": canonical_mainline_summary.get("scoring_version", "") if mainline_rows else "",
         "data_quality_status": data_quality_summary.get("status", ""),
@@ -469,8 +515,7 @@ def _report_summary(path: Path) -> dict[str, Any]:
             "emerging_count": mainline_lifecycle_summary.get("emerging_count", 0),
             "cooling_count": mainline_lifecycle_summary.get("cooling_count", 0),
         },
-        "mainline_cycle_stage_summary": payload.get("mainline_cycle_stage_summary")
-        or build_cycle_stage_summary(mainline_rows),
+        "mainline_cycle_stage_summary": build_cycle_stage_summary(mainline_rows),
         "theme_summary": {
             "scoring_version": theme_summary.get("scoring_version", ""),
             "policy_stance_version": theme_summary.get("policy_stance_version", ""),
@@ -502,6 +547,12 @@ def _report_summary(path: Path) -> dict[str, Any]:
                 "cycle_stage": item.get("cycle_stage"),
                 "cycle_stage_label": item.get("cycle_stage_label"),
                 "cycle_time_window": item.get("cycle_time_window"),
+                "cycle_reference_window": item.get("cycle_reference_window"),
+                "cycle_review_window_days": item.get("cycle_review_window_days"),
+                "cycle_elapsed_days": item.get("cycle_elapsed_days"),
+                "cycle_recent_reinforcement_days": item.get("cycle_recent_reinforcement_days"),
+                "cycle_review_remaining_days": item.get("cycle_review_remaining_days"),
+                "cycle_timing_label": item.get("cycle_timing_label"),
                 "cycle_stage_reason": item.get("cycle_stage_reason"),
                 "score_30d": item.get("score_30d"),
                 "score_90d": item.get("score_90d"),
@@ -600,6 +651,12 @@ def build_score_series() -> dict[str, Any]:
                     "cycle_stage_label": item.get("cycle_stage_label"),
                     "cycle_stage_priority": item.get("cycle_stage_priority"),
                     "cycle_time_window": item.get("cycle_time_window"),
+                    "cycle_reference_window": item.get("cycle_reference_window"),
+                    "cycle_review_window_days": item.get("cycle_review_window_days"),
+                    "cycle_elapsed_days": item.get("cycle_elapsed_days"),
+                    "cycle_recent_reinforcement_days": item.get("cycle_recent_reinforcement_days"),
+                    "cycle_review_remaining_days": item.get("cycle_review_remaining_days"),
+                    "cycle_timing_label": item.get("cycle_timing_label"),
                     "cycle_stage_reason": item.get("cycle_stage_reason"),
                     "score_30d": item.get("score_30d"),
                     "score_90d": item.get("score_90d"),
@@ -658,6 +715,8 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
             "top_mainline_cycle_stage": top_mainline.get("cycle_stage_label", ""),
             "top_mainline_cycle_stage_code": top_mainline.get("cycle_stage", ""),
             "top_mainline_cycle_time_window": top_mainline.get("cycle_time_window", ""),
+            "top_mainline_cycle_timing_label": top_mainline.get("cycle_timing_label", ""),
+            "top_mainline_cycle_review_remaining_days": top_mainline.get("cycle_review_remaining_days"),
             "default_score_field": canonical_mainline_summary.get("default_score_field", DEFAULT_SCORE_FIELD),
             "canonical_mainline_version": canonical_mainline_summary.get("scoring_version", ""),
             "data_quality_status": data_quality_summary.get("status", ""),
@@ -706,8 +765,7 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
         "policy_stance_summary": payload.get("policy_stance_summary") or {},
         "event_theme_allocation_summary": payload.get("event_theme_allocation_summary") or {},
         "mainline_lifecycle_summary": payload.get("mainline_lifecycle_summary") or {},
-        "mainline_cycle_stage_summary": payload.get("mainline_cycle_stage_summary")
-        or build_cycle_stage_summary(mainline_ranking),
+        "mainline_cycle_stage_summary": build_cycle_stage_summary(mainline_ranking),
         "theme_summary": theme_summary,
         "market": {
             "breadth": breadth,
@@ -731,9 +789,7 @@ def latest_page(request: Request) -> HTMLResponse:
     page_report["snapshot_registry_update_summary"] = _snapshot_registry_update_summary(payload)
     page_report["reproducibility_manifest"] = _reproducibility_manifest(payload)
     page_report["contract_validation_summary"] = _contract_summary(payload)
-    page_report["mainline_cycle_stage_summary"] = payload.get("mainline_cycle_stage_summary") or build_cycle_stage_summary(
-        page_report["mainline_ranking"]
-    )
+    page_report["mainline_cycle_stage_summary"] = build_cycle_stage_summary(page_report["mainline_ranking"])
     page_report["legacy_theme_ranking"] = enrich_theme_ranking(_legacy_theme_rows(payload))
     page_report["theme_ranking"] = page_report["legacy_theme_ranking"]
     reports = list_reports()

@@ -103,8 +103,15 @@ def _mainline_row(row: dict[str, Any]) -> dict[str, Any]:
         "lifecycle_reasons": list(row.get("lifecycle_reasons") or []),
         "top_event_ids": _top_event_ids(row),
         "top_event_contributors": list(row.get("top_event_contributors") or []),
+        "_cycle_event_contributors": list(
+            row.get("all_event_contributors")
+            or row.get("lifecycle_event_details")
+            or row.get("top_event_contributors")
+            or []
+        ),
     }
     item.update(classify_mainline_cycle_stage(item))
+    item.pop("_cycle_event_contributors", None)
     return item
 
 
@@ -163,6 +170,12 @@ def build_canonical_mainline_summary(theme_summary: dict[str, Any]) -> dict[str,
             "cycle_stage": top.get("cycle_stage", ""),
             "cycle_stage_label": top.get("cycle_stage_label", ""),
             "cycle_time_window": top.get("cycle_time_window", ""),
+            "cycle_reference_window": top.get("cycle_reference_window", ""),
+            "cycle_review_window_days": top.get("cycle_review_window_days"),
+            "cycle_elapsed_days": top.get("cycle_elapsed_days"),
+            "cycle_recent_reinforcement_days": top.get("cycle_recent_reinforcement_days"),
+            "cycle_review_remaining_days": top.get("cycle_review_remaining_days"),
+            "cycle_timing_label": top.get("cycle_timing_label", ""),
             "score_30d": top.get("score_30d"),
             "score_90d": top.get("score_90d"),
             "matched_allocated_event_count": top.get("matched_allocated_event_count"),

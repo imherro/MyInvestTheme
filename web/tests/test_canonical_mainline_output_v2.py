@@ -56,8 +56,12 @@ def theme(theme_id, name, score, state="sustained", theme_score_v5=1.0):
         "deduplication_effect": 0.0,
         "stance_adjustment_effect": 0.1,
         "allocation_adjustment_effect": 0.2,
+        "all_event_contributors": [
+            {"event_cluster_id": f"event-{theme_id}", "age_days": 44, "allocated_cluster_contribution": score},
+            {"event_cluster_id": f"event-{theme_id}-recent", "age_days": 5, "allocated_cluster_contribution": 0.2},
+        ],
         "top_event_contributors": [
-            {"event_cluster_id": f"event-{theme_id}", "allocated_cluster_contribution": score}
+            {"event_cluster_id": f"event-{theme_id}", "age_days": 44, "allocated_cluster_contribution": score}
         ],
     }
 
@@ -165,8 +169,11 @@ def test_canonical_summary_top_mainline_is_correct():
     assert canonical["default_score_field"] == "mainline_score_v6"
     assert canonical["top_mainline"]["lifecycle_state"] == "sustained"
     assert canonical["top_mainline"]["lifecycle_state_label"] == "持续有效"
-    assert canonical["mainline_cycle_stage_version"] == "mainline_cycle_stage_v1"
+    assert canonical["mainline_cycle_stage_version"] == "mainline_cycle_stage_v2"
     assert canonical["top_mainline"]["cycle_stage_label"]
+    assert canonical["top_mainline"]["cycle_elapsed_days"] == 44
+    assert canonical["top_mainline"]["cycle_review_remaining_days"] == 46
+    assert "距90天复核约46天" in canonical["top_mainline"]["cycle_time_window"]
 
 
 def test_markdown_conclusion_does_not_use_legacy_evidence_top():
@@ -196,7 +203,8 @@ def test_api_latest_exposes_canonical_mainline_summary():
     assert body["mainline_ranking"][0]["lifecycle_state"]
     assert body["mainline_ranking"][0]["lifecycle_state_label"]
     assert body["mainline_ranking"][0]["cycle_stage_label"]
-    assert body["mainline_cycle_stage_summary"]["scoring_version"] == "mainline_cycle_stage_v1"
+    assert "cycle_review_remaining_days" in body["mainline_ranking"][0]
+    assert body["mainline_cycle_stage_summary"]["scoring_version"] == "mainline_cycle_stage_v2"
 
 
 def test_api_index_default_top_mainline_uses_v6():
@@ -205,6 +213,7 @@ def test_api_index_default_top_mainline_uses_v6():
     assert payload["latest_report"]["top_theme"] == payload["latest_report"]["top_mainline_theme"]
     assert payload["latest_report"]["default_score_field"] == "mainline_score_v6"
     assert payload["latest_report"]["top_mainline_cycle_stage"]
+    assert "top_mainline_cycle_review_remaining_days" in payload["latest_report"]
 
 
 def test_score_series_uses_mainline_score_as_default_score():
@@ -220,6 +229,7 @@ def test_score_series_uses_mainline_score_as_default_score():
         assert "legacy_policy_score" in point
         assert "lifecycle_state_label" in point
         assert "cycle_stage_label" in point
+        assert "cycle_review_remaining_days" in point
 
 
 def test_api_reports_summary_uses_canonical_top():

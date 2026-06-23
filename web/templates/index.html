@@ -77,7 +77,7 @@
           <td class="score-cell">{{ "%.4f"|format(item.mainline_score_v6) }}</td>
           <td><span class="stage" title="{{ item.lifecycle_state }}">{{ item.lifecycle_state_label or item.lifecycle_state }}</span></td>
           <td>
-            <span class="cycle-stage" title="{{ item.cycle_stage_reason }}">
+            <span class="cycle-stage" title="{{ item.cycle_stage_reason }}；距90天复核是政策证据窗口，不是行情倒计时">
               {{ item.cycle_stage_label or item.cycle_stage }}
             </span>
             <span class="cycle-window">{{ item.cycle_time_window }}</span>

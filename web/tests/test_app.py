@@ -43,7 +43,8 @@ def test_latest_report_contract():
     assert body["result"].get("mainline_ranking", [])[0]["lifecycle_state"]
     assert body["result"].get("mainline_ranking", [])[0]["lifecycle_state_label"]
     assert body["result"].get("mainline_ranking", [])[0]["cycle_stage_label"]
-    assert body["result"].get("mainline_cycle_stage_summary", {}).get("scoring_version") == "mainline_cycle_stage_v1"
+    assert "cycle_review_remaining_days" in body["result"].get("mainline_ranking", [])[0]
+    assert body["result"].get("mainline_cycle_stage_summary", {}).get("scoring_version") == "mainline_cycle_stage_v2"
 
 
 def test_index_api_returns_homepage_content():
@@ -66,6 +67,7 @@ def test_index_api_returns_homepage_content():
     assert body["latest_report"]["top_mainline_lifecycle_state_label"]
     assert body["latest_report"]["top_mainline_cycle_stage"]
     assert body["latest_report"]["top_mainline_cycle_time_window"]
+    assert "top_mainline_cycle_review_remaining_days" in body["latest_report"]
     assert body["mainline_ranking"]
     assert body["canonical_mainline_summary"]["scoring_version"] == "canonical_mainline_output_v2"
     assert body["legacy_theme_ranking"]
@@ -79,6 +81,7 @@ def test_index_api_returns_homepage_content():
     assert "lifecycle_state_label" in body["reports"][0]["top_themes"][0]
     assert "cycle_stage_label" in body["reports"][0]["top_themes"][0]
     assert "cycle_time_window" in body["reports"][0]["top_themes"][0]
+    assert "cycle_review_remaining_days" in body["reports"][0]["top_themes"][0]
     assert "theme_score_v5" in body["reports"][0]["top_themes"][0]
     assert "theme_score_v4_stance_adjusted" in body["reports"][0]["top_themes"][0]
     assert "theme_score_v4" in body["reports"][0]["top_themes"][0]
@@ -97,6 +100,7 @@ def test_index_api_returns_homepage_content():
     first_mainline = body["mainline_ranking"][0]
     assert first_mainline["theme_name"] == body["latest_report"]["top_mainline_theme"]
     assert first_mainline["cycle_stage_label"] == body["latest_report"]["top_mainline_cycle_stage"]
+    assert first_mainline["cycle_review_remaining_days"] == body["latest_report"]["top_mainline_cycle_review_remaining_days"]
     first_theme = body["legacy_theme_ranking"][0]
     assert "evidence_breakdown" in first_theme
     labels = {item["label"] for item in first_theme["evidence_breakdown"]}
@@ -167,6 +171,7 @@ def test_reports_and_score_series():
     assert "cycle_stage" in first_point
     assert "cycle_stage_label" in first_point
     assert "cycle_time_window" in first_point
+    assert "cycle_review_remaining_days" in first_point
     assert "score_30d" in first_point
     assert "score_90d" in first_point
     assert "resonance_score" in first_point
@@ -184,6 +189,7 @@ def test_pages_render():
     assert "mainline_score_v6" in latest.text
     assert "周期阶段" in latest.text
     assert "周期阶段优先级" in latest.text
+    assert "距90天复核" in latest.text
     assert "启动确认期" in latest.text or "主升扩散期" in latest.text or "政策孕育期" in latest.text
     assert "证据项/拆解" in latest.text
     assert "资金排名" in latest.text

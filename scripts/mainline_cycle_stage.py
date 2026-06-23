@@ -9,7 +9,8 @@ except ModuleNotFoundError:
     from scripts.mainline_lifecycle import lifecycle_state_label
 
 
-SCORING_VERSION = "mainline_cycle_stage_v1"
+SCORING_VERSION = "mainline_cycle_stage_v2"
+REVIEW_WINDOW_DAYS = 90
 
 CYCLE_STAGE_META = {
     "main_rise_diffusion": {
@@ -107,21 +108,90 @@ def _market_field(market_row: dict[str, Any] | None, field: str) -> float | None
     return _float_or_none(market_row.get(field))
 
 
-def _stage_fields(stage: str, reasons: list[str], market_row: dict[str, Any] | None) -> dict[str, Any]:
+def _event_age_details(row: dict[str, Any]) -> list[dict[str, Any]]:
+    source = (
+        row.get("_cycle_event_contributors")
+        or row.get("all_event_contributors")
+        or row.get("lifecycle_event_details")
+        or row.get("cycle_event_age_details")
+        or row.get("top_event_contributors")
+        or []
+    )
+    details = []
+    for item in source:
+        if not isinstance(item, dict):
+            continue
+        age = _float_or_none(item.get("age_days"))
+        if age is None or age < 0:
+            continue
+        details.append(
+            {
+                "event_cluster_id": item.get("event_cluster_id", ""),
+                "event_activity_date": item.get("event_activity_date", ""),
+                "age_days": int(round(age)),
+                "age_bucket": item.get("age_bucket", ""),
+                "allocation_role": item.get("allocation_role", ""),
+                "allocated_cluster_contribution": round4(item.get("allocated_cluster_contribution")),
+            }
+        )
+    return sorted(details, key=lambda item: (item["age_days"], -round4(item.get("allocated_cluster_contribution"))))
+
+
+def _cycle_timing_fields(row: dict[str, Any], reference_window: str) -> dict[str, Any]:
+    details = _event_age_details(row)
+    ages = [item["age_days"] for item in details]
+    effective_ages = [age for age in ages if age <= REVIEW_WINDOW_DAYS]
+    elapsed_days = max(effective_ages) if effective_ages else (max(ages) if ages else None)
+    recent_days = min(ages) if ages else None
+    remaining_days = None
+    if elapsed_days is not None:
+        remaining_days = max(REVIEW_WINDOW_DAYS - elapsed_days, 0)
+
+    parts = []
+    if elapsed_days is not None:
+        prefix = "有效政策" if elapsed_days <= REVIEW_WINDOW_DAYS else "旧政策"
+        parts.append(f"{prefix}第{elapsed_days}天")
+        if remaining_days and remaining_days > 0:
+            parts.append(f"距{REVIEW_WINDOW_DAYS}天复核约{remaining_days}天")
+        else:
+            parts.append(f"已到{REVIEW_WINDOW_DAYS}天复核线")
+    if recent_days is not None:
+        parts.append(f"最近强化第{recent_days}天")
+
+    timing_label = "｜".join(parts) if parts else reference_window
+    return {
+        "cycle_reference_window": reference_window,
+        "cycle_review_window_days": REVIEW_WINDOW_DAYS,
+        "cycle_elapsed_days": elapsed_days,
+        "cycle_recent_reinforcement_days": recent_days,
+        "cycle_review_remaining_days": remaining_days,
+        "cycle_timing_label": timing_label,
+        "cycle_event_age_details": details,
+    }
+
+
+def _stage_fields(
+    stage: str,
+    reasons: list[str],
+    market_row: dict[str, Any] | None,
+    mainline_row: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     meta = CYCLE_STAGE_META.get(stage, CYCLE_STAGE_META["unknown"])
     market_score = _market_field(market_row, "market_score")
     evidence_score = _market_field(market_row, "evidence_score")
+    timing = _cycle_timing_fields(mainline_row or {}, meta["time_window"])
     return {
         "cycle_stage": stage,
         "cycle_stage_label": meta["label"],
         "cycle_stage_priority": meta["priority"],
-        "cycle_time_window": meta["time_window"],
+        "cycle_time_window": timing["cycle_timing_label"],
         "cycle_stage_advice": meta["advice"],
         "cycle_stage_reason": "；".join(reasons),
         "cycle_stage_reasons": reasons,
         "cycle_stage_scoring_version": SCORING_VERSION,
         "cycle_market_score": round(market_score, 2) if market_score is not None else None,
         "cycle_evidence_score": round(evidence_score, 2) if evidence_score is not None else None,
+        **timing,
     }
 
 
@@ -155,31 +225,31 @@ def classify_mainline_cycle_stage(
     policy_not_accelerating = lifecycle != "accelerating" or acceleration_delta <= 0 or score_30d <= score_31_60d
 
     if lifecycle in {"dormant", "undated_unknown"} or (mainline_score <= 0 and score_90d <= 0):
-        return _stage_fields("not_active", [f"生命周期为{lifecycle or '空'}，有效政策主线分不足"], market_row)
+        return _stage_fields("not_active", [f"生命周期为{lifecycle or '空'}，有效政策主线分不足"], market_row, mainline_row)
 
     if lifecycle == "legacy_tail":
-        return _stage_fields("legacy_residual", ["主要贡献来自90日以外旧政策，近期政策事件不足"], market_row)
+        return _stage_fields("legacy_residual", ["主要贡献来自90日以外旧政策，近期政策事件不足"], market_row, mainline_row)
 
     if lifecycle == "cooling" or (score_31_60d > 0 and score_30d < score_31_60d * 0.6 and not market_strong):
-        return _stage_fields("cooling_decline", ["30日政策贡献弱于31-60日，政策边际降温"], market_row)
+        return _stage_fields("cooling_decline", ["30日政策贡献弱于31-60日，政策边际降温"], market_row, mainline_row)
 
     if market_crowded and policy_not_accelerating:
-        return _stage_fields("crowded_late", ["市场热度处在高位，但政策边际没有继续加速"], market_row)
+        return _stage_fields("crowded_late", ["市场热度处在高位，但政策边际没有继续加速"], market_row, mainline_row)
 
     if lifecycle in {"accelerating", "sustained"} and market_strong and policy_breadth_confirmed:
-        return _stage_fields("main_rise_diffusion", ["政策仍处有效状态，市场热度已确认，事件或来源广度达标"], market_row)
+        return _stage_fields("main_rise_diffusion", ["政策仍处有效状态，市场热度已确认，事件或来源广度达标"], market_row, mainline_row)
 
     if lifecycle in {"accelerating", "sustained", "emerging", "single_event_emerging"} and market_confirmed:
-        return _stage_fields("launch_confirmation", ["政策信号有效，市场热度开始确认"], market_row)
+        return _stage_fields("launch_confirmation", ["政策信号有效，市场热度开始确认"], market_row, mainline_row)
 
     if lifecycle in {"accelerating", "sustained", "emerging", "single_event_emerging"} and recent_policy_positive:
         reason = "政策信号有效，但市场热度缺失" if market_missing else "政策信号有效，但市场热度尚未确认"
-        return _stage_fields("policy_incubation", [reason], market_row)
+        return _stage_fields("policy_incubation", [reason], market_row, mainline_row)
 
     if policy_active:
-        return _stage_fields("unknown", ["政策主线分存在，但周期证据未形成稳定组合"], market_row)
+        return _stage_fields("unknown", ["政策主线分存在，但周期证据未形成稳定组合"], market_row, mainline_row)
 
-    return _stage_fields("not_active", ["当前证据不足，不能按主线处理"], market_row)
+    return _stage_fields("not_active", ["当前证据不足，不能按主线处理"], market_row, mainline_row)
 
 
 def market_rows_by_theme(market_rows: list[dict[str, Any]] | None) -> dict[str, dict[str, Any]]:
@@ -210,6 +280,7 @@ def enrich_mainline_rows_with_cycle_stage(
             if market_row:
                 break
         item.update(classify_mainline_cycle_stage(item, market_row))
+        item.pop("_cycle_event_contributors", None)
         enriched.append(item)
     return enriched
 

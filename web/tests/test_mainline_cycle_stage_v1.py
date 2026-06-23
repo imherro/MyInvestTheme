@@ -49,5 +49,19 @@ def test_cycle_stage_enrichment_matches_market_rows_by_theme_name():
     enriched = enrich_mainline_rows_with_cycle_stage(rows, [{"theme": "AI算力/通信", "market_score": 80}])
     assert enriched[0]["cycle_stage"] == "main_rise_diffusion"
     summary = build_cycle_stage_summary(enriched)
-    assert summary["scoring_version"] == "mainline_cycle_stage_v1"
+    assert summary["scoring_version"] == "mainline_cycle_stage_v2"
     assert summary["stage_counts"]["main_rise_diffusion"] == 1
+
+
+def test_cycle_stage_timing_shows_review_remaining_days():
+    item = row()
+    item["_cycle_event_contributors"] = [
+        {"event_cluster_id": "policy-44d", "age_days": 44, "allocated_cluster_contribution": 0.4},
+        {"event_cluster_id": "policy-5d", "age_days": 5, "allocated_cluster_contribution": 0.2},
+    ]
+    result = classify_mainline_cycle_stage(item, {"theme": "AI算力/通信", "market_score": 80})
+    assert result["cycle_elapsed_days"] == 44
+    assert result["cycle_review_window_days"] == 90
+    assert result["cycle_review_remaining_days"] == 46
+    assert result["cycle_recent_reinforcement_days"] == 5
+    assert "距90天复核约46天" in result["cycle_time_window"]

@@ -220,7 +220,7 @@ h2 {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1320px;
+  min-width: 1400px;
   table-layout: fixed;
 }
 
@@ -237,7 +237,7 @@ table {
 }
 
 .col-cycle {
-  width: 148px;
+  width: 228px;
 }
 
 .col-score {
@@ -302,7 +302,8 @@ th {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.3;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .score-cell {
@@ -610,7 +611,7 @@ th {
   }
 
   table {
-    min-width: 1320px;
+    min-width: 1400px;
   }
 
   th,
@@ -635,7 +636,7 @@ th {
   }
 
   table {
-    min-width: 1320px;
+    min-width: 1400px;
   }
 
   .etf-cell {
