@@ -33,6 +33,17 @@ LIFECYCLE_PRIORITY = {
     "dormant": 8,
 }
 
+LIFECYCLE_LABELS = {
+    "accelerating": "升温加速",
+    "sustained": "持续有效",
+    "emerging": "新出现",
+    "single_event_emerging": "单事件新出现",
+    "cooling": "降温",
+    "legacy_tail": "旧政策尾部",
+    "undated_unknown": "日期不足",
+    "dormant": "休眠",
+}
+
 SOURCE_ALIASES = (
     ("state_council", ("国务院办公厅", "中共中央国务院", "国务院")),
     ("ndrc", ("国家发展改革委", "国家发改委", "发改委")),
@@ -41,6 +52,11 @@ SOURCE_ALIASES = (
     ("miit", ("工业和信息化部", "工信部")),
     ("mof", ("财政部",)),
 )
+
+
+def lifecycle_state_label(state: Any) -> str:
+    text = str(state or "")
+    return LIFECYCLE_LABELS.get(text, text)
 
 
 def round4(value: Any) -> float:
@@ -251,6 +267,7 @@ def compute_theme_lifecycle_v2(theme_row: dict[str, Any], as_of_date: date, rule
     return {
         **metrics,
         "lifecycle_state": lifecycle_state,
+        "lifecycle_state_label": lifecycle_state_label(lifecycle_state),
         "state_multiplier": state_multiplier,
         "lifecycle_quality_multiplier": lifecycle_quality_multiplier,
         "mainline_score_v6": min(mainline_score_v6, metrics["theme_score_v5"]),
@@ -317,6 +334,7 @@ def build_mainline_lifecycle_summary(theme_summary: dict[str, Any], as_of_date: 
         "legacy_tail_count": counts["legacy_tail"],
         "undated_unknown_count": counts["undated_unknown"],
         "dormant_count": counts["dormant"],
+        "state_labels": LIFECYCLE_LABELS,
         "themes": rows,
     }
 

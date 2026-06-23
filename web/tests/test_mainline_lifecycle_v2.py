@@ -94,6 +94,7 @@ def test_recent_multi_event_acceleration_is_accelerating():
     assert result["event_count_30d"] == 2
     assert result["acceleration_ratio_30d"] >= 0.25
     assert result["lifecycle_state"] == "accelerating"
+    assert result["lifecycle_state_label"] == "升温加速"
 
 
 def test_multiple_active_windows_are_sustained():
@@ -103,6 +104,7 @@ def test_multiple_active_windows_are_sustained():
     )
 
     assert result["lifecycle_state"] == "sustained"
+    assert result["lifecycle_state_label"] == "持续有效"
     assert result["persistence_score"] >= 0.6666
 
 

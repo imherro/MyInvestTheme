@@ -3,6 +3,11 @@ from __future__ import annotations
 import math
 from typing import Any
 
+try:
+    from mainline_lifecycle import lifecycle_state_label
+except ModuleNotFoundError:
+    from scripts.mainline_lifecycle import lifecycle_state_label
+
 
 SCORING_VERSION = "mainline_cycle_stage_v1"
 
@@ -196,6 +201,9 @@ def enrich_mainline_rows_with_cycle_stage(
         if not isinstance(row, dict):
             continue
         item = dict(row)
+        item["lifecycle_state_label"] = item.get("lifecycle_state_label") or lifecycle_state_label(
+            item.get("lifecycle_state")
+        )
         market_row: dict[str, Any] | None = None
         for key in _theme_keys(item):
             market_row = market_by_theme.get(key)

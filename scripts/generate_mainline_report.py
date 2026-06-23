@@ -709,8 +709,9 @@ def conclusion_lines(canonical_summary: dict[str, Any], mainline_ranking: list[d
     if top:
         event_ids = "、".join(top.get("top_event_ids") or []) or "无"
         cycle_label = top.get("cycle_stage_label") or top.get("cycle_stage") or "未判定"
+        lifecycle_label = top.get("lifecycle_state_label") or top.get("lifecycle_state") or "未判定"
         lines += [
-            f"当前政策主线排序第一的是{top.get('theme_name', '')}，mainline_score_v6为{top.get('mainline_score_v6', 0):.4f}，生命周期状态为{top.get('lifecycle_state', '')}，主线周期阶段为{cycle_label}。",
+            f"当前政策主线排序第一的是{top.get('theme_name', '')}，mainline_score_v6为{top.get('mainline_score_v6', 0):.4f}，生命周期状态为{lifecycle_label}，主线周期阶段为{cycle_label}。",
             f"该主线的theme_score_v5为{top.get('theme_score_v5', 0):.4f}，30日分数为{top.get('score_30d', 0):.4f}，90日分数为{top.get('score_90d', 0):.4f}。",
             f"主要支撑事件包括：{event_ids}。",
             "本报告默认主线排序口径为mainline_score_v6，不使用旧evidence_score作为默认主线排序。",
@@ -719,8 +720,9 @@ def conclusion_lines(canonical_summary: dict[str, Any], mainline_ranking: list[d
         lines.append("当前没有可排序的政策主线。")
     if second:
         second_cycle_label = second.get("cycle_stage_label") or second.get("cycle_stage") or "未判定"
+        second_lifecycle_label = second.get("lifecycle_state_label") or second.get("lifecycle_state") or "未判定"
         lines.append(
-            f"第二梯队是{second.get('theme_name', '')}，mainline_score_v6为{second.get('mainline_score_v6', 0):.4f}，生命周期状态为{second.get('lifecycle_state', '')}，主线周期阶段为{second_cycle_label}。"
+            f"第二梯队是{second.get('theme_name', '')}，mainline_score_v6为{second.get('mainline_score_v6', 0):.4f}，生命周期状态为{second_lifecycle_label}，主线周期阶段为{second_cycle_label}。"
         )
     if breadth["r20_positive_ratio"] < 30:
         lines.append("全市场20日正收益股票比例仍低，说明行情仍偏结构性，不是全面普涨。")
@@ -941,7 +943,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         if item.get("cycle_time_window"):
             cycle_text = f"{cycle_text}（{item.get('cycle_time_window')}）"
         lines.append(
-            f"| {item.get('theme_name', '')} | {item.get('mainline_score_v6', 0):.4f} | {item.get('lifecycle_state', '')} | {cycle_text} | {item.get('theme_score_v5', 0):.4f} | {item.get('score_30d', 0):.4f} | {item.get('score_90d', 0):.4f} | {item.get('matched_allocated_event_count', 0)} | {item.get('source_org_count_90d', 0)} | {top_events} |"
+            f"| {item.get('theme_name', '')} | {item.get('mainline_score_v6', 0):.4f} | {item.get('lifecycle_state_label') or item.get('lifecycle_state', '')} | {cycle_text} | {item.get('theme_score_v5', 0):.4f} | {item.get('score_30d', 0):.4f} | {item.get('score_90d', 0):.4f} | {item.get('matched_allocated_event_count', 0)} | {item.get('source_org_count_90d', 0)} | {top_events} |"
         )
 
     contract_warnings = [issue for issue in contract_summary.get("issues", []) if issue.get("severity") == "warning"][:10]
@@ -1109,7 +1111,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         top_titles = "；".join(item.get("event_cluster_id", "") for item in theme.get("top_event_contributors", [])[:2]) or "无"
         mainline = mainline_by_theme.get(str(theme.get("theme_id") or "")) or mainline_by_theme.get(str(theme.get("theme_name") or "")) or {}
         lines.append(
-            f"| {theme.get('theme_name', '')} | {theme.get('mainline_score_v6', 0):.4f} | {theme.get('theme_score_v5', 0):.4f} | {theme.get('lifecycle_state', '')} | {mainline.get('cycle_stage_label') or mainline.get('cycle_stage', '')} | {theme.get('lifecycle_quality_multiplier', 0):.4f} | {theme.get('score_30d', 0):.4f} | {theme.get('score_90d', 0):.4f} | {theme.get('theme_score_v4_stance_adjusted', theme.get('theme_score_v4', 0)):.4f} | {theme.get('theme_score_v3_dedup', theme.get('theme_score_v3', 0)):.4f} | {theme.get('theme_score_v2_raw', 0):.4f} | {top_titles} |"
+            f"| {theme.get('theme_name', '')} | {theme.get('mainline_score_v6', 0):.4f} | {theme.get('theme_score_v5', 0):.4f} | {theme.get('lifecycle_state_label') or mainline.get('lifecycle_state_label') or theme.get('lifecycle_state', '')} | {mainline.get('cycle_stage_label') or mainline.get('cycle_stage', '')} | {theme.get('lifecycle_quality_multiplier', 0):.4f} | {theme.get('score_30d', 0):.4f} | {theme.get('score_90d', 0):.4f} | {theme.get('theme_score_v4_stance_adjusted', theme.get('theme_score_v4', 0)):.4f} | {theme.get('theme_score_v3_dedup', theme.get('theme_score_v3', 0)):.4f} | {theme.get('theme_score_v2_raw', 0):.4f} | {top_titles} |"
         )
 
     for theme in theme_summary.get("themes", []):
@@ -1131,7 +1133,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
             f"- 次级事件数：{theme.get('secondary_event_count', 0)}",
             f"- 边缘事件数：{theme.get('peripheral_event_count', 0)}",
             f"- 平均分配占比：{theme.get('avg_allocation_share', 0):.4f}",
-            f"- 生命周期状态：{theme.get('lifecycle_state', '')}",
+            f"- 生命周期状态：{theme.get('lifecycle_state_label') or mainline.get('lifecycle_state_label') or theme.get('lifecycle_state', '')}",
             f"- 主线周期阶段：{mainline.get('cycle_stage_label') or mainline.get('cycle_stage', '')}（{mainline.get('cycle_time_window', '')}）",
             f"- 周期阶段原因：{mainline.get('cycle_stage_reason', '')}",
             f"- 生命周期质量乘数：{theme.get('lifecycle_quality_multiplier', 0):.4f}",

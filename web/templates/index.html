@@ -31,7 +31,7 @@
             <strong>计算方法</strong>
             <span>policy_score_v2 → theme_relevance_v2 → event allocation → lifecycle，得到 mainline_score_v6。</span>
             <strong>生命周期优先级</strong>
-            <span>accelerating &gt; sustained &gt; emerging &gt; single_event_emerging &gt; cooling &gt; legacy_tail &gt; undated_unknown &gt; dormant。</span>
+            <span>升温加速 &gt; 持续有效 &gt; 新出现 &gt; 单事件新出现 &gt; 降温 &gt; 旧政策尾部 &gt; 日期不足 &gt; 休眠。</span>
             <strong>周期阶段优先级</strong>
             <span>主升扩散期 &gt; 启动确认期 &gt; 政策孕育期 &gt; 高位拥挤期 &gt; 降温退潮期 &gt; 旧线残余期 &gt; 未形成主线。</span>
             <strong>使用建议</strong>
@@ -75,7 +75,7 @@
           <td>{{ item.rank }}</td>
           <td class="strong">{{ item.theme_name }}</td>
           <td class="score-cell">{{ "%.4f"|format(item.mainline_score_v6) }}</td>
-          <td><span class="stage">{{ item.lifecycle_state }}</span></td>
+          <td><span class="stage" title="{{ item.lifecycle_state }}">{{ item.lifecycle_state_label or item.lifecycle_state }}</span></td>
           <td>
             <span class="cycle-stage" title="{{ item.cycle_stage_reason }}">
               {{ item.cycle_stage_label or item.cycle_stage }}

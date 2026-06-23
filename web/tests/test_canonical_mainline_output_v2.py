@@ -163,6 +163,8 @@ def test_canonical_summary_top_mainline_is_correct():
     canonical = build_canonical_mainline_summary(summary)
     assert canonical["top_mainline"]["theme_name"] == "AI算力/通信"
     assert canonical["default_score_field"] == "mainline_score_v6"
+    assert canonical["top_mainline"]["lifecycle_state"] == "sustained"
+    assert canonical["top_mainline"]["lifecycle_state_label"] == "持续有效"
     assert canonical["mainline_cycle_stage_version"] == "mainline_cycle_stage_v1"
     assert canonical["top_mainline"]["cycle_stage_label"]
 
@@ -191,6 +193,8 @@ def test_api_latest_exposes_canonical_mainline_summary():
     assert body["canonical_mainline_summary"]["scoring_version"] == "canonical_mainline_output_v2"
     assert body["canonical_mainline_summary"]["default_score_field"] == "mainline_score_v6"
     assert body["mainline_ranking"][0]["mainline_score_v6"] is not None
+    assert body["mainline_ranking"][0]["lifecycle_state"]
+    assert body["mainline_ranking"][0]["lifecycle_state_label"]
     assert body["mainline_ranking"][0]["cycle_stage_label"]
     assert body["mainline_cycle_stage_summary"]["scoring_version"] == "mainline_cycle_stage_v1"
 
@@ -214,6 +218,7 @@ def test_score_series_uses_mainline_score_as_default_score():
         assert "legacy_evidence_score" in point
         assert "legacy_market_score" in point
         assert "legacy_policy_score" in point
+        assert "lifecycle_state_label" in point
         assert "cycle_stage_label" in point
 
 

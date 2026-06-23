@@ -4,9 +4,9 @@ import math
 from typing import Any
 
 try:
-    from mainline_lifecycle import LIFECYCLE_PRIORITY
+    from mainline_lifecycle import LIFECYCLE_PRIORITY, lifecycle_state_label
 except ModuleNotFoundError:
-    from scripts.mainline_lifecycle import LIFECYCLE_PRIORITY
+    from scripts.mainline_lifecycle import LIFECYCLE_PRIORITY, lifecycle_state_label
 try:
     from mainline_cycle_stage import (
         SCORING_VERSION as CYCLE_STAGE_VERSION,
@@ -69,6 +69,8 @@ def _mainline_row(row: dict[str, Any]) -> dict[str, Any]:
         "theme_score_v3": round4(row.get("theme_score_v3")),
         "theme_score_v2_raw": round4(row.get("theme_score_v2_raw")),
         "lifecycle_state": row.get("lifecycle_state", ""),
+        "lifecycle_state_label": row.get("lifecycle_state_label")
+        or lifecycle_state_label(row.get("lifecycle_state")),
         "lifecycle_quality_multiplier": round4(row.get("lifecycle_quality_multiplier")),
         "state_multiplier": round4(row.get("state_multiplier")),
         "breadth_score": round4(row.get("breadth_score")),
@@ -156,6 +158,7 @@ def build_canonical_mainline_summary(theme_summary: dict[str, Any]) -> dict[str,
             "mainline_score_v6": top.get("mainline_score_v6"),
             "theme_score_v5": top.get("theme_score_v5"),
             "lifecycle_state": top.get("lifecycle_state", ""),
+            "lifecycle_state_label": top.get("lifecycle_state_label", ""),
             "lifecycle_quality_multiplier": top.get("lifecycle_quality_multiplier"),
             "cycle_stage": top.get("cycle_stage", ""),
             "cycle_stage_label": top.get("cycle_stage_label", ""),

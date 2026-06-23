@@ -40,6 +40,8 @@ def test_latest_report_contract():
     assert body["result"].get("canonical_mainline_summary", {}).get("scoring_version") == "canonical_mainline_output_v2"
     assert body["result"].get("canonical_mainline_summary", {}).get("default_score_field") == "mainline_score_v6"
     assert body["result"].get("mainline_ranking", [])[0]["mainline_score_v6"] is not None
+    assert body["result"].get("mainline_ranking", [])[0]["lifecycle_state"]
+    assert body["result"].get("mainline_ranking", [])[0]["lifecycle_state_label"]
     assert body["result"].get("mainline_ranking", [])[0]["cycle_stage_label"]
     assert body["result"].get("mainline_cycle_stage_summary", {}).get("scoring_version") == "mainline_cycle_stage_v1"
 
@@ -61,6 +63,7 @@ def test_index_api_returns_homepage_content():
     assert body["latest_report"]["top_mainline_theme_v6"] == body["latest_report"]["top_mainline_theme"]
     assert body["latest_report"]["top_mainline_score_v6"] == body["latest_report"]["top_mainline_score"]
     assert body["latest_report"]["top_mainline_lifecycle_state"]
+    assert body["latest_report"]["top_mainline_lifecycle_state_label"]
     assert body["latest_report"]["top_mainline_cycle_stage"]
     assert body["latest_report"]["top_mainline_cycle_time_window"]
     assert body["mainline_ranking"]
@@ -73,6 +76,7 @@ def test_index_api_returns_homepage_content():
     assert body["mainline_lifecycle_summary"]["scoring_version"] == "mainline_lifecycle_v2"
     assert body["theme_summary"]["scoring_version"] == "mainline_score_v6_lifecycle_adjusted"
     assert "mainline_score_v6" in body["reports"][0]["top_themes"][0]
+    assert "lifecycle_state_label" in body["reports"][0]["top_themes"][0]
     assert "cycle_stage_label" in body["reports"][0]["top_themes"][0]
     assert "cycle_time_window" in body["reports"][0]["top_themes"][0]
     assert "theme_score_v5" in body["reports"][0]["top_themes"][0]
@@ -158,6 +162,7 @@ def test_reports_and_score_series():
     assert "deduplication_effect" in first_point
     assert "stance_adjustment_effect" in first_point
     assert "lifecycle_state" in first_point
+    assert "lifecycle_state_label" in first_point
     assert "lifecycle_quality_multiplier" in first_point
     assert "cycle_stage" in first_point
     assert "cycle_stage_label" in first_point
@@ -185,7 +190,8 @@ def test_pages_render():
     assert "政策分" in latest.text
     assert "生命周期优先级" in latest.text
     assert "热度阶段优先级" in latest.text
-    assert "accelerating" in latest.text
+    assert "升温加速" in latest.text
+    assert "持续有效" in latest.text
     assert "政策主线靠前且市场热度靠前" in latest.text
     assert latest.text.count('class="hint"') == 2
     reports = get("/reports")
