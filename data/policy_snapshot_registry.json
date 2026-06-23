@@ -1,7 +1,7 @@
 {
   "version": "policy_snapshot_integrity_v2",
-  "updated_at": "2026-06-22T18:34:27+08:00",
-  "last_report_id": "mainline_review_2026-06-22_183427",
+  "updated_at": "2026-06-23T17:38:55+08:00",
+  "last_report_id": "mainline_review_2026-06-23_173855",
   "policy_snapshots": [
     {
       "policy_id": "csrc-2026-04-10-gem-reform-new-quality-productivity",
@@ -18,11 +18,55 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-22_183427",
+      "last_seen_report_id": "mainline_review_2026-06-23_173855",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-22T18:34:27+08:00",
+      "last_seen_at": "2026-06-23T17:38:55+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
+      ]
+    },
+    {
+      "policy_id": "csrc-2026-06-17-star-board-ai-fifth-listing-standard",
+      "title": "吴清主席在2026陆家嘴论坛提出扩大科创板第五套标准适用范围至人工智能领域",
+      "source_org_norm": "csrc",
+      "source_url": "https://www.csrc.gov.cn/csrc/c106311/c7639684/content.shtml",
+      "source_domain": "www.csrc.gov.cn",
+      "publish_date": "2026-06-17",
+      "content_hash": "sha256:e37b71a22844fd515e3d736ba64f1b99b2b3114796cd18e547bd279fe80eb2bd",
+      "previous_content_hash": "sha256:e37b71a22844fd515e3d736ba64f1b99b2b3114796cd18e547bd279fe80eb2bd",
+      "snapshot_status": "unchanged",
+      "provenance_status": "verified",
+      "inclusion_status": "included_in_mainline",
+      "revision_id": "",
+      "revision_note": "",
+      "first_seen_report_id": "mainline_review_2026-06-22_213219",
+      "last_seen_report_id": "mainline_review_2026-06-23_173855",
+      "first_seen_at": "2026-06-22T21:32:19+08:00",
+      "last_seen_at": "2026-06-23T17:38:55+08:00",
+      "snapshot_reasons": [
+        "content_hash_unchanged"
+      ]
+    },
+    {
+      "policy_id": "nda-2026-04-28-model-data-resonance-action",
+      "title": "工业和信息化部办公厅 国家数据局综合司关于联合实施2026年“模数共振”行动的通知",
+      "source_org_norm": "nda",
+      "source_url": "https://www.nda.gov.cn/sjj/zwgk/tzgg/0428/20260428215540161552208_pc.html",
+      "source_domain": "www.nda.gov.cn",
+      "publish_date": "2026-04-28",
+      "content_hash": "sha256:a0be8f438f86221902fc9862354d0dec91b410b2171bf1642a3329d621dd8f5c",
+      "previous_content_hash": "",
+      "snapshot_status": "new",
+      "provenance_status": "verified",
+      "inclusion_status": "included_in_mainline",
+      "revision_id": "",
+      "revision_note": "",
+      "first_seen_report_id": "mainline_review_2026-06-23_173855",
+      "last_seen_report_id": "mainline_review_2026-06-23_173855",
+      "first_seen_at": "2026-06-23T17:38:55+08:00",
+      "last_seen_at": "2026-06-23T17:38:55+08:00",
+      "snapshot_reasons": [
+        "policy_id_not_seen_before"
       ]
     },
     {
@@ -33,18 +77,18 @@
       "source_domain": "www.nda.gov.cn",
       "publish_date": "2026-06-08",
       "content_hash": "sha256:830c1d252c47ddfdc89c33c5a26a3a28361c812bc7bef69b3c05b9e82a6c7e22",
-      "previous_content_hash": "",
-      "snapshot_status": "new",
+      "previous_content_hash": "sha256:830c1d252c47ddfdc89c33c5a26a3a28361c812bc7bef69b3c05b9e82a6c7e22",
+      "snapshot_status": "unchanged",
       "provenance_status": "verified",
       "inclusion_status": "included_in_mainline",
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_183427",
-      "last_seen_report_id": "mainline_review_2026-06-22_183427",
+      "last_seen_report_id": "mainline_review_2026-06-23_173855",
       "first_seen_at": "2026-06-22T18:34:27+08:00",
-      "last_seen_at": "2026-06-22T18:34:27+08:00",
+      "last_seen_at": "2026-06-23T17:38:55+08:00",
       "snapshot_reasons": [
-        "policy_id_not_seen_before"
+        "content_hash_unchanged"
       ]
     },
     {
@@ -62,9 +106,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-22_183427",
+      "last_seen_report_id": "mainline_review_2026-06-23_173855",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-22T18:34:27+08:00",
+      "last_seen_at": "2026-06-23T17:38:55+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -84,11 +128,55 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-22_183427",
+      "last_seen_report_id": "mainline_review_2026-06-23_173855",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-22T18:34:27+08:00",
+      "last_seen_at": "2026-06-23T17:38:55+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
+      ]
+    },
+    {
+      "policy_id": "ndrc-2026-06-15-key-industries-energy-saving-carbon-reduction",
+      "title": "关于开展重点行业节能降碳改造攻坚三年行动的通知",
+      "source_org_norm": "ndrc",
+      "source_url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202606/t20260615_1405852.html",
+      "source_domain": "www.ndrc.gov.cn",
+      "publish_date": "2026-06-15",
+      "content_hash": "sha256:d57fab72dc6463063e76eb09ff1797d8d16546fe63c1984fce0cc6519a77501e",
+      "previous_content_hash": "",
+      "snapshot_status": "new",
+      "provenance_status": "verified",
+      "inclusion_status": "included_in_mainline",
+      "revision_id": "",
+      "revision_note": "",
+      "first_seen_report_id": "mainline_review_2026-06-23_173855",
+      "last_seen_report_id": "mainline_review_2026-06-23_173855",
+      "first_seen_at": "2026-06-23T17:38:55+08:00",
+      "last_seen_at": "2026-06-23T17:38:55+08:00",
+      "snapshot_reasons": [
+        "policy_id_not_seen_before"
+      ]
+    },
+    {
+      "policy_id": "ndrc-2026-06-22-renewable-consumption-minimum-ratio",
+      "title": "《可再生能源消费最低比重目标和可再生能源电力消纳责任权重制度实施办法》2026年第42号令",
+      "source_org_norm": "ndrc",
+      "source_url": "https://www.ndrc.gov.cn/xxgk/zcfb/fzggwl/202606/t20260612_1405837.html",
+      "source_domain": "www.ndrc.gov.cn",
+      "publish_date": "2026-06-22",
+      "content_hash": "sha256:67583734724155d165edb8c9875d466c10d93d1b7d6c1801e775f5a054f27b79",
+      "previous_content_hash": "",
+      "snapshot_status": "new",
+      "provenance_status": "verified",
+      "inclusion_status": "included_in_mainline",
+      "revision_id": "",
+      "revision_note": "",
+      "first_seen_report_id": "mainline_review_2026-06-23_173855",
+      "last_seen_report_id": "mainline_review_2026-06-23_173855",
+      "first_seen_at": "2026-06-23T17:38:55+08:00",
+      "last_seen_at": "2026-06-23T17:38:55+08:00",
+      "snapshot_reasons": [
+        "policy_id_not_seen_before"
       ]
     },
     {
@@ -106,11 +194,55 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-22_183427",
+      "last_seen_report_id": "mainline_review_2026-06-23_173855",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-22T18:34:27+08:00",
+      "last_seen_at": "2026-06-23T17:38:55+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
+      ]
+    },
+    {
+      "policy_id": "nea-2026-05-14-multi-user-green-power-direct-connection",
+      "title": "关于有序推动多用户绿电直连发展有关事项的通知",
+      "source_org_norm": "nea",
+      "source_url": "https://www.nea.gov.cn/20260520/9e1c4277ce324c8ab82a84da98da7980/c.html",
+      "source_domain": "www.nea.gov.cn",
+      "publish_date": "2026-05-14",
+      "content_hash": "sha256:8544a688eace6e7e475675f2693a6a9c262d8e68c9bce39eb0f0a791f287d4d7",
+      "previous_content_hash": "sha256:62b0ff0214b966e7f406b64a1660cb1c1baf9edbc01c9f6dd020400406dc1209",
+      "snapshot_status": "changed_with_revision_note",
+      "provenance_status": "verified",
+      "inclusion_status": "included_in_mainline",
+      "revision_id": "",
+      "revision_note": "2026-06-23按官方发布页主办单位将source规范为国家能源局，避免联合发文标题触发来源域名冲突。",
+      "first_seen_report_id": "mainline_review_2026-06-22_213219",
+      "last_seen_report_id": "mainline_review_2026-06-23_173855",
+      "first_seen_at": "2026-06-22T21:32:19+08:00",
+      "last_seen_at": "2026-06-23T17:38:55+08:00",
+      "snapshot_reasons": [
+        "content_hash_changed_with_revision_note"
+      ]
+    },
+    {
+      "policy_id": "nea-2026-05-26-ai-energy-high-value-scenarios",
+      "title": "国家能源局综合司关于发布“人工智能+”能源高价值场景清单和组织开展试点申报工作的通知",
+      "source_org_norm": "nea",
+      "source_url": "https://www.nea.gov.cn/20260526/261bbb10eea24be3b7ea3a00d89b8891/c.html",
+      "source_domain": "www.nea.gov.cn",
+      "publish_date": "2026-05-26",
+      "content_hash": "sha256:c7a1df04a393112d089cc80283ab5a6f67e727f7a78491af799caf90cb50e6b9",
+      "previous_content_hash": "",
+      "snapshot_status": "new",
+      "provenance_status": "verified",
+      "inclusion_status": "included_in_mainline",
+      "revision_id": "",
+      "revision_note": "",
+      "first_seen_report_id": "mainline_review_2026-06-23_173855",
+      "last_seen_report_id": "mainline_review_2026-06-23_173855",
+      "first_seen_at": "2026-06-23T17:38:55+08:00",
+      "last_seen_at": "2026-06-23T17:38:55+08:00",
+      "snapshot_reasons": [
+        "policy_id_not_seen_before"
       ]
     }
   ]
