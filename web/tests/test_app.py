@@ -210,8 +210,11 @@ def test_pages_render():
     assert "升温加速" in latest.text
     assert "持续有效" in latest.text
     assert "政策主线靠前且市场热度靠前" in latest.text
-    assert latest.text.count('class="hint"') == 2
-    assert "cycle-stage-style-20260623" in latest.text
+    assert latest.text.count('class="hint"') == 1
+    assert "最新报告原文" in latest.text
+    assert "/markdown" in latest.text
+    assert '<pre class="markdown-view">' not in latest.text
+    assert "latest-raw-link-20260624" in latest.text
     assert "trend-legend-score-sort-20260623" in latest.text
     reports = get("/reports")
     assert reports.status_code == 200

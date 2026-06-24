@@ -78,6 +78,15 @@ body {
   border-color: var(--line);
 }
 
+.text-link {
+  color: var(--brand-dark);
+  font-weight: 700;
+  line-height: 32px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
 .page {
   max-width: 1440px;
   margin: 0 auto;
