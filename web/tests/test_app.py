@@ -211,7 +211,8 @@ def test_pages_render():
     assert "持续有效" in latest.text
     assert "政策主线靠前且市场热度靠前" in latest.text
     assert latest.text.count('class="hint"') == 1
-    assert "最新报告原文" in latest.text
+    assert "完整报告页" in latest.text
+    assert "Markdown原文" in latest.text
     assert "/markdown" in latest.text
     assert '<pre class="markdown-view">' not in latest.text
     assert "latest-raw-link-20260624" in latest.text
