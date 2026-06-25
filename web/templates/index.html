@@ -212,4 +212,49 @@
   <div id="score-chart" class="chart" data-source="/api/score-series"></div>
 </section>
 
+<section class="section-band api-directory">
+  <div class="section-head">
+    <h2>接口说明</h2>
+    <a class="text-link" href="/api">打开 /api</a>
+  </div>
+  <div class="api-summary">
+    <div>
+      <span>公开接口</span>
+      <strong>{{ api_catalog.total_endpoints }}</strong>
+    </div>
+    <div>
+      <span>接口分组</span>
+      <strong>{{ api_catalog.groups|length }}</strong>
+    </div>
+    <div>
+      <span>读写边界</span>
+      <strong>只读</strong>
+    </div>
+  </div>
+  <div class="api-directory-grid">
+    <div>
+      <h3>推荐入口</h3>
+      <ul>
+        {% for item in api_catalog.recommended_entrypoints %}
+        <li><a href="{{ item.path }}">{{ item.name }}</a><span>{{ item.path }}</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div>
+      <h3>接口分组</h3>
+      <ul>
+        {% for group in api_catalog.groups %}
+        <li><strong>{{ group.name }}</strong><span>{{ group.endpoints|length }} 个接口</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="api-safety">
+    <strong>安全边界</strong>
+    <span>{{ api_catalog.safety.boundaries[0] }}</span>
+    <span>{{ api_catalog.safety.boundaries[1] }}</span>
+    <span>{{ api_catalog.safety.boundaries[3] }}</span>
+  </div>
+</section>
+
 {% endblock %}

@@ -685,6 +685,72 @@ th {
   color: var(--muted);
 }
 
+.api-directory .section-head {
+  align-items: flex-start;
+}
+
+.api-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.api-summary span,
+.api-directory-grid li span,
+.api-safety span {
+  color: var(--muted);
+}
+
+.api-summary strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 20px;
+}
+
+.api-directory-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.api-directory-grid h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+
+.api-directory-grid ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.api-directory-grid li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.api-directory-grid a {
+  color: var(--brand-dark);
+  font-weight: 700;
+}
+
+.api-safety {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
 .markdown-view {
   background: #101828;
   color: #f8fafc;
@@ -734,6 +800,11 @@ th {
 
   .summary-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .api-directory-grid,
+  .api-summary {
+    grid-template-columns: 1fr;
   }
 
   .page {

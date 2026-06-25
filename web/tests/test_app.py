@@ -49,6 +49,52 @@ def test_latest_report_contract():
     assert body["result"].get("mainline_cycle_stage_summary", {}).get("scoring_version") == "mainline_cycle_stage_v2"
 
 
+def test_api_directory_contract():
+    response = get("/api")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["system_name"] == "A股主线研究台"
+    assert body["version"] == "1.0.0"
+    assert body["base_url"] == "http://testserver"
+    assert body["docs"] == {
+        "swagger_ui": "/docs",
+        "redoc": "/redoc",
+        "openapi_json": "/openapi.json",
+    }
+    assert body["recommended_entrypoints"][0]["path"] == "/api"
+    assert {item["path"] for item in body["recommended_entrypoints"]}.issuperset(
+        {"/api/index", "/api/latest", "/api/health"}
+    )
+    assert body["safety"]["read_only"] is True
+    assert body["safety"]["no_recompute"] is True
+    assert body["safety"]["no_writes"] is True
+    assert body["safety"]["no_trading"] is True
+    assert body["safety"]["no_sync"] is True
+    assert any("不触发主线重计算" in item for item in body["safety"]["boundaries"])
+    assert any("不会下单" in item for item in body["safety"]["boundaries"])
+
+    groups = body["groups"]
+    assert body["total_endpoints"] == sum(len(group["endpoints"]) for group in groups)
+    assert {group["name"] for group in groups} == {"文档入口", "当前数据", "历史数据", "分析结果", "系统状态"}
+    endpoints = [endpoint for group in groups for endpoint in group["endpoints"]]
+    paths = {endpoint["path"] for endpoint in endpoints}
+    assert {
+        "/api",
+        "/api/index",
+        "/api/latest",
+        "/api/mainline/latest",
+        "/api/reports/{report_id}/markdown",
+        "/api/score-series",
+        "/api/explain/theme/{theme_id}",
+        "/api/simulate/remove-policy/{policy_id}",
+        "/api/consistency/oracle",
+        "/api/drift",
+    }.issubset(paths)
+    assert all(endpoint["method"] == "GET" for endpoint in endpoints)
+    assert all(endpoint["read_only"] is True for endpoint in endpoints)
+    assert all({"method", "path", "purpose", "parameters", "returns", "read_only"}.issubset(endpoint) for endpoint in endpoints)
+
+
 def test_index_api_returns_homepage_content():
     response = get("/api/index")
     assert response.status_code == 200
@@ -220,7 +266,12 @@ def test_pages_render():
     assert 'class="topbar"' not in latest.text
     assert "/markdown" in latest.text
     assert '<pre class="markdown-view">' not in latest.text
-    assert "compact-mainline-20260625" in latest.text
+    assert "接口说明" in latest.text
+    assert "公开接口" in latest.text
+    assert "推荐入口" in latest.text
+    assert "安全边界" in latest.text
+    assert "打开 /api" in latest.text
+    assert "api-directory-20260625" in latest.text
     assert "trend-legend-score-sort-20260623" in latest.text
     reports = get("/reports")
     assert reports.status_code == 200

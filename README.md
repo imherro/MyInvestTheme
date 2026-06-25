@@ -70,6 +70,10 @@ Open:
 
 - Latest research: http://127.0.0.1:8012/
 - Historical research: http://127.0.0.1:8012/reports
+- API directory: http://127.0.0.1:8012/api
+- Swagger UI: http://127.0.0.1:8012/docs
+- ReDoc: http://127.0.0.1:8012/redoc
+- OpenAPI schema: http://127.0.0.1:8012/openapi.json
 - Homepage content API: http://127.0.0.1:8012/api/index
 - Latest report API: http://127.0.0.1:8012/api/latest
 - Drift status API: http://127.0.0.1:8012/api/drift
@@ -83,6 +87,17 @@ Open:
 - System consistency oracle API: http://127.0.0.1:8012/api/consistency/oracle?runs=10
 
 ## API Contract
+
+`GET /api` is the unified read-only API directory. It does not load reports, recalculate research, write files, trade, or synchronize external systems. The response contains:
+
+- `system_name`, `version`, `description`, and `base_url`
+- `docs`: `/docs`, `/redoc`, and `/openapi.json`
+- `recommended_entrypoints`
+- `safety`: read-only boundaries, including no recompute, no writes, no trading, and no sync
+- `groups`: endpoint groups for documentation entry points, current data, historical data, analysis results, and system status
+- `total_endpoints`
+
+Every listed endpoint includes `method`, `path`, `purpose`, `parameters`, `returns`, and `read_only`.
 
 The homepage endpoint returns the main content used by `/`:
 

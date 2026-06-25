@@ -52,6 +52,298 @@ app = FastAPI(
 templates = Jinja2Templates(directory=str(Path(__file__).resolve().parent / "templates"))
 app.mount("/static", StaticFiles(directory=str(Path(__file__).resolve().parent / "static")), name="static")
 
+API_RECOMMENDED_ENTRYPOINTS = [
+    {"name": "接口说明", "path": "/api", "reason": "查看当前系统全部公开接口、参数和只读边界。"},
+    {"name": "首页主要内容", "path": "/api/index", "reason": "读取 Web 首页使用的主线、市场热度、曲线和报告列表。"},
+    {"name": "最新报告", "path": "/api/latest", "reason": "读取最新主线研究 JSON，适合作为系统集成入口。"},
+    {"name": "主线分数历史", "path": "/api/score-series", "reason": "读取政策主线分和市场热度观察分的时间序列。"},
+    {"name": "健康状态", "path": "/api/health", "reason": "检查报告数量、最新报告 ID 和质量校验状态。"},
+]
+
+API_SAFETY_BOUNDARIES = [
+    "/api 及目录中列出的公开接口均为 GET 只读接口。",
+    "接口只读取已生成的研究报告、快照或内存模拟结果，不触发主线重计算。",
+    "接口不会写入研究文件、配置、日志、数据库或外部系统。",
+    "接口不会下单、调仓、同步仓位、推送交易指令或连接交易终端。",
+    "模拟、敏感性和一致性接口只在内存副本上计算，不改变真实报告、分数、排序或快照。",
+]
+
+API_GROUPS = [
+    {
+        "name": "文档入口",
+        "description": "面向人工查看的页面、OpenAPI 文档和接口目录。",
+        "endpoints": [
+            {
+                "method": "GET",
+                "path": "/",
+                "purpose": "打开最新主线研究 Web 首页。",
+                "parameters": [],
+                "returns": "HTML 页面，展示最新政策主线、市场热度观察、分数曲线和接口说明摘要。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/reports",
+                "purpose": "打开历史研究结果列表页。",
+                "parameters": [],
+                "returns": "HTML 页面，列出可读取的历史报告。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/reports/{report_id}",
+                "purpose": "打开单份历史报告详情页。",
+                "parameters": [
+                    {"name": "report_id", "in": "path", "required": True, "description": "报告 ID。"}
+                ],
+                "returns": "HTML 页面，展示报告元信息和完整 Markdown 原文。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/api",
+                "purpose": "读取统一接口目录。",
+                "parameters": [],
+                "returns": "JSON，包含系统信息、文档入口、推荐入口、安全边界、分组接口和接口总数。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/docs",
+                "purpose": "打开 Swagger UI 文档。",
+                "parameters": [],
+                "returns": "HTML OpenAPI 交互文档。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/redoc",
+                "purpose": "打开 ReDoc 文档。",
+                "parameters": [],
+                "returns": "HTML OpenAPI 阅读文档。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/openapi.json",
+                "purpose": "读取 FastAPI 生成的 OpenAPI schema。",
+                "parameters": [],
+                "returns": "JSON OpenAPI schema。",
+                "read_only": True,
+            },
+        ],
+    },
+    {
+        "name": "当前数据",
+        "description": "读取最新报告、首页数据和系统健康状态。",
+        "endpoints": [
+            {
+                "method": "GET",
+                "path": "/api/health",
+                "purpose": "读取系统健康状态和最新报告质量摘要。",
+                "parameters": [],
+                "returns": "JSON，包含 ok、read_only、报告数量、最新报告 ID、质量校验和检查时间。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/api/index",
+                "purpose": "读取首页主要内容。",
+                "parameters": [],
+                "returns": "JSON，包含最新报告摘要、政策主线、市场热度观察、市场数据、分数曲线和报告列表。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/api/latest",
+                "purpose": "读取最新主线研究报告 JSON。",
+                "parameters": [],
+                "returns": "JSON，包含 report_id 和 result 完整报告内容。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/api/mainline/latest",
+                "purpose": "读取最新主线研究报告 JSON 的兼容别名。",
+                "parameters": [],
+                "returns": "JSON，结构同 /api/latest。",
+                "read_only": True,
+            },
+        ],
+    },
+    {
+        "name": "历史数据",
+        "description": "读取历史报告列表、单份历史报告和 Markdown 原文。",
+        "endpoints": [
+            {
+                "method": "GET",
+                "path": "/api/reports",
+                "purpose": "读取历史报告摘要列表。",
+                "parameters": [],
+                "returns": "JSON，包含 reports 数组。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/api/reports/{report_id}",
+                "purpose": "读取指定报告的完整 JSON。",
+                "parameters": [
+                    {"name": "report_id", "in": "path", "required": True, "description": "报告 ID。"}
+                ],
+                "returns": "JSON，包含 report_id 和 result 完整报告内容。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/api/reports/{report_id}/markdown",
+                "purpose": "读取指定报告的 Markdown 原文。",
+                "parameters": [
+                    {"name": "report_id", "in": "path", "required": True, "description": "报告 ID。"}
+                ],
+                "returns": "text/markdown，报告原文。",
+                "read_only": True,
+            },
+        ],
+    },
+    {
+        "name": "分析结果",
+        "description": "读取分数曲线、解释图、反事实模拟、敏感性、核心驱动和一致性分析。",
+        "endpoints": [
+            {
+                "method": "GET",
+                "path": "/api/score-series",
+                "purpose": "读取主线分数历史曲线数据。",
+                "parameters": [],
+                "returns": "JSON，包含 report_count 和 themes 时间序列。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/api/explain/theme/{theme_id}",
+                "purpose": "读取指定主题的政策、事件、主题、主线解释链路。",
+                "parameters": [
+                    {"name": "theme_id", "in": "path", "required": True, "description": "主题 ID。"},
+                    {"name": "report_id", "in": "query", "required": False, "description": "可选历史报告 ID。"},
+                ],
+                "returns": "JSON，包含 trace_graph、top_policy_paths、event_breakdowns 和校验结果。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/api/simulate/remove-policy/{policy_id}",
+                "purpose": "模拟移除单条政策后主线排序的变化。",
+                "parameters": [
+                    {"name": "policy_id", "in": "path", "required": True, "description": "政策 ID。"},
+                    {"name": "report_id", "in": "query", "required": False, "description": "可选历史报告 ID。"},
+                ],
+                "returns": "JSON，包含 baseline_ranking、counterfactual_ranking、theme_impacts 和影响摘要。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/api/simulate/remove-event/{event_cluster_id}",
+                "purpose": "模拟移除单个政策事件簇后主线排序的变化。",
+                "parameters": [
+                    {"name": "event_cluster_id", "in": "path", "required": True, "description": "政策事件簇 ID。"},
+                    {"name": "report_id", "in": "query", "required": False, "description": "可选历史报告 ID。"},
+                ],
+                "returns": "JSON，包含 baseline_ranking、counterfactual_ranking、theme_impacts 和影响摘要。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/api/sensitivity/theme/{theme_id}",
+                "purpose": "读取指定主题对政策和事件的敏感性排序。",
+                "parameters": [
+                    {"name": "theme_id", "in": "path", "required": True, "description": "主题 ID。"},
+                    {"name": "report_id", "in": "query", "required": False, "description": "可选历史报告 ID。"},
+                ],
+                "returns": "JSON，包含主题敏感性、关键政策、关键事件和影响排序。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/api/core-drivers",
+                "purpose": "读取政策层面的核心驱动排名。",
+                "parameters": [
+                    {"name": "report_id", "in": "query", "required": False, "description": "可选历史报告 ID。"}
+                ],
+                "returns": "JSON，包含各政策对主线分的总影响排名。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/api/consistency/oracle",
+                "purpose": "读取同一报告的多次确定性投影一致性检查。",
+                "parameters": [
+                    {"name": "runs", "in": "query", "required": False, "description": "运行次数，接口限制在 2 到 50。"},
+                    {"name": "report_id", "in": "query", "required": False, "description": "可选历史报告 ID。"},
+                ],
+                "returns": "JSON，包含一致性状态、方差、排名变化、分歧列表和根因归类。",
+                "read_only": True,
+            },
+        ],
+    },
+    {
+        "name": "系统状态",
+        "description": "读取黄金快照、漂移和当前报告对比状态。",
+        "endpoints": [
+            {
+                "method": "GET",
+                "path": "/api/golden-snapshot",
+                "purpose": "读取黄金主线快照。",
+                "parameters": [],
+                "returns": "JSON，包含 golden snapshot 内容。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/api/drift",
+                "purpose": "读取最新报告相对黄金快照的系统漂移状态。",
+                "parameters": [],
+                "returns": "JSON，包含漂移检测结果。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/api/compare",
+                "purpose": "读取指定报告或最新报告相对黄金快照的对比结果。",
+                "parameters": [
+                    {"name": "report_id", "in": "query", "required": False, "description": "可选历史报告 ID。"}
+                ],
+                "returns": "JSON，包含报告与黄金快照的对比结果。",
+                "read_only": True,
+            },
+        ],
+    },
+]
+
+
+def build_api_directory(base_url: str) -> dict[str, Any]:
+    normalized_base_url = base_url.rstrip("/")
+    return {
+        "system_name": app.title,
+        "version": app.version,
+        "description": app.description,
+        "base_url": normalized_base_url,
+        "docs": {
+            "swagger_ui": "/docs",
+            "redoc": "/redoc",
+            "openapi_json": "/openapi.json",
+        },
+        "recommended_entrypoints": API_RECOMMENDED_ENTRYPOINTS,
+        "safety": {
+            "read_only": True,
+            "no_recompute": True,
+            "no_writes": True,
+            "no_trading": True,
+            "no_sync": True,
+            "boundaries": API_SAFETY_BOUNDARIES,
+        },
+        "groups": API_GROUPS,
+        "total_endpoints": sum(len(group["endpoints"]) for group in API_GROUPS),
+    }
+
 
 def _json_files() -> list[Path]:
     if not REPORT_DIR.exists():
@@ -862,6 +1154,7 @@ def latest_page(request: Request) -> HTMLResponse:
             "report": page_report,
             "markdown": markdown,
             "reports": reports,
+            "api_catalog": build_api_directory(str(request.base_url)),
             "page": "latest",
         },
     )
@@ -915,6 +1208,11 @@ def health() -> dict[str, Any]:
         "latest_contract_warning_count": latest.get("contract_validation_warning_count"),
         "checked_at": datetime.now().isoformat(timespec="seconds"),
     }
+
+
+@app.get("/api")
+def api_directory(request: Request) -> dict[str, Any]:
+    return build_api_directory(str(request.base_url))
 
 
 @app.get("/api/reports")
