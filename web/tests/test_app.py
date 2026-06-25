@@ -220,7 +220,7 @@ def test_pages_render():
     assert 'class="topbar"' not in latest.text
     assert "/markdown" in latest.text
     assert '<pre class="markdown-view">' not in latest.text
-    assert "unified-shell-20260625" in latest.text
+    assert "compact-mainline-20260625" in latest.text
     assert "trend-legend-score-sort-20260623" in latest.text
     reports = get("/reports")
     assert reports.status_code == 200

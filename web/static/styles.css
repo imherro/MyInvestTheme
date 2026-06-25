@@ -230,6 +230,10 @@ table {
   table-layout: fixed;
 }
 
+.mainline-table {
+  min-width: 880px;
+}
+
 .col-rank {
   width: 52px;
 }
@@ -260,6 +264,30 @@ table {
 
 .col-etf {
   width: 314px;
+}
+
+.mainline-table .col-rank {
+  width: 40px;
+}
+
+.mainline-table .col-theme {
+  width: 132px;
+}
+
+.mainline-table .col-score {
+  width: 72px;
+}
+
+.mainline-table .col-stage {
+  width: 100px;
+}
+
+.mainline-table .col-cycle {
+  width: 140px;
+}
+
+.mainline-table .col-evidence {
+  width: 250px;
 }
 
 th,
