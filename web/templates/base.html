@@ -4,10 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}A股主线研究台{% endblock %}</title>
-    <link rel="stylesheet" href="/static/styles.css?v=latest-raw-link-20260624">
+    <link rel="stylesheet" href="/static/styles.css?v=unified-shell-20260625">
   </head>
   <body>
-    <header class="topbar">
+    <div data-myinvest-header></div>
+    <section class="appbar" aria-label="主线研究站内导航">
       <div>
         <div class="app-title">A股主线研究台</div>
         <div class="app-subtitle">只读展示 · 历史回看 · 分数曲线 · 最新报告API</div>
@@ -17,10 +18,12 @@
         <a class="{{ 'active' if page == 'reports' else '' }}" href="/reports">历史研究</a>
         <a href="/api/latest">最新API</a>
       </nav>
-    </header>
+    </section>
     <main class="page">
       {% block content %}{% endblock %}
     </main>
+    <div data-myinvest-footer></div>
+    <script src="https://invest.okbbc.com/header.js" defer></script>
     <script src="/static/app.js?v=trend-legend-score-sort-20260623"></script>
     {% block scripts %}{% endblock %}
     <script src="https://invest.okbbc.com/footer.js" defer></script>

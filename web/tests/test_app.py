@@ -213,9 +213,14 @@ def test_pages_render():
     assert latest.text.count('class="hint"') == 1
     assert "完整报告页" in latest.text
     assert "Markdown原文" in latest.text
+    assert "data-myinvest-header" in latest.text
+    assert "https://invest.okbbc.com/header.js" in latest.text
+    assert "data-myinvest-footer" in latest.text
+    assert "https://invest.okbbc.com/footer.js" in latest.text
+    assert 'class="topbar"' not in latest.text
     assert "/markdown" in latest.text
     assert '<pre class="markdown-view">' not in latest.text
-    assert "latest-raw-link-20260624" in latest.text
+    assert "unified-shell-20260625" in latest.text
     assert "trend-legend-score-sort-20260623" in latest.text
     reports = get("/reports")
     assert reports.status_code == 200

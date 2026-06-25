@@ -23,8 +23,8 @@ body {
   font-size: 14px;
 }
 
-.topbar {
-  min-height: 72px;
+.appbar {
+  min-height: 64px;
   padding: 14px 28px;
   display: flex;
   align-items: center;
@@ -32,9 +32,6 @@ body {
   gap: 24px;
   background: var(--surface);
   border-bottom: 1px solid var(--line);
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
 
 .app-title {
@@ -700,7 +697,7 @@ th {
 }
 
 @media (max-width: 900px) {
-  .topbar,
+  .appbar,
   .section-head,
   .report-row {
     align-items: flex-start;
@@ -740,7 +737,7 @@ th {
     grid-template-columns: 1fr;
   }
 
-  .topbar {
+  .appbar {
     padding: 14px 16px;
   }
 
