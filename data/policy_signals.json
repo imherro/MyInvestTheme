@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-25T16:51:06+08:00",
+  "updated_at": "2026-06-25T20:53:03+08:00",
   "method": "Codex/LLM extracts official-source facts; Python policy_score_v2 scoring is deterministic.",
   "signals": [
     {
@@ -344,6 +344,25 @@
       "key_points": ["绿色电力证书交易", "内蒙古电力交易中心", "绿证交易试点", "绿色电力交易衔接", "技术平台升级", "能源监管"],
       "beneficiary_chain": ["绿证交易", "新能源运营", "电力交易中心", "绿色电力交易", "重点用能企业", "电网调度"],
       "related_industries": ["新能源", "电力设备", "绿电交易", "资源周期"]
+    },
+    {
+      "id": "ndrc-2026-06-25-new-energy-system-15th-five-year-plan",
+      "title": "关于印发《新型能源体系建设“十五五”规划》的通知",
+      "source": "国家发展改革委",
+      "published_date": "2026-06-25",
+      "authority_level": "multi_ministry",
+      "economic_scope": "national",
+      "url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202606/t20260625_1406079.html",
+      "authority_score": 0.85,
+      "actionability_score": 0.7,
+      "economic_scope_score": 1.0,
+      "time_decay_score": 1.0,
+      "policy_score_v2": 0.8725,
+      "summary": "国家发展改革委、国家能源局印发新型能源体系建设“十五五”规划，提出到2030年初步建成清洁低碳安全高效的新型能源体系，并部署新能源供给、新型电力系统、储能、绿电直连和能源科技装备等重点方向。",
+      "evidence": "规划提出2030年非化石能源消费比重达到25%、非化石能源发电量比重达到50%、新型储能装机达到3亿千瓦，并推动算力中心等新兴产业建设绿电直连项目。",
+      "key_points": ["新型能源体系", "十五五规划", "非化石能源", "新型电力系统", "新型储能", "绿电直连", "能源科技装备", "2030年目标"],
+      "beneficiary_chain": ["新能源运营", "风电光伏基地", "新型储能", "电力设备", "智能电网", "绿电直连", "算力中心", "能源科技装备", "氢能和绿色燃料"],
+      "related_industries": ["新能源", "电力设备", "AI算力", "高端制造", "资源周期", "绿色低碳"]
     }
   ]
 }
