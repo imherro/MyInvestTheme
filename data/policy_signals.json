@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-24T16:51:35+08:00",
+  "updated_at": "2026-06-25T16:51:06+08:00",
   "method": "Codex/LLM extracts official-source facts; Python policy_score_v2 scoring is deterministic.",
   "signals": [
     {
@@ -287,6 +287,63 @@
       "key_points": ["地热能", "高质量开发利用试点", "规模化项目", "浅层地热能", "中深层地热能", "设备更新改造", "7月31日前申报"],
       "beneficiary_chain": ["地热能开发", "清洁供暖", "能源装备", "节能降碳设备", "设备更新改造", "油气田废弃井综合利用"],
       "related_industries": ["新能源", "电力设备", "资源周期", "建筑节能", "高端制造"]
+    },
+    {
+      "id": "most-2026-06-16-ai-major-project-open-call",
+      "title": "关于发布新一代人工智能国家科技重大专项2026年度第一批公开项目申报指南的通知",
+      "source": "科学技术部",
+      "published_date": "2026-06-16",
+      "authority_level": "national_ministry",
+      "economic_scope": "industry",
+      "url": "https://service.most.gov.cn/kjjh_tztg_all/20260616/5837.html",
+      "authority_score": 0.7,
+      "actionability_score": 0.7,
+      "economic_scope_score": 0.6,
+      "time_decay_score": 0.765928,
+      "policy_score_v2": 0.693186,
+      "summary": "科学技术部发布新一代人工智能国家科技重大专项2026年度第一批公开项目申报指南，组织相关单位按指南方向申报项目并进行择优立项。",
+      "evidence": "申报项目须覆盖相应指南方向的全部考核指标；项目申报书受理时间为2026年6月23日至2026年7月17日，推荐单位于2026年7月24日前确认推荐项目。",
+      "key_points": ["新一代人工智能", "国家科技重大专项", "公开项目申报指南", "项目申报", "考核指标", "择优立项", "2026年7月17日受理截止"],
+      "beneficiary_chain": ["人工智能技术研发", "算法模型", "智能体", "科研院所", "科技企业", "软件服务", "智能制造"],
+      "related_industries": ["人工智能", "软件服务", "高端制造", "通信"]
+    },
+    {
+      "id": "ndrc-2026-06-01-non-fossil-electricity-accounting-guide",
+      "title": "关于印发《非化石能源电力消费核算指南(试行)》的通知",
+      "source": "国家发展改革委",
+      "published_date": "2026-06-01",
+      "authority_level": "multi_ministry",
+      "economic_scope": "national",
+      "url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202606/t20260601_1405606.html",
+      "authority_score": 0.85,
+      "actionability_score": 0.2,
+      "economic_scope_score": 1.0,
+      "time_decay_score": 0.464559,
+      "policy_score_v2": 0.640412,
+      "summary": "国家发展改革委等部门印发非化石能源电力消费核算指南，服务碳排放统计核算体系并用于2026年及以后年份非化石能源电力消费核算。",
+      "evidence": "通知要求各地按指南做好相关工作，指南自印发之日起试行，用于2026年及以后年份非化石能源电力消费核算。",
+      "key_points": ["非化石能源电力消费", "电力消费核算", "碳排放统计核算", "绿色低碳", "可再生能源", "2026年及以后年份"],
+      "beneficiary_chain": ["新能源运营", "绿电交易", "电网企业", "电力交易中心", "重点用能企业", "碳核算服务", "电力设备"],
+      "related_industries": ["新能源", "电力设备", "绿电交易", "资源周期", "绿色低碳"]
+    },
+    {
+      "id": "nea-2026-06-12-inner-mongolia-green-certificate-trading-reply",
+      "title": "国家能源局综合司关于内蒙古电力交易中心开展绿色电力证书交易请示的复函",
+      "source": "国家能源局",
+      "published_date": "2026-06-12",
+      "authority_level": "national_ministry",
+      "economic_scope": "regional",
+      "url": "https://www.nea.gov.cn/20260625/5d6aff8953ba4cb6b104dfdea6c0fbae/c.html",
+      "authority_score": 0.7,
+      "actionability_score": 0.0,
+      "economic_scope_score": 0.4,
+      "time_decay_score": 0.67032,
+      "policy_score_v2": 0.459064,
+      "summary": "国家能源局原则同意内蒙古电力交易中心组织开展绿证交易工作，并要求完善交易实施细则、升级技术平台功能并尽快启动试点。",
+      "evidence": "原则同意内蒙古电力交易中心组织开展绿证交易工作；要求尽快启动绿证交易试点工作，统筹做好绿色电力交易与绿证交易机制衔接。",
+      "key_points": ["绿色电力证书交易", "内蒙古电力交易中心", "绿证交易试点", "绿色电力交易衔接", "技术平台升级", "能源监管"],
+      "beneficiary_chain": ["绿证交易", "新能源运营", "电力交易中心", "绿色电力交易", "重点用能企业", "电网调度"],
+      "related_industries": ["新能源", "电力设备", "绿电交易", "资源周期"]
     }
   ]
 }

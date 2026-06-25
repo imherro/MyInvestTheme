@@ -1,7 +1,7 @@
 {
   "version": "policy_snapshot_integrity_v2",
-  "updated_at": "2026-06-24T17:04:55+08:00",
-  "last_report_id": "mainline_review_2026-06-24_170455",
+  "updated_at": "2026-06-25T16:52:12+08:00",
+  "last_report_id": "mainline_review_2026-06-25_165212",
   "policy_snapshots": [
     {
       "policy_id": "csrc-2026-04-10-gem-reform-new-quality-productivity",
@@ -18,9 +18,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-24_170455",
+      "last_seen_report_id": "mainline_review_2026-06-25_165212",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-24T17:04:55+08:00",
+      "last_seen_at": "2026-06-25T16:52:12+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -40,9 +40,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_213219",
-      "last_seen_report_id": "mainline_review_2026-06-24_170455",
+      "last_seen_report_id": "mainline_review_2026-06-25_165212",
       "first_seen_at": "2026-06-22T21:32:19+08:00",
-      "last_seen_at": "2026-06-24T17:04:55+08:00",
+      "last_seen_at": "2026-06-25T16:52:12+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -55,18 +55,18 @@
       "source_domain": "www.miit.gov.cn",
       "publish_date": "2026-06-16",
       "content_hash": "sha256:adecc05306bfde5a248420bf26a767a18c5b0d82c3f6020302047ad84c75a194",
-      "previous_content_hash": "",
-      "snapshot_status": "new",
+      "previous_content_hash": "sha256:adecc05306bfde5a248420bf26a767a18c5b0d82c3f6020302047ad84c75a194",
+      "snapshot_status": "unchanged",
       "provenance_status": "verified",
       "inclusion_status": "included_in_mainline",
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-24_170455",
-      "last_seen_report_id": "mainline_review_2026-06-24_170455",
+      "last_seen_report_id": "mainline_review_2026-06-25_165212",
       "first_seen_at": "2026-06-24T17:04:55+08:00",
-      "last_seen_at": "2026-06-24T17:04:55+08:00",
+      "last_seen_at": "2026-06-25T16:52:12+08:00",
       "snapshot_reasons": [
-        "policy_id_not_seen_before"
+        "content_hash_unchanged"
       ]
     },
     {
@@ -77,16 +77,38 @@
       "source_domain": "scjss.mofcom.gov.cn",
       "publish_date": "2026-06-09",
       "content_hash": "sha256:8199d59557ac5dc3ad8f818c483e137dcd4a7d7e651d499365115f42f131b7a6",
+      "previous_content_hash": "sha256:8199d59557ac5dc3ad8f818c483e137dcd4a7d7e651d499365115f42f131b7a6",
+      "snapshot_status": "unchanged",
+      "provenance_status": "verified",
+      "inclusion_status": "included_in_mainline",
+      "revision_id": "",
+      "revision_note": "",
+      "first_seen_report_id": "mainline_review_2026-06-24_170455",
+      "last_seen_report_id": "mainline_review_2026-06-25_165212",
+      "first_seen_at": "2026-06-24T17:04:55+08:00",
+      "last_seen_at": "2026-06-25T16:52:12+08:00",
+      "snapshot_reasons": [
+        "content_hash_unchanged"
+      ]
+    },
+    {
+      "policy_id": "most-2026-06-16-ai-major-project-open-call",
+      "title": "关于发布新一代人工智能国家科技重大专项2026年度第一批公开项目申报指南的通知",
+      "source_org_norm": "most",
+      "source_url": "https://service.most.gov.cn/kjjh_tztg_all/20260616/5837.html",
+      "source_domain": "service.most.gov.cn",
+      "publish_date": "2026-06-16",
+      "content_hash": "sha256:1f6ccfdc48ddb17c533936ecced2391ab135f7f4b05b84fac0934fb890977e10",
       "previous_content_hash": "",
       "snapshot_status": "new",
       "provenance_status": "verified",
       "inclusion_status": "included_in_mainline",
       "revision_id": "",
       "revision_note": "",
-      "first_seen_report_id": "mainline_review_2026-06-24_170455",
-      "last_seen_report_id": "mainline_review_2026-06-24_170455",
-      "first_seen_at": "2026-06-24T17:04:55+08:00",
-      "last_seen_at": "2026-06-24T17:04:55+08:00",
+      "first_seen_report_id": "mainline_review_2026-06-25_165212",
+      "last_seen_report_id": "mainline_review_2026-06-25_165212",
+      "first_seen_at": "2026-06-25T16:52:12+08:00",
+      "last_seen_at": "2026-06-25T16:52:12+08:00",
       "snapshot_reasons": [
         "policy_id_not_seen_before"
       ]
@@ -106,9 +128,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-23_173855",
-      "last_seen_report_id": "mainline_review_2026-06-24_170455",
+      "last_seen_report_id": "mainline_review_2026-06-25_165212",
       "first_seen_at": "2026-06-23T17:38:55+08:00",
-      "last_seen_at": "2026-06-24T17:04:55+08:00",
+      "last_seen_at": "2026-06-25T16:52:12+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -128,9 +150,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_183427",
-      "last_seen_report_id": "mainline_review_2026-06-24_170455",
+      "last_seen_report_id": "mainline_review_2026-06-25_165212",
       "first_seen_at": "2026-06-22T18:34:27+08:00",
-      "last_seen_at": "2026-06-24T17:04:55+08:00",
+      "last_seen_at": "2026-06-25T16:52:12+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -150,11 +172,33 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-24_170455",
+      "last_seen_report_id": "mainline_review_2026-06-25_165212",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-24T17:04:55+08:00",
+      "last_seen_at": "2026-06-25T16:52:12+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
+      ]
+    },
+    {
+      "policy_id": "ndrc-2026-06-01-non-fossil-electricity-accounting-guide",
+      "title": "关于印发《非化石能源电力消费核算指南(试行)》的通知",
+      "source_org_norm": "ndrc",
+      "source_url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202606/t20260601_1405606.html",
+      "source_domain": "www.ndrc.gov.cn",
+      "publish_date": "2026-06-01",
+      "content_hash": "sha256:35a703f6826414b470644d009dd445423336f55ffcec82b669ce1129bb66da6b",
+      "previous_content_hash": "",
+      "snapshot_status": "new",
+      "provenance_status": "verified",
+      "inclusion_status": "included_in_mainline",
+      "revision_id": "",
+      "revision_note": "",
+      "first_seen_report_id": "mainline_review_2026-06-25_165212",
+      "last_seen_report_id": "mainline_review_2026-06-25_165212",
+      "first_seen_at": "2026-06-25T16:52:12+08:00",
+      "last_seen_at": "2026-06-25T16:52:12+08:00",
+      "snapshot_reasons": [
+        "policy_id_not_seen_before"
       ]
     },
     {
@@ -172,9 +216,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-24_170455",
+      "last_seen_report_id": "mainline_review_2026-06-25_165212",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-24T17:04:55+08:00",
+      "last_seen_at": "2026-06-25T16:52:12+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -194,9 +238,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-23_173855",
-      "last_seen_report_id": "mainline_review_2026-06-24_170455",
+      "last_seen_report_id": "mainline_review_2026-06-25_165212",
       "first_seen_at": "2026-06-23T17:38:55+08:00",
-      "last_seen_at": "2026-06-24T17:04:55+08:00",
+      "last_seen_at": "2026-06-25T16:52:12+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -216,9 +260,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-23_173855",
-      "last_seen_report_id": "mainline_review_2026-06-24_170455",
+      "last_seen_report_id": "mainline_review_2026-06-25_165212",
       "first_seen_at": "2026-06-23T17:38:55+08:00",
-      "last_seen_at": "2026-06-24T17:04:55+08:00",
+      "last_seen_at": "2026-06-25T16:52:12+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -238,9 +282,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-24_170455",
+      "last_seen_report_id": "mainline_review_2026-06-25_165212",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-24T17:04:55+08:00",
+      "last_seen_at": "2026-06-25T16:52:12+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -260,9 +304,9 @@
       "revision_id": "",
       "revision_note": "2026-06-23按官方发布页主办单位将source规范为国家能源局，避免联合发文标题触发来源域名冲突。",
       "first_seen_report_id": "mainline_review_2026-06-22_213219",
-      "last_seen_report_id": "mainline_review_2026-06-24_170455",
+      "last_seen_report_id": "mainline_review_2026-06-25_165212",
       "first_seen_at": "2026-06-22T21:32:19+08:00",
-      "last_seen_at": "2026-06-24T17:04:55+08:00",
+      "last_seen_at": "2026-06-25T16:52:12+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -282,9 +326,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-23_173855",
-      "last_seen_report_id": "mainline_review_2026-06-24_170455",
+      "last_seen_report_id": "mainline_review_2026-06-25_165212",
       "first_seen_at": "2026-06-23T17:38:55+08:00",
-      "last_seen_at": "2026-06-24T17:04:55+08:00",
+      "last_seen_at": "2026-06-25T16:52:12+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -297,18 +341,18 @@
       "source_domain": "www.nea.gov.cn",
       "publish_date": "2026-05-28",
       "content_hash": "sha256:b51895d8f2b971490cb69b707d67e9e63d5c06bafe6fe7a578a12fc2cb923c3f",
-      "previous_content_hash": "",
-      "snapshot_status": "new",
+      "previous_content_hash": "sha256:b51895d8f2b971490cb69b707d67e9e63d5c06bafe6fe7a578a12fc2cb923c3f",
+      "snapshot_status": "unchanged",
       "provenance_status": "verified",
       "inclusion_status": "included_in_mainline",
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-24_170455",
-      "last_seen_report_id": "mainline_review_2026-06-24_170455",
+      "last_seen_report_id": "mainline_review_2026-06-25_165212",
       "first_seen_at": "2026-06-24T17:04:55+08:00",
-      "last_seen_at": "2026-06-24T17:04:55+08:00",
+      "last_seen_at": "2026-06-25T16:52:12+08:00",
       "snapshot_reasons": [
-        "policy_id_not_seen_before"
+        "content_hash_unchanged"
       ]
     },
     {
@@ -319,16 +363,38 @@
       "source_domain": "www.nea.gov.cn",
       "publish_date": "2026-06-05",
       "content_hash": "sha256:f677937af5876062092f8a0ea0d84a03cf9d963d65f382d002b4d3bb743e6796",
+      "previous_content_hash": "sha256:f677937af5876062092f8a0ea0d84a03cf9d963d65f382d002b4d3bb743e6796",
+      "snapshot_status": "unchanged",
+      "provenance_status": "verified",
+      "inclusion_status": "included_in_mainline",
+      "revision_id": "",
+      "revision_note": "",
+      "first_seen_report_id": "mainline_review_2026-06-24_170455",
+      "last_seen_report_id": "mainline_review_2026-06-25_165212",
+      "first_seen_at": "2026-06-24T17:04:55+08:00",
+      "last_seen_at": "2026-06-25T16:52:12+08:00",
+      "snapshot_reasons": [
+        "content_hash_unchanged"
+      ]
+    },
+    {
+      "policy_id": "nea-2026-06-12-inner-mongolia-green-certificate-trading-reply",
+      "title": "国家能源局综合司关于内蒙古电力交易中心开展绿色电力证书交易请示的复函",
+      "source_org_norm": "nea",
+      "source_url": "https://www.nea.gov.cn/20260625/5d6aff8953ba4cb6b104dfdea6c0fbae/c.html",
+      "source_domain": "www.nea.gov.cn",
+      "publish_date": "2026-06-12",
+      "content_hash": "sha256:30c6885847c9e908aabe911918b307070e657b51c32bdbcc2d1ff5a7dd4fe413",
       "previous_content_hash": "",
       "snapshot_status": "new",
       "provenance_status": "verified",
       "inclusion_status": "included_in_mainline",
       "revision_id": "",
       "revision_note": "",
-      "first_seen_report_id": "mainline_review_2026-06-24_170455",
-      "last_seen_report_id": "mainline_review_2026-06-24_170455",
-      "first_seen_at": "2026-06-24T17:04:55+08:00",
-      "last_seen_at": "2026-06-24T17:04:55+08:00",
+      "first_seen_report_id": "mainline_review_2026-06-25_165212",
+      "last_seen_report_id": "mainline_review_2026-06-25_165212",
+      "first_seen_at": "2026-06-25T16:52:12+08:00",
+      "last_seen_at": "2026-06-25T16:52:12+08:00",
       "snapshot_reasons": [
         "policy_id_not_seen_before"
       ]

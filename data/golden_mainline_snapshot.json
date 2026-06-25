@@ -1,59 +1,59 @@
 {
   "scoring_version": "system_drift_control_v2",
   "snapshot_id": "mainline_gold_v1",
-  "created_at": "2026-06-24T17:04:55+08:00",
-  "source_report_id": "mainline_review_2026-06-24_170455",
-  "basis_date": "2026-06-24",
-  "source_reproducibility_json_hash": "sha256:e7d110a7958282e35bdcbe280b064880642a47469ca5ab76c0906d5b3da718cd",
-  "source_git_commit": "56793c2",
+  "created_at": "2026-06-25T16:52:12+08:00",
+  "source_report_id": "mainline_review_2026-06-25_165212",
+  "basis_date": "2026-06-25",
+  "source_reproducibility_json_hash": "sha256:35ffb458a93128c0ea701b037a47ef89c84835b4dd9c3659e808dc2b46f5f38b",
+  "source_git_commit": "de34529",
   "mainline_ranking": [
     {
       "rank": 1,
       "theme_id": "new_energy_power_equipment",
       "theme_name": "新能源/电力设备",
-      "mainline_score_v6": 1.821,
+      "mainline_score_v6": 2.0734,
       "lifecycle_state": "accelerating"
     },
     {
       "rank": 2,
       "theme_id": "ai_compute_communications",
       "theme_name": "AI算力/通信",
-      "mainline_score_v6": 1.7441,
+      "mainline_score_v6": 2.0321,
       "lifecycle_state": "accelerating"
     },
     {
       "rank": 3,
       "theme_id": "hard_tech_semiconductor",
       "theme_name": "硬科技电子/半导体",
-      "mainline_score_v6": 1.1181,
+      "mainline_score_v6": 1.1126,
       "lifecycle_state": "accelerating"
     },
     {
       "rank": 4,
       "theme_id": "resources_cycle",
       "theme_name": "资源周期",
-      "mainline_score_v6": 0.7497,
+      "mainline_score_v6": 0.9312,
       "lifecycle_state": "accelerating"
     },
     {
       "rank": 5,
       "theme_id": "infrastructure_materials",
       "theme_name": "建材/稳增长修复",
-      "mainline_score_v6": 0.7004,
+      "mainline_score_v6": 0.6964,
       "lifecycle_state": "accelerating"
     },
     {
       "rank": 6,
       "theme_id": "high_end_manufacturing_robotics_defense",
       "theme_name": "高端制造/机器人/军工",
-      "mainline_score_v6": 0.5287,
+      "mainline_score_v6": 0.526,
       "lifecycle_state": "accelerating"
     },
     {
       "rank": 7,
       "theme_id": "consumption_media",
       "theme_name": "消费/传媒",
-      "mainline_score_v6": 0.2893,
+      "mainline_score_v6": 0.2875,
       "lifecycle_state": "single_event_emerging"
     },
     {
@@ -67,67 +67,67 @@
   "theme_scores": {
     "new_energy_power_equipment": {
       "rank": 1,
-      "mainline_score_v6": 1.821,
-      "theme_score_v5": 1.8837,
-      "theme_score_v4_stance_adjusted": 2.448,
-      "theme_score_v3_dedup": 3.8152,
-      "theme_score_v2_raw": 4.1976
+      "mainline_score_v6": 2.0734,
+      "theme_score_v5": 2.1448,
+      "theme_score_v4_stance_adjusted": 2.7065,
+      "theme_score_v3_dedup": 4.3375,
+      "theme_score_v2_raw": 5.0824
     },
     "ai_compute_communications": {
       "rank": 2,
-      "mainline_score_v6": 1.7441,
-      "theme_score_v5": 1.7441,
-      "theme_score_v4_stance_adjusted": 2.1381,
-      "theme_score_v3_dedup": 2.5606,
-      "theme_score_v2_raw": 2.9232
+      "mainline_score_v6": 2.0321,
+      "theme_score_v5": 2.0321,
+      "theme_score_v4_stance_adjusted": 2.4241,
+      "theme_score_v3_dedup": 2.9434,
+      "theme_score_v2_raw": 3.3048
     },
     "hard_tech_semiconductor": {
       "rank": 3,
-      "mainline_score_v6": 1.1181,
-      "theme_score_v5": 1.1181,
-      "theme_score_v4_stance_adjusted": 1.5397,
-      "theme_score_v3_dedup": 2.4382,
-      "theme_score_v2_raw": 2.4382
+      "mainline_score_v6": 1.1126,
+      "theme_score_v5": 1.1126,
+      "theme_score_v4_stance_adjusted": 1.5323,
+      "theme_score_v3_dedup": 2.4265,
+      "theme_score_v2_raw": 2.4265
     },
     "resources_cycle": {
       "rank": 4,
-      "mainline_score_v6": 0.7497,
-      "theme_score_v5": 0.7755,
-      "theme_score_v4_stance_adjusted": 1.0048,
-      "theme_score_v3_dedup": 1.1633,
-      "theme_score_v2_raw": 1.1633
+      "mainline_score_v6": 0.9312,
+      "theme_score_v5": 0.9633,
+      "theme_score_v4_stance_adjusted": 1.1911,
+      "theme_score_v3_dedup": 1.3491,
+      "theme_score_v2_raw": 1.4866
     },
     "infrastructure_materials": {
       "rank": 5,
-      "mainline_score_v6": 0.7004,
-      "theme_score_v5": 0.7004,
-      "theme_score_v4_stance_adjusted": 1.1926,
-      "theme_score_v3_dedup": 1.664,
-      "theme_score_v2_raw": 1.664
+      "mainline_score_v6": 0.6964,
+      "theme_score_v5": 0.6964,
+      "theme_score_v4_stance_adjusted": 1.1858,
+      "theme_score_v3_dedup": 1.6545,
+      "theme_score_v2_raw": 1.6545
     },
     "high_end_manufacturing_robotics_defense": {
       "rank": 6,
-      "mainline_score_v6": 0.5287,
-      "theme_score_v5": 0.5287,
-      "theme_score_v4_stance_adjusted": 0.7924,
-      "theme_score_v3_dedup": 1.2058,
-      "theme_score_v2_raw": 1.2058
+      "mainline_score_v6": 0.526,
+      "theme_score_v5": 0.526,
+      "theme_score_v4_stance_adjusted": 0.7887,
+      "theme_score_v3_dedup": 1.1997,
+      "theme_score_v2_raw": 1.1997
     },
     "consumption_media": {
       "rank": 7,
-      "mainline_score_v6": 0.2893,
-      "theme_score_v5": 0.4756,
-      "theme_score_v4_stance_adjusted": 0.4756,
-      "theme_score_v3_dedup": 0.4756,
-      "theme_score_v2_raw": 0.4756
+      "mainline_score_v6": 0.2875,
+      "theme_score_v5": 0.4726,
+      "theme_score_v4_stance_adjusted": 0.4726,
+      "theme_score_v3_dedup": 0.4726,
+      "theme_score_v2_raw": 0.4726
     },
     "innovative_medicine": {
       "rank": 8,
       "mainline_score_v6": 0.0354,
-      "theme_score_v5": 0.1024,
-      "theme_score_v4_stance_adjusted": 0.1457,
-      "theme_score_v3_dedup": 0.1943,
-      "theme_score_v2_raw": 0.1943
+      "theme_score_v5": 0.1023,
+      "theme_score_v4_stance_adjusted": 0.1456,
+      "theme_score_v3_dedup": 0.1941,
+      "theme_score_v2_raw": 0.1941
     }
   },
   "lifecycle_states": {
@@ -142,65 +142,72 @@
   },
   "allocation_matrix": {
     "event_20260410_csrc_csrc_2026_04_10_gem_reform_new_quality_productiv": {
-      "hard_tech_semiconductor": 0.2123,
-      "high_end_manufacturing_robotics_defense": 0.1592,
-      "innovative_medicine": 0.1024
+      "hard_tech_semiconductor": 0.2121,
+      "high_end_manufacturing_robotics_defense": 0.159,
+      "innovative_medicine": 0.1023
     },
     "event_20260428_nda_nda_2026_04_28_model_data_resonance_action": {
-      "ai_compute_communications": 0.1711,
-      "hard_tech_semiconductor": 0.1971
+      "ai_compute_communications": 0.1708,
+      "hard_tech_semiconductor": 0.1968
     },
     "event_20260514_nea_nea_2026_05_14_multi_user_green_power_direct_con": {
-      "ai_compute_communications": 0.3234,
-      "new_energy_power_equipment": 0.2426
+      "ai_compute_communications": 0.3224,
+      "new_energy_power_equipment": 0.2419
     },
     "event_20260526_nea_nea_2026_05_26_ai_energy_high_value_scenarios": {
-      "ai_compute_communications": 0.2303,
-      "new_energy_power_equipment": 0.2424
+      "ai_compute_communications": 0.2294,
+      "new_energy_power_equipment": 0.2414
     },
     "event_20260528_nea_nea_2026_05_28_geothermal_high_quality_pilot": {
-      "new_energy_power_equipment": 0.2705,
-      "resources_cycle": 0.1535
+      "new_energy_power_equipment": 0.2695,
+      "resources_cycle": 0.1529
     },
     "event_20260601_ndrc_ndrc_2026_06_01_109_major_projects_industrial_fo": {
-      "hard_tech_semiconductor": 0.1391,
-      "high_end_manufacturing_robotics_defense": 0.1455,
-      "infrastructure_materials": 0.1837,
-      "new_energy_power_equipment": 0.197
+      "hard_tech_semiconductor": 0.1385,
+      "high_end_manufacturing_robotics_defense": 0.1449,
+      "infrastructure_materials": 0.1829,
+      "new_energy_power_equipment": 0.1961
+    },
+    "event_20260601_ndrc_ndrc_2026_06_01_non_fossil_electricity_accountin": {
+      "new_energy_power_equipment": 0.2709,
+      "resources_cycle": 0.1446
     },
     "event_20260603_ndrc_ndrc_2026_06_03_intelligent_economy": {
-      "ai_compute_communications": 0.3386,
-      "hard_tech_semiconductor": 0.1505,
-      "infrastructure_materials": 0.0677
+      "ai_compute_communications": 0.3366,
+      "hard_tech_semiconductor": 0.1496,
+      "infrastructure_materials": 0.0674
     },
     "event_20260605_nea_nea_2026_06_05_non_public_grid_green_certificate": {
-      "new_energy_power_equipment": 0.3818,
-      "resources_cycle": 0.1444
+      "new_energy_power_equipment": 0.3796,
+      "resources_cycle": 0.1914
     },
     "event_20260608_nda_nda_2026_06_08_high_quality_datasets_action_plan": {
-      "ai_compute_communications": 0.4127,
-      "infrastructure_materials": 0.1165
+      "ai_compute_communications": 0.4103,
+      "infrastructure_materials": 0.1158
     },
     "event_20260609_mofcom_mofcom_2026_06_09_ai_consumption_implementation": {
-      "consumption_media": 0.4756
+      "consumption_media": 0.4726
     },
     "event_20260615_ndrc_ndrc_2026_06_15_key_industries_energy_saving_car": {
-      "infrastructure_materials": 0.2455,
-      "new_energy_power_equipment": 0.2355,
-      "resources_cycle": 0.2996
+      "infrastructure_materials": 0.244,
+      "new_energy_power_equipment": 0.234,
+      "resources_cycle": 0.2978
     },
     "event_20260616_miit_miit_2026_06_16_first_equipment_insurance_compen": {
-      "hard_tech_semiconductor": 0.1583,
-      "high_end_manufacturing_robotics_defense": 0.224
+      "hard_tech_semiconductor": 0.157,
+      "high_end_manufacturing_robotics_defense": 0.2221
+    },
+    "event_20260616_most_most_2026_06_16_ai_major_project_open_call": {
+      "ai_compute_communications": 0.2968
     },
     "event_20260617_csrc_csrc_2026_06_17_star_board_ai_fifth_listing_stan": {
-      "ai_compute_communications": 0.268,
-      "hard_tech_semiconductor": 0.2608,
-      "infrastructure_materials": 0.087
+      "ai_compute_communications": 0.2658,
+      "hard_tech_semiconductor": 0.2586,
+      "infrastructure_materials": 0.0863
     },
     "event_20260622_ndrc_ndrc_2026_06_22_renewable_consumption_minimum_ra": {
-      "new_energy_power_equipment": 0.3139,
-      "resources_cycle": 0.178
+      "new_energy_power_equipment": 0.3114,
+      "resources_cycle": 0.1766
     }
   },
   "stance_matrix": {
@@ -228,6 +235,11 @@
       "event_20260608_nda_nda_2026_06_08_high_quality_datasets_action_plan": {
         "cluster_stance_label": "mildly_supportive",
         "cluster_stance_score_v2": 0.2,
+        "direction_multiplier": 0.75
+      },
+      "event_20260616_most_most_2026_06_16_ai_major_project_open_call": {
+        "cluster_stance_label": "mildly_supportive",
+        "cluster_stance_score_v2": 0.15,
         "direction_multiplier": 0.75
       },
       "event_20260617_csrc_csrc_2026_06_17_star_board_ai_fifth_listing_stan": {
@@ -347,6 +359,11 @@
         "cluster_stance_score_v2": 0.15,
         "direction_multiplier": 0.75
       },
+      "event_20260601_ndrc_ndrc_2026_06_01_non_fossil_electricity_accountin": {
+        "cluster_stance_label": "neutral_or_mixed",
+        "cluster_stance_score_v2": 0.0,
+        "direction_multiplier": 0.5
+      },
       "event_20260605_nea_nea_2026_06_05_non_public_grid_green_certificate": {
         "cluster_stance_label": "mildly_supportive",
         "cluster_stance_score_v2": 0.35,
@@ -369,10 +386,15 @@
         "cluster_stance_score_v2": 0.35,
         "direction_multiplier": 0.75
       },
-      "event_20260605_nea_nea_2026_06_05_non_public_grid_green_certificate": {
+      "event_20260601_ndrc_ndrc_2026_06_01_non_fossil_electricity_accountin": {
         "cluster_stance_label": "mildly_supportive",
-        "cluster_stance_score_v2": 0.35,
+        "cluster_stance_score_v2": 0.2,
         "direction_multiplier": 0.75
+      },
+      "event_20260605_nea_nea_2026_06_05_non_public_grid_green_certificate": {
+        "cluster_stance_label": "supportive",
+        "cluster_stance_score_v2": 0.55,
+        "direction_multiplier": 1.0
       },
       "event_20260615_ndrc_ndrc_2026_06_15_key_industries_energy_saving_car": {
         "cluster_stance_label": "supportive",
@@ -421,5 +443,5 @@
     "theme_summary",
     "ths_top"
   ],
-  "snapshot_hash": "sha256:243fd60962f7ed6d93eade66826c34752b05c1f70c3774a3fc600148d20f8284"
+  "snapshot_hash": "sha256:89a80a2f2885f4aeb33197992dea25970ee7529d4e4044c763565929a77e7b56"
 }
