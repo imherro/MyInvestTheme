@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-25T20:53:03+08:00",
+  "updated_at": "2026-06-26T16:50:00+08:00",
   "method": "Codex/LLM extracts official-source facts; Python policy_score_v2 scoring is deterministic.",
   "signals": [
     {
@@ -363,6 +363,25 @@
       "key_points": ["新型能源体系", "十五五规划", "非化石能源", "新型电力系统", "新型储能", "绿电直连", "能源科技装备", "2030年目标"],
       "beneficiary_chain": ["新能源运营", "风电光伏基地", "新型储能", "电力设备", "智能电网", "绿电直连", "算力中心", "能源科技装备", "氢能和绿色燃料"],
       "related_industries": ["新能源", "电力设备", "AI算力", "高端制造", "资源周期", "绿色低碳"]
+    },
+    {
+      "id": "sse-2026-06-17-ai-large-model-star-board-fifth-standard",
+      "title": "上海证券交易所发行上市审核规则适用指引第10号——人工智能大模型企业适用科创板第五套上市标准",
+      "source": "上海证券交易所",
+      "published_date": "2026-06-17",
+      "authority_level": "exchange",
+      "economic_scope": "industry",
+      "url": "https://www.sse.com.cn/lawandrules/sselawsrules2025/stocks/review/firstepisode/c/c_20260617_10822578.shtml",
+      "authority_score": 0.6,
+      "actionability_score": 0.2,
+      "economic_scope_score": 0.6,
+      "time_decay_score": 0.740818,
+      "policy_score_v2": 0.528164,
+      "summary": "上海证券交易所发布发行上市审核规则适用指引，明确人工智能大模型企业适用科创板第五套上市标准的业务范围、技术优势、阶段性成果和发行上市审核要求。",
+      "evidence": "指引自2026年6月17日起施行，支持尚未形成一定收入规模的优质人工智能大模型企业在科创板发行上市，并明确主营业务包括人工智能大模型自主研发、模型服务或者模型应用等。",
+      "key_points": ["科创板第五套上市标准", "人工智能大模型", "发行上市审核", "规模化应用", "模型服务", "模型应用", "2026年6月17日施行"],
+      "beneficiary_chain": ["人工智能大模型", "模型服务", "模型应用", "硬科技融资", "算力基础设施", "半导体", "软件服务"],
+      "related_industries": ["人工智能", "软件服务", "半导体", "高端制造", "通信"]
     }
   ]
 }

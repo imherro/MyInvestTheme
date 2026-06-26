@@ -1,7 +1,7 @@
 {
   "version": "policy_snapshot_integrity_v2",
-  "updated_at": "2026-06-25T20:54:39+08:00",
-  "last_report_id": "mainline_review_2026-06-25_205439",
+  "updated_at": "2026-06-26T16:50:46+08:00",
+  "last_report_id": "mainline_review_2026-06-26_165046",
   "policy_snapshots": [
     {
       "policy_id": "csrc-2026-04-10-gem-reform-new-quality-productivity",
@@ -18,9 +18,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -40,9 +40,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_213219",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-22T21:32:19+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -62,9 +62,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-24_170455",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-24T17:04:55+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -84,9 +84,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-24_170455",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-24T17:04:55+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -106,9 +106,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-25_165212",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-25T16:52:12+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -128,9 +128,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-23_173855",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-23T17:38:55+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -150,9 +150,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_183427",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-22T18:34:27+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -172,9 +172,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -194,9 +194,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-25_165212",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-25T16:52:12+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -216,9 +216,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -238,9 +238,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-23_173855",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-23T17:38:55+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -260,9 +260,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-23_173855",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-23T17:38:55+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -275,18 +275,18 @@
       "source_domain": "www.ndrc.gov.cn",
       "publish_date": "2026-06-25",
       "content_hash": "sha256:2cf52e5da31aa5242876c9524ea3ed17a7ffdc9d90857156b2e3c60e9766f412",
-      "previous_content_hash": "",
-      "snapshot_status": "new",
+      "previous_content_hash": "sha256:2cf52e5da31aa5242876c9524ea3ed17a7ffdc9d90857156b2e3c60e9766f412",
+      "snapshot_status": "unchanged",
       "provenance_status": "verified",
       "inclusion_status": "included_in_mainline",
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-25_205439",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-25T20:54:39+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
-        "policy_id_not_seen_before"
+        "content_hash_unchanged"
       ]
     },
     {
@@ -304,9 +304,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -326,9 +326,9 @@
       "revision_id": "",
       "revision_note": "2026-06-23按官方发布页主办单位将source规范为国家能源局，避免联合发文标题触发来源域名冲突。",
       "first_seen_report_id": "mainline_review_2026-06-22_213219",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-22T21:32:19+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -348,9 +348,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-23_173855",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-23T17:38:55+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -370,9 +370,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-24_170455",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-24T17:04:55+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -392,9 +392,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-24_170455",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-24T17:04:55+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -414,11 +414,33 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-25_165212",
-      "last_seen_report_id": "mainline_review_2026-06-25_205439",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
       "first_seen_at": "2026-06-25T16:52:12+08:00",
-      "last_seen_at": "2026-06-25T20:54:39+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
+      ]
+    },
+    {
+      "policy_id": "sse-2026-06-17-ai-large-model-star-board-fifth-standard",
+      "title": "上海证券交易所发行上市审核规则适用指引第10号——人工智能大模型企业适用科创板第五套上市标准",
+      "source_org_norm": "sse",
+      "source_url": "https://www.sse.com.cn/lawandrules/sselawsrules2025/stocks/review/firstepisode/c/c_20260617_10822578.shtml",
+      "source_domain": "www.sse.com.cn",
+      "publish_date": "2026-06-17",
+      "content_hash": "sha256:4cb56698a5ddd830b1f7e470f2e3795111660f32e263b3e14e797fda35386b4d",
+      "previous_content_hash": "",
+      "snapshot_status": "new",
+      "provenance_status": "verified",
+      "inclusion_status": "included_in_mainline",
+      "revision_id": "",
+      "revision_note": "",
+      "first_seen_report_id": "mainline_review_2026-06-26_165046",
+      "last_seen_report_id": "mainline_review_2026-06-26_165046",
+      "first_seen_at": "2026-06-26T16:50:46+08:00",
+      "last_seen_at": "2026-06-26T16:50:46+08:00",
+      "snapshot_reasons": [
+        "policy_id_not_seen_before"
       ]
     }
   ]
