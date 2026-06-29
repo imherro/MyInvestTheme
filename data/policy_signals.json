@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-26T16:50:00+08:00",
+  "updated_at": "2026-06-29T09:54:34+08:00",
   "method": "Codex/LLM extracts official-source facts; Python policy_score_v2 scoring is deterministic.",
   "signals": [
     {
@@ -382,6 +382,63 @@
       "key_points": ["科创板第五套上市标准", "人工智能大模型", "发行上市审核", "规模化应用", "模型服务", "模型应用", "2026年6月17日施行"],
       "beneficiary_chain": ["人工智能大模型", "模型服务", "模型应用", "硬科技融资", "算力基础设施", "半导体", "软件服务"],
       "related_industries": ["人工智能", "软件服务", "半导体", "高端制造", "通信"]
+    },
+    {
+      "id": "state-council-2026-03-31-industrial-supply-chain-security",
+      "title": "国务院关于产业链供应链安全的规定",
+      "source": "国务院",
+      "published_date": "2026-03-31",
+      "authority_level": "state_council",
+      "economic_scope": "national",
+      "url": "https://www.gov.cn/zhengce/content/202604/content_7064837.htm",
+      "authority_score": 1.0,
+      "actionability_score": 0.0,
+      "economic_scope_score": 1.0,
+      "time_decay_score": 0.049787,
+      "policy_score_v2": 0.559957,
+      "summary": "国务院发布产业链供应链安全规定，建立产业链供应链安全工作机制，引导合理有序布局，推进数字化、智能化并提升安全可控水平。",
+      "evidence": "规定要求国家加强关键领域产业链供应链安全保障，维护关键领域原材料、技术、设备、产品等的生产与流通稳定，并推动信息共享和风险监测预警。",
+      "key_points": ["产业链供应链安全", "关键领域", "原材料", "技术", "设备", "产品", "数字化", "智能化", "风险监测预警"],
+      "beneficiary_chain": ["产业链供应链安全", "关键领域", "原材料", "技术设备", "高端装备", "数字化", "智能化", "资源保障"],
+      "related_industries": ["高端制造", "半导体", "资源周期", "软件服务"]
+    },
+    {
+      "id": "mofcom-2026-06-22-industrial-supply-chain-security-investigation",
+      "title": "商务部公告2026年第24号公布《产业链供应链安全调查工作办法》",
+      "source": "商务部",
+      "published_date": "2026-06-22",
+      "authority_level": "national_ministry",
+      "economic_scope": "cross_industry",
+      "url": "https://www.mofcom.gov.cn/zwgk/zcfb/art/2026/art_6203fd463c704de1bd870597f24bbcb4.html",
+      "authority_score": 0.7,
+      "actionability_score": 0.8,
+      "economic_scope_score": 0.8,
+      "time_decay_score": 0.79189,
+      "policy_score_v2": 0.763378,
+      "summary": "商务部制定产业链供应链安全调查工作办法，明确调查对象、评估内容、程序和处理措施，维护产业链供应链安全稳定。",
+      "evidence": "办法明确可调查损害产业链供应链安全的措施或者行为，并评估重要物质、技术、资金、资产、数据、信息、人员、企业、项目等要素安全和畅通流动影响。",
+      "key_points": ["产业链供应链安全", "安全调查", "重要物质", "技术", "资金", "数据", "企业", "项目", "稳定畅通"],
+      "beneficiary_chain": ["产业链供应链安全", "关键材料", "关键技术", "数据流通", "高端制造", "战略资源", "科技企业"],
+      "related_industries": ["高端制造", "半导体", "资源周期", "软件服务"]
+    },
+    {
+      "id": "mofcom-2026-06-24-strategic-minerals-export-control-reporting",
+      "title": "商务部公告2026年第26号公布关于进一步完善战略矿产两用物项出口管制违法违规行为举报处理工作有关事项",
+      "source": "商务部",
+      "published_date": "2026-06-24",
+      "authority_level": "national_ministry",
+      "economic_scope": "industry",
+      "url": "https://www.mofcom.gov.cn/zwgk/zcfb/art/2026/art_d6998a818b2e4329b6980093d751cd52.html",
+      "authority_score": 0.7,
+      "actionability_score": 0.2,
+      "economic_scope_score": 0.6,
+      "time_decay_score": 0.846482,
+      "policy_score_v2": 0.584296,
+      "summary": "商务部完善战略矿产两用物项出口管制违法违规行为举报处理机制，明确举报范围、举报方式、受理规则和实施时间。",
+      "evidence": "公告覆盖未经许可出口、超许可范围出口、规避许可、绕道第三国和非法转移战略矿产相关技术等行为，自2026年7月1日起实施。",
+      "key_points": ["战略矿产", "两用物项", "出口管制", "举报处理", "规避许可", "战略矿产技术", "2026年7月1日实施"],
+      "beneficiary_chain": ["战略矿产", "稀土", "关键矿产", "资源安全", "出口管制合规", "矿产技术"],
+      "related_industries": ["资源周期", "有色金属", "稀土", "高端制造"]
     }
   ]
 }

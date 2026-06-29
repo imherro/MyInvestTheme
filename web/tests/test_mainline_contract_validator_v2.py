@@ -93,7 +93,9 @@ def test_theme_score_formula_error_is_detected(report):
 
 def test_allocation_cap_error_is_detected(report):
     broken = deepcopy(report)
-    event = broken["event_theme_allocation_summary"]["events"][0]
+    event = next(
+        item for item in broken["event_theme_allocation_summary"]["events"] if item.get("allocation_capped")
+    )
     event["allocation_budget_used"] = round(event["event_contribution_budget"] + 0.05, 4)
     summary = validate(broken)
     assert "EVENT_BUDGET_OVERUSED" in issue_codes(summary)
