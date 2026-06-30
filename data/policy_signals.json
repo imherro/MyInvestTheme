@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-29T16:54:25+08:00",
+  "updated_at": "2026-06-30T16:55:00+08:00",
   "method": "Codex/LLM extracts official-source facts; Python policy_score_v2 scoring is deterministic.",
   "signals": [
     {
@@ -515,6 +515,25 @@
       "key_points": ["集成电路", "软件企业", "税收优惠", "研发费用加计扣除", "进口税收政策", "企业清单", "联审确认"],
       "beneficiary_chain": ["集成电路制造", "集成电路设计", "关键原材料", "零配件", "软件企业", "半导体设备", "硬科技企业"],
       "related_industries": ["半导体", "软件服务", "硬科技电子", "高端制造", "关键材料"]
+    },
+    {
+      "id": "nea-2026-06-24-energy-rd-innovation-platform-draft",
+      "title": "国家能源局关于公开征求《国家能源局研发创新平台管理办法（征求意见稿）》意见的通知",
+      "source": "国家能源局",
+      "published_date": "2026-06-24",
+      "authority_level": "national_ministry",
+      "economic_scope": "industry",
+      "url": "https://www.nea.gov.cn/20260630/1e60e565f05048c8843022f055466a23/c.html",
+      "authority_score": 0.7,
+      "actionability_score": 0.5,
+      "economic_scope_score": 0.6,
+      "time_decay_score": 0.818731,
+      "policy_score_v2": 0.653746,
+      "summary": "国家能源局就研发创新平台管理办法征求意见，围绕能源领域研发创新平台的建设、运行、评价和管理形成制度化安排。",
+      "evidence": "通知公开征求研发创新平台管理办法意见，规范能源领域研发创新平台建设运行和评价管理，征求意见截止至2026年7月30日。",
+      "key_points": ["能源研发创新平台", "征求意见稿", "平台建设", "运行管理", "评价管理", "能源科技创新", "2026年7月30日截止"],
+      "beneficiary_chain": ["能源科技创新", "新能源技术", "电力设备", "能源装备", "储能技术", "智能电网", "科研平台"],
+      "related_industries": ["新能源", "电力设备", "高端制造", "能源装备", "绿色低碳"]
     }
   ]
 }
