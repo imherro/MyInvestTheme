@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-06-30T16:55:00+08:00",
+  "updated_at": "2026-07-01T16:50:00+08:00",
   "method": "Codex/LLM extracts official-source facts; Python policy_score_v2 scoring is deterministic.",
   "signals": [
     {
@@ -515,6 +515,25 @@
       "key_points": ["集成电路", "软件企业", "税收优惠", "研发费用加计扣除", "进口税收政策", "企业清单", "联审确认"],
       "beneficiary_chain": ["集成电路制造", "集成电路设计", "关键原材料", "零配件", "软件企业", "半导体设备", "硬科技企业"],
       "related_industries": ["半导体", "软件服务", "硬科技电子", "高端制造", "关键材料"]
+    },
+    {
+      "id": "miit-2026-06-20-industrial-internet-high-quality-development",
+      "title": "工业和信息化部等八部门印发《关于推动工业互联网高质量发展的实施意见》的通知",
+      "source": "工业和信息化部",
+      "published_date": "2026-06-20",
+      "authority_level": "multi_ministry",
+      "economic_scope": "cross_industry",
+      "url": "https://www.miit.gov.cn/zwgk/zcwj/wjfb/tz/art/2026/art_5f76aa6e3a4745d2bd96ee0010ec8459.html",
+      "authority_score": 0.8,
+      "actionability_score": 0.7,
+      "economic_scope_score": 0.8,
+      "time_decay_score": 0.693041,
+      "policy_score_v2": 0.753608,
+      "summary": "工业和信息化部等八部门出台推动工业互联网高质量发展的实施意见，部署网络、标识、平台、数据、安全体系建设和规模化应用，推动工业互联网与人工智能、算力基础设施融合。",
+      "evidence": "政策解读明确到2030年建设5万张工业5G专网，融合应用覆盖207个工业中类，核心产业增加值突破2.5万亿元，并建设区域、行业高质量数据集和工业算力网络。",
+      "key_points": ["工业互联网", "工业5G专网", "高质量数据集", "算力基础设施", "人工智能", "工业智能体", "安全保障", "2030年目标"],
+      "beneficiary_chain": ["工业互联网平台", "工业5G专网", "通信网络", "工业软件", "工业数据", "高质量数据集", "算力基础设施", "工业智能体", "智能制造", "网络安全"],
+      "related_industries": ["通信", "人工智能", "软件服务", "高端制造", "工业互联网", "网络安全"]
     },
     {
       "id": "nea-2026-06-24-energy-rd-innovation-platform-draft",
