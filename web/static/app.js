@@ -77,6 +77,32 @@
     return "低确认";
   }
 
+  function niceCeil(value) {
+    if (!Number.isFinite(value) || value <= 0) return 1;
+    const exponent = Math.floor(Math.log10(value));
+    const scale = Math.pow(10, exponent);
+    const normalized = value / scale;
+    const nice = [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find((step) => normalized <= step) || 10;
+    return nice * scale;
+  }
+
+  function niceStep(value) {
+    if (!Number.isFinite(value) || value <= 0) return 1;
+    const exponent = Math.floor(Math.log10(value));
+    const scale = Math.pow(10, exponent);
+    const normalized = value / scale;
+    const nice = [1, 2, 2.5, 5, 10].find((step) => normalized <= step) || 10;
+    return nice * scale;
+  }
+
+  function chartYMax(themes, scoreAccessor) {
+    const scores = themes
+      .flatMap((theme) => (theme.points || []).map(scoreAccessor))
+      .filter((score) => score !== null && Number.isFinite(score));
+    const maxScore = Math.max(0, ...scores);
+    return niceCeil(maxScore * 1.12);
+  }
+
   function pathFor(points, scoreAccessor, xFor, yFor) {
     return points
       .map((point) => ({ point, score: scoreAccessor(point) }))
@@ -110,7 +136,8 @@
     const xFor = (label) => pad.left + (labels.length <= 1 ? plotW / 2 : (labels.indexOf(label) / (labels.length - 1)) * plotW);
     const yFor = (score) => pad.top + (1 - clamp(score, 0, yMax) / yMax) * plotH;
     const axisTicks = [];
-    for (let value = 0; value <= yMax; value += 20) axisTicks.push(value);
+    const yStep = niceStep(yMax / 5);
+    for (let value = 0; value <= yMax; value += yStep) axisTicks.push(value);
     if (axisTicks[axisTicks.length - 1] !== yMax) axisTicks.push(yMax);
     const labelStep = Math.max(1, Math.ceil(labels.length / 6));
     const legendThemes = [...themes].sort((a, b) => {
@@ -122,6 +149,7 @@
       <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(title)}">
         <rect x="0" y="0" width="${width}" height="${height}" fill="#fbfcfd" />
         <text x="${pad.left}" y="18" font-size="14" font-weight="700" fill="#172033">${escapeHtml(title)}</text>
+        <text x="${pad.left + 170}" y="18" font-size="11" fill="#667085">Y轴 0-${formatScore(yMax)}</text>
         ${axisTicks.map((value) => {
           const y = yFor(value);
           return `<line x1="${pad.left}" y1="${y}" x2="${pad.left + plotW}" y2="${y}" stroke="#e4e7ec" /><text x="${pad.left - 8}" y="${y + 4}" text-anchor="end" font-size="11" fill="#667085">${Math.round(value)}</text>`;
@@ -190,8 +218,8 @@
     }
 
     const labels = Array.from(new Set(themes.flatMap((theme) => theme.points.map((point) => point.x))));
-    const scores = themes.flatMap((theme) => theme.points.flatMap((point) => [policyScore(point), marketScore(point)]).filter((score) => score !== null));
-    const yMax = Math.max(100, Math.ceil(Math.max(...scores) / 10) * 10);
+    const policyYMax = chartYMax(themes, policyScore);
+    const marketYMax = chartYMax(themes, marketScore);
     const latestScores = themes.flatMap((theme) => {
       const point = latestPoint(theme.points || []);
       return [policyScore(point), marketScore(point)].filter((score) => score !== null);
@@ -213,11 +241,11 @@
         </div>
         <div class="chart-subhead">
           <strong>时间走势</strong>
-          <span>分开看政策主线分和市场热度观察分；每张图右侧说明按本图最新分数降序排列</span>
+          <span>分开看政策主线分和市场热度观察分；每张图独立缩放Y轴，右侧说明按本图最新分数降序排列</span>
         </div>
         <div class="trend-list">
-          <div class="trend-card">${renderTrendChart(themes, labels, policyScore, "政策主线分历史变化", "政策主线分", yMax)}</div>
-          <div class="trend-card">${renderTrendChart(themes, labels, marketScore, "市场热度观察分历史变化", "市场热度观察分", yMax)}</div>
+          <div class="trend-card">${renderTrendChart(themes, labels, policyScore, "政策主线分历史变化", "政策主线分", policyYMax)}</div>
+          <div class="trend-card">${renderTrendChart(themes, labels, marketScore, "市场热度观察分历史变化", "市场热度观察分", marketYMax)}</div>
         </div>
       </div>`;
   }

@@ -272,7 +272,7 @@ def test_pages_render():
     assert "安全边界" in latest.text
     assert "打开 /api" in latest.text
     assert "api-directory-20260625" in latest.text
-    assert "trend-legend-score-sort-20260623" in latest.text
+    assert "trend-dynamic-yaxis-20260701" in latest.text
     reports = get("/reports")
     assert reports.status_code == 200
     assert "历次研究结果" in reports.text
@@ -285,7 +285,10 @@ def test_pages_render():
     assert "市场热度观察分历史变化" in app_js.text
     assert "legendThemes" in app_js.text
     assert "latestChartScore" in app_js.text
+    assert "chartYMax" in app_js.text
+    assert "每张图独立缩放Y轴" in app_js.text
     assert "右侧说明按本图最新分数降序排列" in app_js.text
+    assert "Y轴 0-" in app_js.text
     assert "颜色=主题" in app_js.text
     assert "点大小/外圈" not in app_js.text
 
