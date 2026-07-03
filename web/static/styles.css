@@ -564,13 +564,13 @@ th {
   gap: 12px;
   align-items: baseline;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
   padding: 8px 0 4px;
 }
 
 .chart-subhead strong {
   color: var(--text);
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .legend-line {

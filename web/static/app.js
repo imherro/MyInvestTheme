@@ -122,15 +122,15 @@
           `${label} ${formatScore(item.score)}`,
           `报告 ${item.point.report_id}`,
         ].join(" / ");
-        return `<circle cx="${xFor(item.point.x).toFixed(2)}" cy="${yFor(item.score).toFixed(2)}" r="3.4" fill="${color}"><title>${escapeHtml(title)}</title></circle>`;
+        return `<circle cx="${xFor(item.point.x).toFixed(2)}" cy="${yFor(item.score).toFixed(2)}" r="4" fill="${color}"><title>${escapeHtml(title)}</title></circle>`;
       })
       .join("");
   }
 
   function renderTrendChart(themes, labels, scoreAccessor, title, label, yMax) {
-    const width = Math.max(1020, labels.length * 76 + 260);
-    const height = 360;
-    const pad = { left: 48, right: 230, top: 34, bottom: 48 };
+    const width = Math.max(1200, labels.length * 92 + 340);
+    const height = 640;
+    const pad = { left: 64, right: 310, top: 56, bottom: 72 };
     const plotW = width - pad.left - pad.right;
     const plotH = height - pad.top - pad.bottom;
     const xFor = (label) => pad.left + (labels.length <= 1 ? plotW / 2 : (labels.indexOf(label) / (labels.length - 1)) * plotW);
@@ -148,29 +148,29 @@
     return `
       <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(title)}">
         <rect x="0" y="0" width="${width}" height="${height}" fill="#fbfcfd" />
-        <text x="${pad.left}" y="18" font-size="14" font-weight="700" fill="#172033">${escapeHtml(title)}</text>
-        <text x="${pad.left + 170}" y="18" font-size="11" fill="#667085">Y轴 0-${formatScore(yMax)}</text>
+        <text x="${pad.left}" y="30" font-size="16" font-weight="700" fill="#172033">${escapeHtml(title)}</text>
+        <text x="${pad.left + 210}" y="30" font-size="13" fill="#667085">Y轴 0-${formatScore(yMax)}</text>
         ${axisTicks.map((value) => {
           const y = yFor(value);
-          return `<line x1="${pad.left}" y1="${y}" x2="${pad.left + plotW}" y2="${y}" stroke="#e4e7ec" /><text x="${pad.left - 8}" y="${y + 4}" text-anchor="end" font-size="11" fill="#667085">${Math.round(value)}</text>`;
+          return `<line x1="${pad.left}" y1="${y}" x2="${pad.left + plotW}" y2="${y}" stroke="#e4e7ec" /><text x="${pad.left - 10}" y="${y + 5}" text-anchor="end" font-size="13" fill="#667085">${Math.round(value)}</text>`;
         }).join("")}
         ${labels.map((timeLabel, index) => {
           if (index !== 0 && index !== labels.length - 1 && index % labelStep !== 0) return "";
           const x = xFor(timeLabel);
-          return `<text x="${x}" y="${height - 16}" text-anchor="middle" font-size="11" fill="#667085">${escapeHtml(timeLabel)}</text>`;
+          return `<text x="${x}" y="${height - 28}" text-anchor="middle" font-size="13" fill="#667085">${escapeHtml(timeLabel)}</text>`;
         }).join("")}
         <line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${pad.top + plotH}" stroke="#98a2b3" />
         <line x1="${pad.left}" y1="${pad.top + plotH}" x2="${pad.left + plotW}" y2="${pad.top + plotH}" stroke="#98a2b3" />
         ${themes.map((theme, index) => {
           const color = theme.color || themeColor(index);
           const points = theme.points || [];
-          return `<path d="${pathFor(points, scoreAccessor, xFor, yFor)}" fill="none" stroke="${color}" stroke-width="2.4" />${circlesFor(points, scoreAccessor, xFor, yFor, color, label, theme.theme)}`;
+          return `<path d="${pathFor(points, scoreAccessor, xFor, yFor)}" fill="none" stroke="${color}" stroke-width="2.8" />${circlesFor(points, scoreAccessor, xFor, yFor, color, label, theme.theme)}`;
         }).join("")}
         ${legendThemes.map((theme, index) => {
-          const y = pad.top + index * 24;
+          const y = pad.top + index * 34;
           const color = theme.color || themeColor(index);
           const latest = scoreAccessor(latestPoint(theme.points || []));
-          return `<line x1="${pad.left + plotW + 22}" y1="${y}" x2="${pad.left + plotW + 42}" y2="${y}" stroke="${color}" stroke-width="3" /><text x="${pad.left + plotW + 50}" y="${y + 4}" font-size="12" fill="#172033">${escapeHtml(theme.theme)} ${formatScore(latest)}</text>`;
+          return `<line x1="${pad.left + plotW + 24}" y1="${y}" x2="${pad.left + plotW + 48}" y2="${y}" stroke="${color}" stroke-width="4" /><text x="${pad.left + plotW + 58}" y="${y + 5}" font-size="14" fill="#172033">${escapeHtml(theme.theme)} ${formatScore(latest)}</text>`;
         }).join("")}
       </svg>`;
   }
