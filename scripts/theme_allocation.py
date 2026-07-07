@@ -108,24 +108,50 @@ def assign_allocation_roles(allocated_rows: list[dict[str, Any]]) -> list[dict[s
 
 def _apply_rounding_cap(rows: list[dict[str, Any]], budget: float) -> list[dict[str, Any]]:
     total = round4(sum(row.get("allocated_cluster_contribution", 0.0) for row in rows))
-    excess = round4(total - budget)
-    if excess <= 0:
+    delta = round4(total - budget)
+    if delta == 0:
         return rows
-    positive_rows = [row for row in rows if round4(row.get("allocated_cluster_contribution")) > 0]
-    if not positive_rows:
+    if delta > 0:
+        positive_rows = [row for row in rows if round4(row.get("allocated_cluster_contribution")) > 0]
+        if not positive_rows:
+            return rows
+        target = sorted(
+            positive_rows,
+            key=lambda row: (
+                round4(row.get("allocated_cluster_contribution")),
+                round4(row.get("allocation_share")),
+                row.get("theme_id", ""),
+            ),
+        )[0]
+        target["allocated_cluster_contribution"] = round4(round4(target.get("allocated_cluster_contribution")) - delta)
+        target["theme_allocation_reduction_effect"] = round4(
+            round4(target.get("raw_stance_adjusted_cluster_contribution")) - round4(target.get("allocated_cluster_contribution"))
+        )
         return rows
-    target = sorted(
-        positive_rows,
+
+    deficit = round4(-delta)
+    candidates = sorted(
+        rows,
         key=lambda row: (
-            round4(row.get("allocated_cluster_contribution")),
-            round4(row.get("allocation_share")),
+            -round4(round4(row.get("raw_stance_adjusted_cluster_contribution")) - round4(row.get("allocated_cluster_contribution"))),
+            -round4(row.get("allocated_cluster_contribution")),
             row.get("theme_id", ""),
         ),
-    )[0]
-    target["allocated_cluster_contribution"] = round4(round4(target.get("allocated_cluster_contribution")) - excess)
-    target["theme_allocation_reduction_effect"] = round4(
-        round4(target.get("raw_stance_adjusted_cluster_contribution")) - round4(target.get("allocated_cluster_contribution"))
     )
+    for target in candidates:
+        allocated = round4(target.get("allocated_cluster_contribution"))
+        raw = round4(target.get("raw_stance_adjusted_cluster_contribution"))
+        headroom = round4(raw - allocated)
+        if headroom <= 0:
+            continue
+        increment = deficit if headroom >= deficit else headroom
+        target["allocated_cluster_contribution"] = round4(allocated + increment)
+        target["theme_allocation_reduction_effect"] = round4(
+            raw - round4(target.get("allocated_cluster_contribution"))
+        )
+        deficit = round4(deficit - increment)
+        if deficit <= 0:
+            break
     return rows
 
 

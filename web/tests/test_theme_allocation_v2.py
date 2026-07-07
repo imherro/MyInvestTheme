@@ -105,6 +105,20 @@ def test_allocated_sum_never_exceeds_event_budget():
     assert sum(row["allocated_cluster_contribution"] for row in event["allocated_themes"]) <= event["cluster_policy_score_v2"] + 1e-6
 
 
+def test_capped_event_rounding_uses_full_budget():
+    event = allocate_single_event_theme_contributions(
+        [
+            claim(theme_id="theme_a", raw=0.2986, policy_score=0.4685),
+            claim(theme_id="theme_b", raw=0.2459, policy_score=0.4685),
+            claim(theme_id="theme_c", raw=0.1222, policy_score=0.4685),
+        ]
+    )
+
+    assert event["allocation_capped"] is True
+    assert event["allocation_budget_used"] == event["event_contribution_budget"] == 0.4685
+    assert sum(row["allocated_cluster_contribution"] for row in event["allocated_themes"]) == 0.4685
+
+
 def test_theme_score_v5_is_not_higher_than_v4_when_capped():
     summary = allocate_event_theme_contributions(
         [
