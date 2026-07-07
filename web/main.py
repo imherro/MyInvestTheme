@@ -36,6 +36,11 @@ from scripts.counterfactual_simulator import (
 from scripts.mainline_sensitivity_engine import build_theme_sensitivity
 from scripts.core_driver_detector import detect_core_drivers
 from scripts.system_consistency_oracle import build_consistency_oracle
+from scripts.theme_taxonomy_v2 import (
+    SCORING_VERSION as TAXONOMY_V2_VERSION,
+    build_score_series as build_taxonomy_v2_score_series,
+    load_or_build_taxonomy_v2,
+)
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
@@ -56,6 +61,7 @@ API_RECOMMENDED_ENTRYPOINTS = [
     {"name": "接口说明", "path": "/api", "reason": "查看当前系统全部公开接口、参数和只读边界。"},
     {"name": "首页主要内容", "path": "/api/index", "reason": "读取 Web 首页使用的主线、市场热度、曲线和报告列表。"},
     {"name": "最新报告", "path": "/api/latest", "reason": "读取最新主线研究 JSON，适合作为系统集成入口。"},
+    {"name": "二级主线观察", "path": "/api/taxonomy-v2", "reason": "读取最新报告派生出的二级主线重映射结果。"},
     {"name": "主线分数历史", "path": "/api/score-series", "reason": "读取政策主线分和市场热度观察分的时间序列。"},
     {"name": "健康状态", "path": "/api/health", "reason": "检查报告数量、最新报告 ID 和质量校验状态。"},
 ]
@@ -150,7 +156,15 @@ API_GROUPS = [
                 "path": "/api/index",
                 "purpose": "读取首页主要内容。",
                 "parameters": [],
-                "returns": "JSON，包含最新报告摘要、政策主线、市场热度观察、市场数据、分数曲线和报告列表。",
+                "returns": "JSON，包含最新报告摘要、政策主线、二级主线观察、市场热度观察、市场数据、分数曲线和报告列表。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/api/taxonomy-v2",
+                "purpose": "读取最新报告派生出的二级主线观察结果。",
+                "parameters": [],
+                "returns": "JSON，包含 taxonomy_v2 历史重映射摘要、父级分组和二级主题列表。",
                 "read_only": True,
             },
             {
@@ -203,6 +217,16 @@ API_GROUPS = [
                 "returns": "text/markdown，报告原文。",
                 "read_only": True,
             },
+            {
+                "method": "GET",
+                "path": "/api/reports/{report_id}/taxonomy-v2",
+                "purpose": "读取指定历史报告派生出的二级主线观察结果。",
+                "parameters": [
+                    {"name": "report_id", "in": "path", "required": True, "description": "报告 ID。"}
+                ],
+                "returns": "JSON，包含 report_id 和 taxonomy_v2 派生结果。",
+                "read_only": True,
+            },
         ],
     },
     {
@@ -215,6 +239,14 @@ API_GROUPS = [
                 "purpose": "读取主线分数历史曲线数据。",
                 "parameters": [],
                 "returns": "JSON，包含 report_count 和 themes 时间序列。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/api/taxonomy-v2/score-series",
+                "purpose": "读取二级主线观察的历史重映射曲线数据。",
+                "parameters": [],
+                "returns": "JSON，包含 taxonomy_v2 二级主题的政策分、市场热度分和综合分时间序列。",
                 "read_only": True,
             },
             {
@@ -762,6 +794,19 @@ def _with_canonical_fields(payload: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
+def _taxonomy_v2_backfill(report_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+    return load_or_build_taxonomy_v2(report_id, payload)
+
+
+def _with_taxonomy_v2(report_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+    result = _with_canonical_fields(payload)
+    taxonomy_v2 = _taxonomy_v2_backfill(report_id, result)
+    result["taxonomy_v2_backfill"] = taxonomy_v2
+    result["taxonomy_v2_ranking"] = taxonomy_v2.get("themes") or []
+    result["taxonomy_v2_parent_groups"] = taxonomy_v2.get("parent_groups") or []
+    return result
+
+
 def _report_summary(path: Path) -> dict[str, Any]:
     payload = _load_json(path)
     mainline_rows = _mainline_rows(payload)
@@ -1037,6 +1082,9 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
     mainline_ranking = _mainline_rows(payload)
     canonical_mainline_summary = _canonical_summary(payload)
     legacy_theme_ranking = enrich_theme_ranking(_legacy_theme_rows(payload))
+    taxonomy_v2 = _taxonomy_v2_backfill(report_id, payload)
+    taxonomy_v2_ranking = taxonomy_v2.get("themes") or []
+    taxonomy_v2_top = taxonomy_v2_ranking[0] if taxonomy_v2_ranking else {}
     legacy_top = legacy_theme_ranking[0] if legacy_theme_ranking else {}
     theme_summary = payload.get("theme_summary") or {}
     data_quality_summary = _data_quality_summary(payload)
@@ -1098,6 +1146,10 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
             "contract_validation_warning_count": contract_validation_summary.get("warning_count", 0),
             "legacy_top_theme": legacy_top.get("theme", ""),
             "legacy_top_score": legacy_top.get("evidence_score"),
+            "taxonomy_v2_scoring_version": taxonomy_v2.get("scoring_version", TAXONOMY_V2_VERSION),
+            "taxonomy_v2_top_theme": taxonomy_v2_top.get("theme_name", ""),
+            "taxonomy_v2_top_parent": taxonomy_v2_top.get("parent_name", ""),
+            "taxonomy_v2_top_combined_score": taxonomy_v2_top.get("combined_score"),
             "theme_scoring_version": theme_summary.get("scoring_version", ""),
             "mainline_lifecycle_version": theme_summary.get("mainline_lifecycle_version", ""),
             "top_mainline_theme_v6": top_mainline_theme,
@@ -1114,6 +1166,9 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
         "contract_validation_summary": contract_validation_summary,
         "theme_ranking": legacy_theme_ranking,
         "legacy_theme_ranking": legacy_theme_ranking,
+        "taxonomy_v2_backfill": taxonomy_v2,
+        "taxonomy_v2_ranking": taxonomy_v2_ranking,
+        "taxonomy_v2_parent_groups": taxonomy_v2.get("parent_groups") or [],
         "event_cluster_summary": payload.get("event_cluster_summary") or {},
         "policy_stance_summary": payload.get("policy_stance_summary") or {},
         "event_theme_allocation_summary": payload.get("event_theme_allocation_summary") or {},
@@ -1125,6 +1180,7 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
             "broad_indexes": payload.get("broad_indexes") or [],
         },
         "score_series": build_score_series(),
+        "taxonomy_v2_score_series": build_taxonomy_v2_score_series(),
         "reports": list_reports(),
         "markdown": markdown,
     }
@@ -1145,6 +1201,10 @@ def latest_page(request: Request) -> HTMLResponse:
     page_report["mainline_cycle_stage_summary"] = build_cycle_stage_summary(page_report["mainline_ranking"])
     page_report["legacy_theme_ranking"] = enrich_theme_ranking(_legacy_theme_rows(payload))
     page_report["theme_ranking"] = page_report["legacy_theme_ranking"]
+    taxonomy_v2 = _taxonomy_v2_backfill(report_id, payload)
+    page_report["taxonomy_v2_backfill"] = taxonomy_v2
+    page_report["taxonomy_v2_ranking"] = taxonomy_v2.get("themes") or []
+    page_report["taxonomy_v2_parent_groups"] = taxonomy_v2.get("parent_groups") or []
     reports = list_reports()
     return templates.TemplateResponse(
         request,
@@ -1222,7 +1282,7 @@ def api_reports() -> dict[str, Any]:
 
 @app.get("/api/reports/{report_id}")
 def api_report(report_id: str) -> dict[str, Any]:
-    return {"report_id": report_id, "result": _with_canonical_fields(load_report(report_id))}
+    return {"report_id": report_id, "result": _with_taxonomy_v2(report_id, load_report(report_id))}
 
 
 @app.get("/api/reports/{report_id}/markdown")
@@ -1230,9 +1290,20 @@ def api_report_markdown(report_id: str) -> Response:
     return PlainTextResponse(load_markdown(report_id), media_type="text/markdown; charset=utf-8")
 
 
+@app.get("/api/reports/{report_id}/taxonomy-v2")
+def api_report_taxonomy_v2(report_id: str) -> dict[str, Any]:
+    payload = load_report(report_id)
+    return {"report_id": report_id, "result": _taxonomy_v2_backfill(report_id, payload)}
+
+
 @app.get("/api/score-series")
 def api_score_series() -> dict[str, Any]:
     return build_score_series()
+
+
+@app.get("/api/taxonomy-v2/score-series")
+def api_taxonomy_v2_score_series() -> dict[str, Any]:
+    return build_taxonomy_v2_score_series()
 
 
 @app.get("/api/index")
@@ -1241,11 +1312,17 @@ def api_index() -> dict[str, Any]:
     return build_index_payload(report_id, payload, markdown)
 
 
+@app.get("/api/taxonomy-v2")
+def api_taxonomy_v2() -> dict[str, Any]:
+    report_id, payload, _ = load_latest_report()
+    return {"report_id": report_id, "result": _taxonomy_v2_backfill(report_id, payload)}
+
+
 @app.get("/api/latest")
 @app.get("/api/mainline/latest")
 def api_latest() -> dict[str, Any]:
     report_id, payload, _ = load_latest_report()
-    return {"report_id": report_id, "result": _with_canonical_fields(payload)}
+    return {"report_id": report_id, "result": _with_taxonomy_v2(report_id, payload)}
 
 
 @app.get("/api/explain/theme/{theme_id}")

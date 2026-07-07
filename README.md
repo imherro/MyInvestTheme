@@ -26,6 +26,14 @@ python scripts/daily_mainline_update.py
 
 The daily updater is idempotent: if the latest complete Tushare trading date already has a report, it exits without creating a duplicate. The Codex recurring automation runs this command after market close.
 
+Build derived two-level mainline backfill:
+
+```powershell
+python scripts/theme_taxonomy_v2.py --all --write
+```
+
+`theme_taxonomy_v2` is a deterministic derived observation layer. It remaps existing reports into finer second-level themes such as `机器人`, `智能汽车/自动驾驶/车路云`, `农业/养殖/猪周期`, `量子科技/量子计算`, and `可控核聚变`. It does not modify old reports and should not be read as the original conclusion at that historical time.
+
 Policy scoring:
 
 - Codex reviews official policy sources and maintains `data/policy_signals.json`.
@@ -44,6 +52,7 @@ Policy scoring:
 - Explainability trace uses deterministic `explainability_trace_graph_v2` to expose policy -> event -> theme -> mainline paths, event contribution breakdowns, and formula checks without changing scores, ranking, contract validation, drift, or snapshots.
 - Counterfactual simulation uses deterministic `counterfactual_mainline_simulator_v2`, `mainline_sensitivity_engine_v2`, and `core_driver_detector_v2` to simulate removing a policy or event on an in-memory report copy without writing reports or changing real scores, ranking, contract validation, drift, or snapshots.
 - System consistency oracle uses deterministic `system_consistency_oracle_v2`, `multi_run_executor_v2`, and `divergence_analyzer_v2` to repeat same-report projections and classify score, ranking, allocation, lifecycle, provenance, snapshot, and explainability divergence without writing reports or changing real outputs.
+- Two-level taxonomy backfill uses deterministic `theme_taxonomy_v2_backfill_v1` from `config/theme_taxonomy_v2.json` to split coarse themes and surface independent themes that the original 8-bucket market view could hide. The output is written to `research/mainline_taxonomy_v2/` and is marked as derived/backfilled.
 - `theme_score_v2_raw` is the undeduplicated policy-theme comparison score, `theme_score_v3_dedup` is the deduplicated score before direction adjustment, `theme_score_v4_stance_adjusted` is the direction-adjusted score before allocation, `theme_score_v5` is the event-theme allocated score, and `mainline_score_v6` is the default lifecycle-adjusted policy-theme score.
 - Default canonical mainline score is `mainline_score_v6`.
 - `mainline_score_v6 = theme_score_v5 * lifecycle_quality_multiplier`.
@@ -76,6 +85,8 @@ Open:
 - OpenAPI schema: http://127.0.0.1:8012/openapi.json
 - Homepage content API: http://127.0.0.1:8012/api/index
 - Latest report API: http://127.0.0.1:8012/api/latest
+- Taxonomy v2 latest API: http://127.0.0.1:8012/api/taxonomy-v2
+- Taxonomy v2 score series API: http://127.0.0.1:8012/api/taxonomy-v2/score-series
 - Drift status API: http://127.0.0.1:8012/api/drift
 - Golden snapshot API: http://127.0.0.1:8012/api/golden-snapshot
 - Compare report API: http://127.0.0.1:8012/api/compare
@@ -109,6 +120,9 @@ The homepage endpoint returns the main content used by `/`:
 - `snapshot_registry_update_summary`
 - `reproducibility_manifest`
 - `mainline_ranking`
+- `taxonomy_v2_backfill`
+- `taxonomy_v2_ranking`
+- `taxonomy_v2_parent_groups`
 - `theme_ranking`
 - `legacy_theme_ranking`
 - `market`
@@ -117,7 +131,9 @@ The homepage endpoint returns the main content used by `/`:
 - `markdown`
 
 `mainline_ranking` is the policy-mainline list. `theme_ranking` and `legacy_theme_ranking` are compatibility market-heat observation lists and are not the policy-mainline ranking.
+`taxonomy_v2_ranking` is a derived second-level observation list. Its `combined_score` combines report-local normalized policy score, market heat, and confidence. It is useful for seeing whether a coarse bucket is hiding independent themes, but it is not a replacement for original policy-mainline ranking.
 In `score_series`, `score` and `default_score` both use `mainline_score_v6`; market-heat observation values are exposed only as `legacy_*` fields.
+`/api/taxonomy-v2/score-series` returns the derived second-level historical series. It is generated from existing reports and backfill files only; it does not trigger market-data collection or report recomputation.
 `/api/index`, `/api/latest`, and `/api/health` expose the latest `contract_validation_summary` or status fields. Contract errors block new JSON/Markdown writes; warnings are retained for audit.
 `data_quality_summary` is also exposed by `/api/latest`, `/api/index`, and `/api/health`. Required data stages block writes if they fail; optional market-context stages can degrade with schema fallback and do not change `mainline_score_v6`.
 `policy_provenance_summary` is exposed by `/api/latest` and `/api/index`; `/api/health` exposes the latest provenance status and rejected/degraded counts.

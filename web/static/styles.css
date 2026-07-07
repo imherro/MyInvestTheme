@@ -234,6 +234,10 @@ table {
   min-width: 880px;
 }
 
+.taxonomy-table {
+  min-width: 1120px;
+}
+
 .col-rank {
   width: 52px;
 }
@@ -256,6 +260,14 @@ table {
 
 .col-policy {
   width: 80px;
+}
+
+.col-parent {
+  width: 120px;
+}
+
+.col-confidence {
+  width: 110px;
 }
 
 .col-evidence {
@@ -325,6 +337,13 @@ th {
 
 .strong {
   font-weight: 700;
+}
+
+.backfill-note {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .stage {
@@ -435,6 +454,35 @@ th {
 
 .evidence-note {
   overflow-wrap: anywhere;
+}
+
+.taxonomy-confidence {
+  display: inline-block;
+  border: 1px solid #99d6cb;
+  background: #e6f5f2;
+  color: var(--brand-dark);
+  border-radius: 999px;
+  padding: 3px 8px;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.taxonomy-stage {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.taxonomy-evidence .evidence-action {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.taxonomy-source {
+  grid-template-columns: 92px 48px minmax(0, 1.1fr) minmax(0, 1fr);
 }
 
 .support-cell {
@@ -822,6 +870,10 @@ th {
     min-width: 1400px;
   }
 
+  .taxonomy-table {
+    min-width: 1120px;
+  }
+
   th,
   td {
     padding: 8px 6px;
@@ -845,6 +897,10 @@ th {
 
   table {
     min-width: 1400px;
+  }
+
+  .taxonomy-table {
+    min-width: 1120px;
   }
 
   .etf-cell {

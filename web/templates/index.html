@@ -24,6 +24,92 @@
   <div class="section-head">
     <div>
       <div class="title-row">
+        <h1>二级主线观察</h1>
+        <span class="info-popover">
+          <button class="info-icon" type="button" aria-label="查看二级主线观察说明" aria-describedby="taxonomy-v2-help">?</button>
+          <span id="taxonomy-v2-help" class="info-panel" role="tooltip">
+            <strong>计算方法</strong>
+            <span>taxonomy_v2 把旧粗主题和全市场证据重映射到二级主线；综合观察分 = 政策分归一 42% + 市场热度 48% + 置信度 10%。</span>
+            <strong>数据边界</strong>
+            <span>这是历史派生结果，不修改旧报告，不等同于当时原始研究结论；低置信行只能当线索，不当主线结论。</span>
+            <strong>使用建议</strong>
+            <span>先看二级主题是否真的有直接证据，再看它归属的一级分类；市场热但政策弱的主题适合观察，不宜直接替代政策主线。</span>
+          </span>
+        </span>
+      </div>
+      <div class="backfill-note">{{ report.taxonomy_v2_backfill.backfill_notice }}</div>
+    </div>
+    <div class="actions">
+      <a class="button secondary" href="/api/taxonomy-v2">读取二级主线API</a>
+      <a class="text-link" href="/api/taxonomy-v2/score-series">二级走势数据</a>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table class="taxonomy-table">
+      <colgroup>
+        <col class="col-rank">
+        <col class="col-theme">
+        <col class="col-parent">
+        <col class="col-score">
+        <col class="col-score">
+        <col class="col-score">
+        <col class="col-confidence">
+        <col class="col-evidence">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>排序</th>
+          <th>二级主线</th>
+          <th>一级分类</th>
+          <th>综合观察分</th>
+          <th>政策分</th>
+          <th>市场热度</th>
+          <th>置信度</th>
+          <th>证据来源</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in report.taxonomy_v2_ranking %}
+        <tr>
+          <td>{{ item.rank }}</td>
+          <td class="strong">{{ item.theme_name }}</td>
+          <td>{{ item.parent_name }}</td>
+          <td class="score-cell">{{ "%.1f"|format(item.combined_score) }}</td>
+          <td class="score-cell">{{ "%.4f"|format(item.policy_mainline_score) }}</td>
+          <td class="score-cell">{{ "%.1f"|format(item.market_heat_score) }}</td>
+          <td>
+            <span class="taxonomy-confidence confidence-{{ item.confidence_label }}">{{ item.confidence_label }}</span>
+            <span class="taxonomy-stage">{{ item.stage }}</span>
+          </td>
+          <td class="taxonomy-evidence">
+            <details class="evidence-details">
+              <summary>
+                <span class="evidence-count">{{ item.evidence_sources|length }}项</span>
+                <span class="evidence-action">{{ item.confidence_reason }}</span>
+              </summary>
+              <div class="evidence-list">
+                {% for evidence in item.evidence_sources[:6] %}
+                <div class="evidence-row taxonomy-source">
+                  <span class="evidence-state">{{ evidence.source }}</span>
+                  <span class="evidence-name">{{ "%.1f"|format(evidence.score) if evidence.score is not none else "无" }}</span>
+                  <span class="evidence-note">{{ evidence.label }}</span>
+                  <span class="evidence-note">{{ evidence.matched_keywords|join("、") }}</span>
+                </div>
+                {% endfor %}
+              </div>
+            </details>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section-band">
+  <div class="section-head">
+    <div>
+      <div class="title-row">
         <h1>政策主线</h1>
         <span class="info-popover">
           <button class="info-icon" type="button" aria-label="查看政策主线说明" aria-describedby="policy-mainline-help">?</button>
@@ -210,6 +296,14 @@
     <span class="hint">上方看当前强弱对比；下方分两张图看不同主题的历史强弱变化</span>
   </div>
   <div id="score-chart" class="chart" data-source="/api/score-series"></div>
+</section>
+
+<section class="section-band">
+  <div class="section-head">
+    <h2>二级主线历史走势</h2>
+    <span class="hint">taxonomy_v2 历史重映射；同一张图内比较二级主题强弱</span>
+  </div>
+  <div id="taxonomy-v2-chart" class="chart" data-source="/api/taxonomy-v2/score-series"></div>
 </section>
 
 <section class="section-band api-directory">

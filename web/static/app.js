@@ -48,6 +48,10 @@
     ]);
   }
 
+  function combinedScore(point) {
+    return firstNumber([point.combined_score, point.combinedScore]);
+  }
+
   function latestPoint(points) {
     return points[points.length - 1] || {};
   }
@@ -205,13 +209,15 @@
   }
 
   function drawScoreChart(container, payload) {
+    const isTaxonomyV2 = payload && payload.taxonomy_version === "theme_taxonomy_v2";
+    const rankingScore = isTaxonomyV2 ? (theme) => latestChartScore(theme, combinedScore) ?? -1 : latestPolicyScore;
     const themes = (payload.themes || [])
       .map((theme) => ({
         ...theme,
         points: (theme.points || []).filter((point) => policyScore(point) !== null || marketScore(point) !== null),
       }))
       .filter((theme) => theme.points.length)
-      .sort((a, b) => latestPolicyScore(b) - latestPolicyScore(a))
+      .sort((a, b) => rankingScore(b) - rankingScore(a))
       .slice(0, 8)
       .map((theme, index) => ({ ...theme, color: themeColor(index) }));
 
@@ -224,6 +230,9 @@
     const chartWidth = Math.max(320, Math.floor(container.clientWidth || 1120));
     const policyYMax = chartYMax(themes, policyScore);
     const marketYMax = chartYMax(themes, marketScore);
+    const policyTitle = isTaxonomyV2 ? "二级主线政策映射分历史变化" : "政策主线分历史变化";
+    const marketTitle = isTaxonomyV2 ? "二级主线市场热度分历史变化" : "市场热度观察分历史变化";
+    const rankingText = isTaxonomyV2 ? "显示最新综合观察分前 8 个二级主题" : "显示最新政策主线分前 8 个主题";
     const latestScores = themes.flatMap((theme) => {
       const point = latestPoint(theme.points || []);
       return [policyScore(point), marketScore(point)].filter((score) => score !== null);
@@ -234,7 +243,7 @@
       <div class="dual-chart">
         <div class="chart-legend">
           <span>颜色=主题，同一主题在两张图里颜色一致</span>
-          <span>横轴=报告生成时间，显示最新政策主线分前 8 个主题</span>
+          <span>横轴=报告生成时间，${escapeHtml(rankingText)}</span>
         </div>
         <div class="strength-board">
           <div class="chart-subhead">
@@ -248,8 +257,8 @@
           <span>分开看政策主线分和市场热度观察分；每张图独立缩放Y轴，右侧说明按本图最新分数降序排列</span>
         </div>
         <div class="trend-list">
-          <div class="trend-card">${renderTrendChart(themes, labels, policyScore, "政策主线分历史变化", "政策主线分", policyYMax, chartWidth)}</div>
-          <div class="trend-card">${renderTrendChart(themes, labels, marketScore, "市场热度观察分历史变化", "市场热度观察分", marketYMax, chartWidth)}</div>
+          <div class="trend-card">${renderTrendChart(themes, labels, policyScore, policyTitle, "政策映射分", policyYMax, chartWidth)}</div>
+          <div class="trend-card">${renderTrendChart(themes, labels, marketScore, marketTitle, "市场热度分", marketYMax, chartWidth)}</div>
         </div>
       </div>`;
   }

@@ -47,6 +47,9 @@ def test_latest_report_contract():
     assert body["result"].get("mainline_ranking", [])[0]["supporting_events"]
     assert body["result"].get("mainline_ranking", [])[0]["supporting_events"][0]["title"]
     assert body["result"].get("mainline_cycle_stage_summary", {}).get("scoring_version") == "mainline_cycle_stage_v2"
+    assert body["result"].get("taxonomy_v2_backfill", {}).get("scoring_version") == "theme_taxonomy_v2_backfill_v1"
+    taxonomy_names = {item["theme_name"] for item in body["result"].get("taxonomy_v2_ranking", [])}
+    assert {"机器人", "农业/养殖/猪周期", "智能汽车/自动驾驶/车路云", "量子科技/量子计算", "可控核聚变"}.issubset(taxonomy_names)
 
 
 def test_api_directory_contract():
@@ -63,7 +66,7 @@ def test_api_directory_contract():
     }
     assert body["recommended_entrypoints"][0]["path"] == "/api"
     assert {item["path"] for item in body["recommended_entrypoints"]}.issuperset(
-        {"/api/index", "/api/latest", "/api/health"}
+        {"/api/index", "/api/latest", "/api/taxonomy-v2", "/api/health"}
     )
     assert body["safety"]["read_only"] is True
     assert body["safety"]["no_recompute"] is True
@@ -83,8 +86,11 @@ def test_api_directory_contract():
         "/api/index",
         "/api/latest",
         "/api/mainline/latest",
+        "/api/taxonomy-v2",
+        "/api/reports/{report_id}/taxonomy-v2",
         "/api/reports/{report_id}/markdown",
         "/api/score-series",
+        "/api/taxonomy-v2/score-series",
         "/api/explain/theme/{theme_id}",
         "/api/simulate/remove-policy/{policy_id}",
         "/api/consistency/oracle",
@@ -116,8 +122,18 @@ def test_index_api_returns_homepage_content():
     assert body["latest_report"]["top_mainline_cycle_stage"]
     assert body["latest_report"]["top_mainline_cycle_time_window"]
     assert "top_mainline_cycle_review_remaining_days" in body["latest_report"]
+    assert body["latest_report"]["taxonomy_v2_scoring_version"] == "theme_taxonomy_v2_backfill_v1"
+    assert body["latest_report"]["taxonomy_v2_top_theme"]
     assert body["mainline_ranking"]
     assert body["canonical_mainline_summary"]["scoring_version"] == "canonical_mainline_output_v2"
+    assert body["taxonomy_v2_backfill"]["scoring_version"] == "theme_taxonomy_v2_backfill_v1"
+    assert body["taxonomy_v2_ranking"]
+    taxonomy_names = {item["theme_name"] for item in body["taxonomy_v2_ranking"]}
+    assert "农业/养殖/猪周期" in taxonomy_names
+    assert "机器人" in taxonomy_names
+    agriculture = next(item for item in body["taxonomy_v2_ranking"] if item["theme_name"] == "农业/养殖/猪周期")
+    assert agriculture["market_heat_score"] > 0
+    assert agriculture["is_backfilled"] is True
     assert body["legacy_theme_ranking"]
     assert body["theme_ranking"]
     assert body["event_cluster_summary"]["scoring_version"] == "policy_event_clustering_v2"
@@ -169,6 +185,7 @@ def test_index_api_returns_homepage_content():
     assert body["market"]["breadth"]
     assert body["market"]["broad_indexes"]
     assert body["score_series"]["report_count"] >= 1
+    assert body["taxonomy_v2_score_series"]["report_count"] >= 1
     assert body["reports"]
     assert "A股主线研究报告" in body["markdown"]
 
@@ -183,10 +200,15 @@ def test_reports_and_score_series():
     report_response = get(f"/api/reports/{report_id}")
     assert report_response.status_code == 200
     assert report_response.json()["result"]["theme_ranking"]
+    assert report_response.json()["result"]["taxonomy_v2_ranking"]
 
     markdown_response = get(f"/api/reports/{report_id}/markdown")
     assert markdown_response.status_code == 200
     assert "A股主线研究报告" in markdown_response.text
+
+    taxonomy_response = get(f"/api/reports/{report_id}/taxonomy-v2")
+    assert taxonomy_response.status_code == 200
+    assert taxonomy_response.json()["result"]["taxonomy_version"] == "theme_taxonomy_v2"
 
     series_response = get("/api/score-series")
     assert series_response.status_code == 200
@@ -229,12 +251,30 @@ def test_reports_and_score_series():
     assert "resonance_score" in first_point
     assert "triple_confirmation" in first_point
 
+    taxonomy_latest_response = get("/api/taxonomy-v2")
+    assert taxonomy_latest_response.status_code == 200
+    taxonomy_latest = taxonomy_latest_response.json()["result"]
+    assert taxonomy_latest["scoring_version"] == "theme_taxonomy_v2_backfill_v1"
+    assert taxonomy_latest["is_backfilled"] is True
+
+    taxonomy_series_response = get("/api/taxonomy-v2/score-series")
+    assert taxonomy_series_response.status_code == 200
+    taxonomy_series = taxonomy_series_response.json()
+    assert taxonomy_series["taxonomy_version"] == "theme_taxonomy_v2"
+    assert taxonomy_series["report_count"] >= 1
+    assert any(item["theme"] == "农业/养殖/猪周期" and item["points"] for item in taxonomy_series["themes"])
+
 
 def test_pages_render():
     latest = get("/")
     assert latest.status_code == 200
     assert "A股主线研究台" in latest.text
+    assert "二级主线观察" in latest.text
+    assert "农业/养殖/猪周期" in latest.text
+    assert "机器人" in latest.text
+    assert "历史派生结果" in latest.text
     assert "政策主线分 vs 市场热度观察分" in latest.text
+    assert "二级主线历史走势" in latest.text
     assert "上方看当前强弱对比" in latest.text
     assert "下方分两张图看不同主题的历史强弱变化" in latest.text
     assert "点大小/外圈" not in latest.text
@@ -256,7 +296,7 @@ def test_pages_render():
     assert "升温加速" in latest.text
     assert "持续有效" in latest.text
     assert "政策主线靠前且市场热度靠前" in latest.text
-    assert latest.text.count('class="hint"') == 1
+    assert latest.text.count('class="hint"') == 2
     assert "完整报告页" in latest.text
     assert "Markdown原文" in latest.text
     assert "data-myinvest-header" in latest.text
@@ -271,7 +311,7 @@ def test_pages_render():
     assert "推荐入口" in latest.text
     assert "安全边界" in latest.text
     assert "打开 /api" in latest.text
-    assert "trend-responsive-width-20260707" in latest.text
+    assert "taxonomy-v2-20260707" in latest.text
     reports = get("/reports")
     assert reports.status_code == 200
     assert "历次研究结果" in reports.text
@@ -282,6 +322,8 @@ def test_pages_render():
     assert "时间走势" in app_js.text
     assert "政策主线分历史变化" in app_js.text
     assert "市场热度观察分历史变化" in app_js.text
+    assert "二级主线政策映射分历史变化" in app_js.text
+    assert "最新综合观察分前 8 个二级主题" in app_js.text
     assert "legendThemes" in app_js.text
     assert "latestChartScore" in app_js.text
     assert "chartYMax" in app_js.text
