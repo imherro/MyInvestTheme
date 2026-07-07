@@ -271,7 +271,7 @@ def test_pages_render():
     assert "推荐入口" in latest.text
     assert "安全边界" in latest.text
     assert "打开 /api" in latest.text
-    assert "trend-large-labels-20260707" in latest.text
+    assert "trend-responsive-width-20260707" in latest.text
     reports = get("/reports")
     assert reports.status_code == 200
     assert "历次研究结果" in reports.text
@@ -286,6 +286,8 @@ def test_pages_render():
     assert "latestChartScore" in app_js.text
     assert "chartYMax" in app_js.text
     assert "const height = 760" in app_js.text
+    assert "container.clientWidth" in app_js.text
+    assert "showLegend" in app_js.text
     assert 'width="${width}" height="${height}"' in app_js.text
     assert 'font-size="22"' in app_js.text
     assert 'font-size="16"' in app_js.text
@@ -294,6 +296,12 @@ def test_pages_render():
     assert "Y轴 0-" in app_js.text
     assert "颜色=主题" in app_js.text
     assert "点大小/外圈" not in app_js.text
+
+    styles = get("/static/styles.css")
+    assert styles.status_code == 200
+    assert ".trend-card" in styles.text
+    assert "overflow: hidden" in styles.text
+    assert "min-width: 1020px" not in styles.text
 
 
 def test_index_table_column_contract():

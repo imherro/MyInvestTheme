@@ -127,10 +127,13 @@
       .join("");
   }
 
-  function renderTrendChart(themes, labels, scoreAccessor, title, label, yMax) {
-    const width = Math.max(1320, labels.length * 104 + 420);
+  function renderTrendChart(themes, labels, scoreAccessor, title, label, yMax, availableWidth) {
+    const width = Math.max(320, Math.floor(availableWidth || 1120));
     const height = 760;
-    const pad = { left: 76, right: 400, top: 72, bottom: 92 };
+    const showLegend = width >= 980;
+    const pad = showLegend
+      ? { left: 76, right: 360, top: 72, bottom: 92 }
+      : { left: 68, right: 28, top: 72, bottom: 92 };
     const plotW = width - pad.left - pad.right;
     const plotH = height - pad.top - pad.bottom;
     const xFor = (label) => pad.left + (labels.length <= 1 ? plotW / 2 : (labels.indexOf(label) / (labels.length - 1)) * plotW);
@@ -139,7 +142,7 @@
     const yStep = niceStep(yMax / 5);
     for (let value = 0; value <= yMax; value += yStep) axisTicks.push(value);
     if (axisTicks[axisTicks.length - 1] !== yMax) axisTicks.push(yMax);
-    const labelStep = Math.max(1, Math.ceil(labels.length / 6));
+    const labelStep = Math.max(1, Math.ceil(labels.length / (width >= 760 ? 6 : 3)));
     const legendThemes = [...themes].sort((a, b) => {
       const scoreDiff = scoreSortValue(latestChartScore(b, scoreAccessor)) - scoreSortValue(latestChartScore(a, scoreAccessor));
       return scoreDiff || String(a.theme || "").localeCompare(String(b.theme || ""), "zh-Hans-CN");
@@ -166,12 +169,12 @@
           const points = theme.points || [];
           return `<path d="${pathFor(points, scoreAccessor, xFor, yFor)}" fill="none" stroke="${color}" stroke-width="3.2" />${circlesFor(points, scoreAccessor, xFor, yFor, color, label, theme.theme)}`;
         }).join("")}
-        ${legendThemes.map((theme, index) => {
+        ${showLegend ? legendThemes.map((theme, index) => {
           const y = pad.top + index * 42;
           const color = theme.color || themeColor(index);
           const latest = scoreAccessor(latestPoint(theme.points || []));
           return `<line x1="${pad.left + plotW + 28}" y1="${y}" x2="${pad.left + plotW + 58}" y2="${y}" stroke="${color}" stroke-width="4.5" /><text x="${pad.left + plotW + 70}" y="${y + 6}" font-size="16" fill="#172033">${escapeHtml(theme.theme)} ${formatScore(latest)}</text>`;
-        }).join("")}
+        }).join("") : ""}
       </svg>`;
   }
 
@@ -218,6 +221,7 @@
     }
 
     const labels = Array.from(new Set(themes.flatMap((theme) => theme.points.map((point) => point.x))));
+    const chartWidth = Math.max(320, Math.floor(container.clientWidth || 1120));
     const policyYMax = chartYMax(themes, policyScore);
     const marketYMax = chartYMax(themes, marketScore);
     const latestScores = themes.flatMap((theme) => {
@@ -244,8 +248,8 @@
           <span>分开看政策主线分和市场热度观察分；每张图独立缩放Y轴，右侧说明按本图最新分数降序排列</span>
         </div>
         <div class="trend-list">
-          <div class="trend-card">${renderTrendChart(themes, labels, policyScore, "政策主线分历史变化", "政策主线分", policyYMax)}</div>
-          <div class="trend-card">${renderTrendChart(themes, labels, marketScore, "市场热度观察分历史变化", "市场热度观察分", marketYMax)}</div>
+          <div class="trend-card">${renderTrendChart(themes, labels, policyScore, "政策主线分历史变化", "政策主线分", policyYMax, chartWidth)}</div>
+          <div class="trend-card">${renderTrendChart(themes, labels, marketScore, "市场热度观察分历史变化", "市场热度观察分", marketYMax, chartWidth)}</div>
         </div>
       </div>`;
   }

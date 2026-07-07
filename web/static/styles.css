@@ -671,11 +671,14 @@ th {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
-  overflow: auto;
+  overflow: hidden;
 }
 
 .trend-card svg {
-  min-width: 1020px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: auto;
   display: block;
 }
 
