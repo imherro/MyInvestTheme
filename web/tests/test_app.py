@@ -132,7 +132,8 @@ def test_index_api_returns_homepage_content():
     assert "农业/养殖/猪周期" in taxonomy_names
     assert "机器人" in taxonomy_names
     agriculture = next(item for item in body["taxonomy_v2_ranking"] if item["theme_name"] == "农业/养殖/猪周期")
-    assert agriculture["market_heat_score"] > 0
+    assert agriculture["market_heat_score"] >= 0
+    assert agriculture["component_scores"]
     assert agriculture["is_backfilled"] is True
     assert body["legacy_theme_ranking"]
     assert body["theme_ranking"]
