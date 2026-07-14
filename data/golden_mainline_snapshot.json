@@ -1,329 +1,348 @@
 {
   "scoring_version": "system_drift_control_v2",
   "snapshot_id": "mainline_gold_v1",
-  "created_at": "2026-07-13T10:09:44+08:00",
-  "source_report_id": "mainline_review_2026-07-13_100944",
-  "basis_date": "2026-07-10",
-  "source_reproducibility_json_hash": "sha256:24ee274f0a447e43c457b2e4c5ce08dd72ad6e1b4fc11cde958ec698544394a1",
-  "source_git_commit": "c887acd",
+  "created_at": "2026-07-14T11:10:43+08:00",
+  "source_report_id": "mainline_review_2026-07-14_111043",
+  "basis_date": "2026-07-13",
+  "source_reproducibility_json_hash": "sha256:ca269ce6f6557660a221a69412414c9918e62a10cbd1fbcb767bd4b83a76b286",
+  "source_git_commit": "f0e0fb2",
   "mainline_ranking": [
     {
       "rank": 1,
-      "theme_id": "new_energy_power_equipment",
-      "theme_name": "新能源/电力设备",
-      "mainline_score_v6": 5.0859,
+      "theme_id": "ai_compute_communications",
+      "theme_name": "AI算力/通信",
+      "mainline_score_v6": 5.0058,
       "lifecycle_state": "accelerating"
     },
     {
       "rank": 2,
-      "theme_id": "ai_compute_communications",
-      "theme_name": "AI算力/通信",
-      "mainline_score_v6": 4.2495,
+      "theme_id": "new_energy_power_equipment",
+      "theme_name": "新能源/电力设备",
+      "mainline_score_v6": 4.9538,
       "lifecycle_state": "accelerating"
     },
     {
       "rank": 3,
       "theme_id": "hard_tech_semiconductor",
       "theme_name": "硬科技电子/半导体",
-      "mainline_score_v6": 2.5776,
+      "mainline_score_v6": 2.704,
       "lifecycle_state": "accelerating"
     },
     {
       "rank": 4,
-      "theme_id": "resources_cycle",
-      "theme_name": "资源周期",
-      "mainline_score_v6": 1.9223,
+      "theme_id": "consumption_media",
+      "theme_name": "消费/传媒",
+      "mainline_score_v6": 2.2385,
       "lifecycle_state": "accelerating"
     },
     {
       "rank": 5,
-      "theme_id": "consumption_media",
-      "theme_name": "消费/传媒",
-      "mainline_score_v6": 1.7608,
+      "theme_id": "infrastructure_materials",
+      "theme_name": "建材/稳增长修复",
+      "mainline_score_v6": 2.0513,
       "lifecycle_state": "accelerating"
     },
     {
       "rank": 6,
-      "theme_id": "infrastructure_materials",
-      "theme_name": "建材/稳增长修复",
-      "mainline_score_v6": 1.758,
+      "theme_id": "resources_cycle",
+      "theme_name": "资源周期",
+      "mainline_score_v6": 2.0107,
       "lifecycle_state": "accelerating"
     },
     {
       "rank": 7,
       "theme_id": "high_end_manufacturing_robotics_defense",
       "theme_name": "高端制造/机器人/军工",
-      "mainline_score_v6": 1.7033,
+      "mainline_score_v6": 1.8168,
       "lifecycle_state": "accelerating"
     },
     {
       "rank": 8,
       "theme_id": "innovative_medicine",
       "theme_name": "创新药/医药",
-      "mainline_score_v6": 0.841,
+      "mainline_score_v6": 1.3586,
       "lifecycle_state": "accelerating"
     }
   ],
   "theme_scores": {
-    "new_energy_power_equipment": {
-      "rank": 1,
-      "mainline_score_v6": 5.0859,
-      "theme_score_v5": 5.0859,
-      "theme_score_v4_stance_adjusted": 6.009,
-      "theme_score_v3_dedup": 8.981,
-      "theme_score_v2_raw": 10.3015
-    },
     "ai_compute_communications": {
+      "rank": 1,
+      "mainline_score_v6": 5.0058,
+      "theme_score_v5": 5.0058,
+      "theme_score_v4_stance_adjusted": 6.6378,
+      "theme_score_v3_dedup": 8.9172,
+      "theme_score_v2_raw": 9.6854
+    },
+    "new_energy_power_equipment": {
       "rank": 2,
-      "mainline_score_v6": 4.2495,
-      "theme_score_v5": 4.2495,
-      "theme_score_v4_stance_adjusted": 5.3845,
-      "theme_score_v3_dedup": 7.3247,
-      "theme_score_v2_raw": 7.6738
+      "mainline_score_v6": 4.9538,
+      "theme_score_v5": 4.9538,
+      "theme_score_v4_stance_adjusted": 5.9167,
+      "theme_score_v3_dedup": 8.8456,
+      "theme_score_v2_raw": 10.5939
     },
     "hard_tech_semiconductor": {
       "rank": 3,
-      "mainline_score_v6": 2.5776,
-      "theme_score_v5": 2.5776,
-      "theme_score_v4_stance_adjusted": 3.0721,
-      "theme_score_v3_dedup": 4.6199,
-      "theme_score_v2_raw": 4.6199
-    },
-    "resources_cycle": {
-      "rank": 4,
-      "mainline_score_v6": 1.9223,
-      "theme_score_v5": 1.9223,
-      "theme_score_v4_stance_adjusted": 2.3007,
-      "theme_score_v3_dedup": 3.1103,
-      "theme_score_v2_raw": 3.4996
+      "mainline_score_v6": 2.704,
+      "theme_score_v5": 2.704,
+      "theme_score_v4_stance_adjusted": 3.3031,
+      "theme_score_v3_dedup": 5.0994,
+      "theme_score_v2_raw": 5.0994
     },
     "consumption_media": {
-      "rank": 5,
-      "mainline_score_v6": 1.7608,
-      "theme_score_v5": 1.7608,
-      "theme_score_v4_stance_adjusted": 2.1191,
-      "theme_score_v3_dedup": 2.8384,
-      "theme_score_v2_raw": 2.8384
+      "rank": 4,
+      "mainline_score_v6": 2.2385,
+      "theme_score_v5": 2.2385,
+      "theme_score_v4_stance_adjusted": 2.9876,
+      "theme_score_v3_dedup": 3.9637,
+      "theme_score_v2_raw": 3.9637
     },
     "infrastructure_materials": {
+      "rank": 5,
+      "mainline_score_v6": 2.0513,
+      "theme_score_v5": 2.0513,
+      "theme_score_v4_stance_adjusted": 3.2489,
+      "theme_score_v3_dedup": 4.6739,
+      "theme_score_v2_raw": 5.2925
+    },
+    "resources_cycle": {
       "rank": 6,
-      "mainline_score_v6": 1.758,
-      "theme_score_v5": 1.758,
-      "theme_score_v4_stance_adjusted": 2.6806,
-      "theme_score_v3_dedup": 3.828,
-      "theme_score_v2_raw": 4.146
+      "mainline_score_v6": 2.0107,
+      "theme_score_v5": 2.0107,
+      "theme_score_v4_stance_adjusted": 2.5247,
+      "theme_score_v3_dedup": 3.4077,
+      "theme_score_v2_raw": 4.0283
     },
     "high_end_manufacturing_robotics_defense": {
       "rank": 7,
-      "mainline_score_v6": 1.7033,
-      "theme_score_v5": 1.7033,
-      "theme_score_v4_stance_adjusted": 2.0914,
-      "theme_score_v3_dedup": 3.2326,
-      "theme_score_v2_raw": 3.5241
+      "mainline_score_v6": 1.8168,
+      "theme_score_v5": 1.8168,
+      "theme_score_v4_stance_adjusted": 2.333,
+      "theme_score_v3_dedup": 3.7267,
+      "theme_score_v2_raw": 4.0132
     },
     "innovative_medicine": {
       "rank": 8,
-      "mainline_score_v6": 0.841,
-      "theme_score_v5": 0.9174,
-      "theme_score_v4_stance_adjusted": 0.9601,
-      "theme_score_v3_dedup": 1.2428,
-      "theme_score_v2_raw": 1.2428
+      "mainline_score_v6": 1.3586,
+      "theme_score_v5": 1.4054,
+      "theme_score_v4_stance_adjusted": 1.6746,
+      "theme_score_v3_dedup": 2.2918,
+      "theme_score_v2_raw": 2.2918
     }
   },
   "lifecycle_states": {
-    "new_energy_power_equipment": "accelerating",
     "ai_compute_communications": "accelerating",
+    "new_energy_power_equipment": "accelerating",
     "hard_tech_semiconductor": "accelerating",
-    "resources_cycle": "accelerating",
     "consumption_media": "accelerating",
     "infrastructure_materials": "accelerating",
+    "resources_cycle": "accelerating",
     "high_end_manufacturing_robotics_defense": "accelerating",
     "innovative_medicine": "accelerating"
   },
   "allocation_matrix": {
     "event_20260331_state_council_state_council_2026_03_31_industrial_supply_chain": {
-      "hard_tech_semiconductor": 0.1003,
-      "high_end_manufacturing_robotics_defense": 0.0843,
-      "resources_cycle": 0.1003
+      "hard_tech_semiconductor": 0.1001,
+      "high_end_manufacturing_robotics_defense": 0.0842,
+      "resources_cycle": 0.1001
     },
     "event_20260409_ndrc_ndrc_2026_04_09_ic_software_tax_preference_list": {
-      "hard_tech_semiconductor": 0.4414
+      "hard_tech_semiconductor": 0.4407
     },
     "event_20260410_csrc_csrc_2026_04_10_gem_reform_new_quality_productiv": {
-      "hard_tech_semiconductor": 0.2093,
-      "high_end_manufacturing_robotics_defense": 0.1569,
-      "innovative_medicine": 0.1009
+      "hard_tech_semiconductor": 0.2089,
+      "high_end_manufacturing_robotics_defense": 0.1566,
+      "innovative_medicine": 0.1007
     },
     "event_20260428_nda_nda_2026_04_28_model_data_resonance_action": {
-      "ai_compute_communications": 0.1674,
-      "hard_tech_semiconductor": 0.193
+      "ai_compute_communications": 0.167,
+      "hard_tech_semiconductor": 0.1924
     },
     "event_20260514_nea_nea_2026_05_14_multi_user_green_power_direct_con": {
-      "ai_compute_communications": 0.3114,
-      "new_energy_power_equipment": 0.2335
+      "ai_compute_communications": 0.3098,
+      "new_energy_power_equipment": 0.2323
     },
     "event_20260519_nda_nda_2026_05_19_digital_economy_work_points": {
-      "ai_compute_communications": 0.2495,
-      "consumption_media": 0.0609,
-      "hard_tech_semiconductor": 0.1275,
-      "high_end_manufacturing_robotics_defense": 0.0609,
-      "infrastructure_materials": 0.0665
+      "ai_compute_communications": 0.248,
+      "consumption_media": 0.0606,
+      "hard_tech_semiconductor": 0.1267,
+      "high_end_manufacturing_robotics_defense": 0.0606,
+      "infrastructure_materials": 0.0661
     },
     "event_20260526_nea_nea_2026_05_26_ai_energy_high_value_scenarios": {
-      "ai_compute_communications": 0.2183,
-      "new_energy_power_equipment": 0.2298
+      "ai_compute_communications": 0.2168,
+      "new_energy_power_equipment": 0.2281
     },
     "event_20260528_nea_nea_2026_05_28_geothermal_high_quality_pilot": {
-      "new_energy_power_equipment": 0.2571,
-      "resources_cycle": 0.1458
+      "new_energy_power_equipment": 0.2553,
+      "resources_cycle": 0.1448
     },
     "event_20260601_ndrc_ndrc_2026_06_01_109_major_projects_industrial_fo": {
-      "hard_tech_semiconductor": 0.131,
-      "high_end_manufacturing_robotics_defense": 0.1371,
-      "infrastructure_materials": 0.1732,
-      "new_energy_power_equipment": 0.1857
+      "hard_tech_semiconductor": 0.13,
+      "high_end_manufacturing_robotics_defense": 0.1359,
+      "infrastructure_materials": 0.1717,
+      "new_energy_power_equipment": 0.1842
     },
     "event_20260601_ndrc_ndrc_2026_06_01_non_fossil_electricity_accountin": {
-      "new_energy_power_equipment": 0.2559,
-      "resources_cycle": 0.1366
+      "new_energy_power_equipment": 0.2536,
+      "resources_cycle": 0.1354
     },
     "event_20260603_ndrc_ndrc_2026_06_03_intelligent_economy": {
-      "ai_compute_communications": 0.3137,
-      "hard_tech_semiconductor": 0.1394,
-      "infrastructure_materials": 0.0627
+      "ai_compute_communications": 0.3103,
+      "hard_tech_semiconductor": 0.1379,
+      "infrastructure_materials": 0.062
     },
     "event_20260605_nea_nea_2026_06_05_non_public_grid_green_certificate": {
-      "new_energy_power_equipment": 0.3553,
-      "resources_cycle": 0.1792
+      "new_energy_power_equipment": 0.3518,
+      "resources_cycle": 0.1774
     },
     "event_20260608_nda_nda_2026_06_08_high_quality_datasets_action_plan": {
-      "ai_compute_communications": 0.3818,
-      "infrastructure_materials": 0.1078
+      "ai_compute_communications": 0.3776,
+      "infrastructure_materials": 0.1066
     },
     "event_20260609_miit_miit_2026_06_09_agricultural_robot_application_s": {
-      "ai_compute_communications": 0.099,
-      "high_end_manufacturing_robotics_defense": 0.129
+      "ai_compute_communications": 0.0978,
+      "high_end_manufacturing_robotics_defense": 0.1274
     },
     "event_20260609_mofcom_mofcom_2026_06_09_ai_consumption_implementation": {
-      "consumption_media": 0.4382
+      "consumption_media": 0.4331
     },
     "event_20260615_ndrc_ndrc_2026_06_15_key_industries_energy_saving_car": {
-      "infrastructure_materials": 0.2263,
-      "new_energy_power_equipment": 0.217,
-      "resources_cycle": 0.2761
+      "infrastructure_materials": 0.2236,
+      "new_energy_power_equipment": 0.2145,
+      "resources_cycle": 0.273
     },
     "event_20260616_miit_miit_2026_06_16_first_equipment_insurance_compen": {
-      "hard_tech_semiconductor": 0.1417,
-      "high_end_manufacturing_robotics_defense": 0.2004
+      "hard_tech_semiconductor": 0.1394,
+      "high_end_manufacturing_robotics_defense": 0.1973
     },
     "event_20260616_most_most_2026_06_16_ai_major_project_open_call": {
-      "ai_compute_communications": 0.2717
+      "ai_compute_communications": 0.2679
     },
     "event_20260617___sse_2026_06_17_ai_large_model_star_board_fifth_s": {
-      "ai_compute_communications": 0.1927,
-      "hard_tech_semiconductor": 0.1703,
-      "infrastructure_materials": 0.0851
+      "ai_compute_communications": 0.1891,
+      "hard_tech_semiconductor": 0.1671,
+      "infrastructure_materials": 0.0835
     },
     "event_20260617_csrc_csrc_2026_06_17_star_board_ai_fifth_listing_stan": {
-      "ai_compute_communications": 0.2396,
-      "hard_tech_semiconductor": 0.2331,
-      "infrastructure_materials": 0.0777
+      "ai_compute_communications": 0.2358,
+      "hard_tech_semiconductor": 0.2294,
+      "infrastructure_materials": 0.0764
     },
     "event_20260618_miit_miit_2026_06_18_first_batch_new_materials_insura": {
-      "hard_tech_semiconductor": 0.1118
+      "hard_tech_semiconductor": 0.1101
     },
     "event_20260618_miit_miit_2026_06_18_new_energy_vehicles_rural_campai": {
-      "consumption_media": 0.0947,
-      "new_energy_power_equipment": 0.324
+      "consumption_media": 0.0933,
+      "new_energy_power_equipment": 0.3193
     },
     "event_20260618_mofcom_mofcom_2026_06_18_auto_aftermarket_consumption_m": {
-      "new_energy_power_equipment": 0.1414
+      "new_energy_power_equipment": 0.1391
     },
     "event_20260620_miit_miit_2026_06_20_industrial_internet_high_quality": {
-      "ai_compute_communications": 0.469,
-      "infrastructure_materials": 0.1987
+      "ai_compute_communications": 0.4622,
+      "infrastructure_materials": 0.1957
     },
     "event_20260622_mofcom_mofcom_2026_06_22_industrial_supply_chain_securi": {
-      "hard_tech_semiconductor": 0.1286,
-      "resources_cycle": 0.1286
+      "hard_tech_semiconductor": 0.1268,
+      "resources_cycle": 0.1268
     },
     "event_20260622_ndrc_ndrc_2026_06_22_renewable_consumption_minimum_ra": {
-      "new_energy_power_equipment": 0.2829,
-      "resources_cycle": 0.1605
+      "new_energy_power_equipment": 0.2787,
+      "resources_cycle": 0.1581
     },
     "event_20260624_mofcom_mofcom_2026_06_24_strategic_minerals_export_cont": {
-      "resources_cycle": 0.1683
+      "resources_cycle": 0.1648
     },
     "event_20260624_nea_nea_2026_06_24_energy_rd_innovation_platform_dra": {
-      "new_energy_power_equipment": 0.2429
+      "new_energy_power_equipment": 0.2385
     },
     "event_20260625_miit_miit_2026_06_25_intelligent_manufacturing_soluti": {
-      "high_end_manufacturing_robotics_defense": 0.501
+      "high_end_manufacturing_robotics_defense": 0.4926
     },
     "event_20260625_ndrc_ndrc_2026_06_25_new_energy_system_15th_five_year": {
-      "ai_compute_communications": 0.1227,
-      "new_energy_power_equipment": 0.4462,
-      "resources_cycle": 0.1688
+      "ai_compute_communications": 0.1208,
+      "new_energy_power_equipment": 0.4394,
+      "resources_cycle": 0.1661
     },
     "event_20260626_miit_miit_2026_06_26_iot_industry_enablement_cases": {
-      "ai_compute_communications": 0.2171
+      "ai_compute_communications": 0.2132
     },
     "event_20260630_nea_nea_2026_06_30_energy_data_classification_guide": {
-      "new_energy_power_equipment": 0.185
+      "new_energy_power_equipment": 0.1804
     },
     "event_20260702_mofcom_mofcom_2026_07_02_bonded_testing_pilot_ic_consum": {
-      "consumption_media": 0.178,
-      "hard_tech_semiconductor": 0.4502
+      "consumption_media": 0.1739,
+      "hard_tech_semiconductor": 0.4397
     },
     "event_20260703_miit_miit_2026_07_03_fine_chemical_key_products_chall": {
-      "high_end_manufacturing_robotics_defense": 0.1613
+      "high_end_manufacturing_robotics_defense": 0.1575
     },
     "event_20260703_mof_mof_2026_07_03_nev_vehicle_vessel_tax_adjustment": {
-      "consumption_media": 0.1032,
-      "high_end_manufacturing_robotics_defense": 0.1032,
-      "new_energy_power_equipment": 0.3239
+      "consumption_media": 0.1008,
+      "high_end_manufacturing_robotics_defense": 0.1008,
+      "new_energy_power_equipment": 0.3161
     },
     "event_20260703_ndrc_ndrc_2026_07_03_circular_economy_15th_five_year": {
-      "new_energy_power_equipment": 0.4315,
-      "resources_cycle": 0.1866
+      "new_energy_power_equipment": 0.4222,
+      "resources_cycle": 0.1826
     },
     "event_20260703_ndrc_ndrc_2026_07_03_equipment_renewal_funds_fully_is": {
-      "infrastructure_materials": 0.2246,
-      "new_energy_power_equipment": 0.337
+      "infrastructure_materials": 0.2207,
+      "new_energy_power_equipment": 0.3311
     },
     "event_20260704_nda_nda_2026_07_04_data_property_registration_guide": {
-      "ai_compute_communications": 0.1493
+      "ai_compute_communications": 0.1452
     },
     "event_20260707___mct_2026_07_07_tourism_power_15th_five_year_plan": {
-      "ai_compute_communications": 0.1858,
-      "consumption_media": 0.4211,
-      "infrastructure_materials": 0.1352
+      "ai_compute_communications": 0.1816,
+      "consumption_media": 0.4113,
+      "infrastructure_materials": 0.1321
     },
     "event_20260709_______nhc_2026_07_09_national_essential_medicines_cata": {
-      "innovative_medicine": 0.2349
+      "innovative_medicine": 0.2281
     },
     "event_20260709_mofcom_mofcom_2026_07_09_retail_innovation_development": {
-      "ai_compute_communications": 0.2749,
-      "consumption_media": 0.2352,
-      "infrastructure_materials": 0.2983
+      "ai_compute_communications": 0.2687,
+      "consumption_media": 0.2299,
+      "infrastructure_materials": 0.2914
     },
     "event_20260709_state_council_state_council_2026_07_09_carbon_peak_action_plan": {
-      "ai_compute_communications": 0.1401,
-      "consumption_media": 0.0934,
-      "high_end_manufacturing_robotics_defense": 0.0934,
-      "infrastructure_materials": 0.1019,
-      "new_energy_power_equipment": 0.3611,
-      "resources_cycle": 0.1285
+      "ai_compute_communications": 0.1167,
+      "consumption_media": 0.0777,
+      "high_end_manufacturing_robotics_defense": 0.0778,
+      "infrastructure_materials": 0.0849,
+      "new_energy_power_equipment": 0.3006,
+      "resources_cycle": 0.2423
     },
     "event_20260710_nea_nea_2026_07_10_energy_sector_carbon_reduction_ac": {
-      "ai_compute_communications": 0.2455,
-      "high_end_manufacturing_robotics_defense": 0.0758,
-      "new_energy_power_equipment": 0.2757,
-      "resources_cycle": 0.143
+      "ai_compute_communications": 0.2392,
+      "high_end_manufacturing_robotics_defense": 0.0739,
+      "new_energy_power_equipment": 0.2686,
+      "resources_cycle": 0.1393
     },
     "event_20260710_state_council_state_council_2026_07_10_tcm_revitalization_15th": {
-      "consumption_media": 0.1361,
-      "innovative_medicine": 0.5816
+      "consumption_media": 0.133,
+      "innovative_medicine": 0.5682
+    },
+    "event_20260713_miit_miit_2026_07_13_internet_basic_resources_high_qu": {
+      "ai_compute_communications": 0.3814,
+      "consumption_media": 0.0739,
+      "hard_tech_semiconductor": 0.1548,
+      "high_end_manufacturing_robotics_defense": 0.0741,
+      "infrastructure_materials": 0.0808
+    },
+    "event_20260713_state_council_state_council_2026_07_13_consumption_expansion_1": {
+      "ai_compute_communications": 0.1172,
+      "consumption_media": 0.3458,
+      "high_end_manufacturing_robotics_defense": 0.0781,
+      "infrastructure_materials": 0.2558,
+      "innovative_medicine": 0.0781
+    },
+    "event_20260713_state_council_state_council_2026_07_13_national_health_15th_fi": {
+      "ai_compute_communications": 0.3395,
+      "consumption_media": 0.1052,
+      "innovative_medicine": 0.4303
     }
   },
   "stance_matrix": {
@@ -417,6 +436,21 @@
         "cluster_stance_label": "mildly_supportive",
         "cluster_stance_score_v2": 0.15,
         "direction_multiplier": 0.75
+      },
+      "event_20260713_miit_miit_2026_07_13_internet_basic_resources_high_qu": {
+        "cluster_stance_label": "supportive",
+        "cluster_stance_score_v2": 0.65,
+        "direction_multiplier": 1.0
+      },
+      "event_20260713_state_council_state_council_2026_07_13_consumption_expansion_1": {
+        "cluster_stance_label": "neutral_or_mixed",
+        "cluster_stance_score_v2": 0.0,
+        "direction_multiplier": 0.5
+      },
+      "event_20260713_state_council_state_council_2026_07_13_national_health_15th_fi": {
+        "cluster_stance_label": "mildly_supportive",
+        "cluster_stance_score_v2": 0.15,
+        "direction_multiplier": 0.75
       }
     },
     "consumption_media": {
@@ -461,6 +495,21 @@
         "direction_multiplier": 0.5
       },
       "event_20260710_state_council_state_council_2026_07_10_tcm_revitalization_15th": {
+        "cluster_stance_label": "neutral_or_mixed",
+        "cluster_stance_score_v2": 0.0,
+        "direction_multiplier": 0.5
+      },
+      "event_20260713_miit_miit_2026_07_13_internet_basic_resources_high_qu": {
+        "cluster_stance_label": "neutral_or_mixed",
+        "cluster_stance_score_v2": 0.0,
+        "direction_multiplier": 0.5
+      },
+      "event_20260713_state_council_state_council_2026_07_13_consumption_expansion_1": {
+        "cluster_stance_label": "supportive",
+        "cluster_stance_score_v2": 0.6,
+        "direction_multiplier": 1.0
+      },
+      "event_20260713_state_council_state_council_2026_07_13_national_health_15th_fi": {
         "cluster_stance_label": "neutral_or_mixed",
         "cluster_stance_score_v2": 0.0,
         "direction_multiplier": 0.5
@@ -531,6 +580,11 @@
         "cluster_stance_label": "supportive",
         "cluster_stance_score_v2": 0.7,
         "direction_multiplier": 1.0
+      },
+      "event_20260713_miit_miit_2026_07_13_internet_basic_resources_high_qu": {
+        "cluster_stance_label": "neutral_or_mixed",
+        "cluster_stance_score_v2": 0.0,
+        "direction_multiplier": 0.5
       }
     },
     "high_end_manufacturing_robotics_defense": {
@@ -585,6 +639,16 @@
         "direction_multiplier": 0.5
       },
       "event_20260710_nea_nea_2026_07_10_energy_sector_carbon_reduction_ac": {
+        "cluster_stance_label": "neutral_or_mixed",
+        "cluster_stance_score_v2": 0.0,
+        "direction_multiplier": 0.5
+      },
+      "event_20260713_miit_miit_2026_07_13_internet_basic_resources_high_qu": {
+        "cluster_stance_label": "neutral_or_mixed",
+        "cluster_stance_score_v2": 0.0,
+        "direction_multiplier": 0.5
+      },
+      "event_20260713_state_council_state_council_2026_07_13_consumption_expansion_1": {
         "cluster_stance_label": "neutral_or_mixed",
         "cluster_stance_score_v2": 0.0,
         "direction_multiplier": 0.5
@@ -650,6 +714,16 @@
         "cluster_stance_label": "neutral_or_mixed",
         "cluster_stance_score_v2": 0.0,
         "direction_multiplier": 0.5
+      },
+      "event_20260713_miit_miit_2026_07_13_internet_basic_resources_high_qu": {
+        "cluster_stance_label": "neutral_or_mixed",
+        "cluster_stance_score_v2": 0.0,
+        "direction_multiplier": 0.5
+      },
+      "event_20260713_state_council_state_council_2026_07_13_consumption_expansion_1": {
+        "cluster_stance_label": "mildly_supportive",
+        "cluster_stance_score_v2": 0.2,
+        "direction_multiplier": 0.75
       }
     },
     "innovative_medicine": {
@@ -667,6 +741,16 @@
         "cluster_stance_label": "supportive",
         "cluster_stance_score_v2": 1.0,
         "direction_multiplier": 1.0
+      },
+      "event_20260713_state_council_state_council_2026_07_13_consumption_expansion_1": {
+        "cluster_stance_label": "neutral_or_mixed",
+        "cluster_stance_score_v2": 0.0,
+        "direction_multiplier": 0.5
+      },
+      "event_20260713_state_council_state_council_2026_07_13_national_health_15th_fi": {
+        "cluster_stance_label": "mildly_supportive",
+        "cluster_stance_score_v2": 0.15,
+        "direction_multiplier": 0.75
       }
     },
     "new_energy_power_equipment": {
@@ -859,5 +943,5 @@
     "theme_summary",
     "ths_top"
   ],
-  "snapshot_hash": "sha256:21f02bacf14e8f7a2e2383102a3942697a2558df1c2baa994d9c3383cd3e51d1"
+  "snapshot_hash": "sha256:69573d64494378029a05218ea9fc67d3fe516bd682055a872cd066e309a25fa4"
 }
