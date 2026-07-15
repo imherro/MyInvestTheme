@@ -1,7 +1,7 @@
 {
   "version": "policy_snapshot_integrity_v2",
-  "updated_at": "2026-07-14T11:10:43+08:00",
-  "last_report_id": "mainline_review_2026-07-14_111043",
+  "updated_at": "2026-07-15T10:59:38+08:00",
+  "last_report_id": "mainline_review_2026-07-15_105938",
   "policy_snapshots": [
     {
       "policy_id": "csrc-2026-04-10-gem-reform-new-quality-productivity",
@@ -18,9 +18,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -40,11 +40,33 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_213219",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-22T21:32:19+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
+      ]
+    },
+    {
+      "policy_id": "mca-2026-07-14-rehabilitation-assistive-device-industry-action-plan",
+      "title": "关于印发《康复辅助器具产业扩能提质三年行动方案（2026-2028年）》的通知",
+      "source_org_norm": "民政部等14部门",
+      "source_url": "https://www.cncaprc.gov.cn/xwllxw/772157.jhtml",
+      "source_domain": "www.cncaprc.gov.cn",
+      "publish_date": "2026-07-14",
+      "content_hash": "sha256:cc284b006f4acd18ed050377b32539e5e26b75e71f344d68035a3e89b2002557",
+      "previous_content_hash": "",
+      "snapshot_status": "new",
+      "provenance_status": "degraded",
+      "inclusion_status": "included_in_mainline",
+      "revision_id": "",
+      "revision_note": "",
+      "first_seen_report_id": "mainline_review_2026-07-15_105938",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
+      "first_seen_at": "2026-07-15T10:59:38+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
+      "snapshot_reasons": [
+        "policy_id_not_seen_before"
       ]
     },
     {
@@ -62,9 +84,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-13_100944",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-13T10:09:44+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -84,9 +106,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-02_165140",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-02T16:51:40+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -106,9 +128,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-24_170455",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-24T17:04:55+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -128,9 +150,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-29_165551",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-29T16:55:51+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -150,9 +172,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-29_165551",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-29T16:55:51+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -172,9 +194,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-01_165217",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-01T16:52:17+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -194,9 +216,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-29_165551",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-29T16:55:51+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -216,9 +238,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-02_165140",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-02T16:51:40+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -238,9 +260,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-07_092515",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-07T09:25:15+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -253,18 +275,18 @@
       "source_domain": "www.miit.gov.cn",
       "publish_date": "2026-07-13",
       "content_hash": "sha256:bb544614d54f76b6fda656c7dce67814f495252cdc2de5114e6b7735fe65efe1",
-      "previous_content_hash": "",
-      "snapshot_status": "new",
+      "previous_content_hash": "sha256:bb544614d54f76b6fda656c7dce67814f495252cdc2de5114e6b7735fe65efe1",
+      "snapshot_status": "unchanged",
       "provenance_status": "verified",
       "inclusion_status": "included_in_mainline",
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-14_111043",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-14T11:10:43+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
-        "policy_id_not_seen_before"
+        "content_hash_unchanged"
       ]
     },
     {
@@ -282,9 +304,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-07_165525",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-07T16:55:25+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -304,9 +326,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-24_170455",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-24T17:04:55+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -326,9 +348,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-02_165140",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-02T16:51:40+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -348,9 +370,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-29_095613",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-29T09:56:13+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -370,9 +392,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-29_095613",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-29T09:56:13+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -392,9 +414,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-07_092515",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-07T09:25:15+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -414,9 +436,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-10_131155",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-10T13:11:55+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -436,9 +458,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-25_165212",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-25T16:52:12+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -458,9 +480,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-23_173855",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-23T17:38:55+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -480,9 +502,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-07_165525",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-07T16:55:25+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -502,9 +524,31 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_183427",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-22T18:34:27+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
+      "snapshot_reasons": [
+        "content_hash_unchanged"
+      ]
+    },
+    {
+      "policy_id": "nda-2026-06-22-ai-hrss-application-development",
+      "title": "人力资源社会保障部 国家发展改革委 工业和信息化部 国家数据局关于加快推进“人工智能＋人社”应用发展的实施意见",
+      "source_org_norm": "nda",
+      "source_url": "https://www.nda.gov.cn/sjj/zwgk/zcfb/0708/20260708133949899211227_pc.html",
+      "source_domain": "www.nda.gov.cn",
+      "publish_date": "2026-06-22",
+      "content_hash": "sha256:d00dd7c79943817844d98071f678fd97b79b848d7110e13d36d27ef646e32f39",
+      "previous_content_hash": "sha256:d00dd7c79943817844d98071f678fd97b79b848d7110e13d36d27ef646e32f39",
+      "snapshot_status": "unchanged",
+      "provenance_status": "verified",
+      "inclusion_status": "included_in_mainline",
+      "revision_id": "",
+      "revision_note": "",
+      "first_seen_report_id": "mainline_review_2026-07-15_093433",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
+      "first_seen_at": "2026-07-15T09:34:33+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -524,9 +568,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-07_092515",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-07T09:25:15+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -546,9 +590,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-29_165551",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-29T16:55:51+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -568,9 +612,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -590,9 +634,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-25_165212",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-25T16:52:12+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -612,9 +656,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -634,9 +678,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-23_173855",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-23T17:38:55+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -656,9 +700,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-23_173855",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-23T17:38:55+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -678,9 +722,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-25_205439",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-25T20:54:39+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -700,9 +744,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-03_165128",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-03T16:51:28+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -722,9 +766,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-03_165128",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-03T16:51:28+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -744,9 +788,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-22_172047",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-22T17:20:47+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -766,9 +810,9 @@
       "revision_id": "",
       "revision_note": "2026-06-23按官方发布页主办单位将source规范为国家能源局，避免联合发文标题触发来源域名冲突。",
       "first_seen_report_id": "mainline_review_2026-06-22_213219",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-22T21:32:19+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -788,9 +832,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-23_173855",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-23T17:38:55+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -810,9 +854,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-24_170455",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-24T17:04:55+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -832,9 +876,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-24_170455",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-24T17:04:55+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -854,9 +898,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-25_165212",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-25T16:52:12+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -876,9 +920,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-30_164912",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-30T16:49:12+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -898,9 +942,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-02_165140",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-02T16:51:40+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -920,9 +964,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-10_131155",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-10T13:11:55+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -942,9 +986,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-13_100944",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-13T10:09:44+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -964,9 +1008,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-26_165046",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-26T16:50:46+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -986,9 +1030,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-06-29_095613",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-06-29T09:56:13+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -1008,9 +1052,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-07_165525",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-07T16:55:25+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -1030,9 +1074,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-10_131155",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-10T13:11:55+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -1052,9 +1096,9 @@
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-13_100944",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-13T10:09:44+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "content_hash_unchanged"
       ]
@@ -1067,18 +1111,18 @@
       "source_domain": "www.gov.cn",
       "publish_date": "2026-07-13",
       "content_hash": "sha256:ab799247f904476adea65417f5b5bd1a9e254272c4cd54de9300d53c6cfb21bf",
-      "previous_content_hash": "",
-      "snapshot_status": "new",
+      "previous_content_hash": "sha256:ab799247f904476adea65417f5b5bd1a9e254272c4cd54de9300d53c6cfb21bf",
+      "snapshot_status": "unchanged",
       "provenance_status": "verified",
       "inclusion_status": "included_in_mainline",
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-14_111043",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-14T11:10:43+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
-        "policy_id_not_seen_before"
+        "content_hash_unchanged"
       ]
     },
     {
@@ -1089,18 +1133,18 @@
       "source_domain": "www.gov.cn",
       "publish_date": "2026-07-13",
       "content_hash": "sha256:7ca82db25e39b5cdfe0b60cff76a48420d782ecce94b505b7bc2fa8becf4ed15",
-      "previous_content_hash": "",
-      "snapshot_status": "new",
+      "previous_content_hash": "sha256:7ca82db25e39b5cdfe0b60cff76a48420d782ecce94b505b7bc2fa8becf4ed15",
+      "snapshot_status": "unchanged",
       "provenance_status": "verified",
       "inclusion_status": "included_in_mainline",
       "revision_id": "",
       "revision_note": "",
       "first_seen_report_id": "mainline_review_2026-07-14_111043",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
       "first_seen_at": "2026-07-14T11:10:43+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
-        "policy_id_not_seen_before"
+        "content_hash_unchanged"
       ]
     },
     {
@@ -1111,16 +1155,38 @@
       "source_domain": "www.gov.cn",
       "publish_date": "2026-07-13",
       "content_hash": "sha256:2109b4e68d76126b2f6979acfa3bfe80c50cd2d7c02c2314442b592ec8dd4739",
+      "previous_content_hash": "sha256:2109b4e68d76126b2f6979acfa3bfe80c50cd2d7c02c2314442b592ec8dd4739",
+      "snapshot_status": "unchanged",
+      "provenance_status": "verified",
+      "inclusion_status": "included_in_mainline",
+      "revision_id": "",
+      "revision_note": "",
+      "first_seen_report_id": "mainline_review_2026-07-14_111043",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
+      "first_seen_at": "2026-07-14T11:10:43+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
+      "snapshot_reasons": [
+        "content_hash_unchanged"
+      ]
+    },
+    {
+      "policy_id": "state-council-2026-07-14-nearby-water-body-governance-action-plan",
+      "title": "国务院办公厅关于转发生态环境部等部门《群众身边水体保护治理行动方案》的通知",
+      "source_org_norm": "state_council",
+      "source_url": "https://www.mee.gov.cn/zcwj/gwywj/202607/t20260714_1161754.shtml",
+      "source_domain": "www.mee.gov.cn",
+      "publish_date": "2026-07-14",
+      "content_hash": "sha256:1d2be8e675c1a11fa5b245a7243aa4e808ac46ed3689230e25e1cdb114037f79",
       "previous_content_hash": "",
       "snapshot_status": "new",
       "provenance_status": "verified",
       "inclusion_status": "included_in_mainline",
       "revision_id": "",
       "revision_note": "",
-      "first_seen_report_id": "mainline_review_2026-07-14_111043",
-      "last_seen_report_id": "mainline_review_2026-07-14_111043",
-      "first_seen_at": "2026-07-14T11:10:43+08:00",
-      "last_seen_at": "2026-07-14T11:10:43+08:00",
+      "first_seen_report_id": "mainline_review_2026-07-15_105938",
+      "last_seen_report_id": "mainline_review_2026-07-15_105938",
+      "first_seen_at": "2026-07-15T10:59:38+08:00",
+      "last_seen_at": "2026-07-15T10:59:38+08:00",
       "snapshot_reasons": [
         "policy_id_not_seen_before"
       ]
