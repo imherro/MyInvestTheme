@@ -1,7 +1,26 @@
 {
-  "updated_at": "2026-07-20T18:56:28+08:00",
+  "updated_at": "2026-07-21T18:50:35+08:00",
   "method": "Codex/LLM extracts official-source facts; Python policy_score_v2 scoring is deterministic.",
   "signals": [
+    {
+      "id": "nea-2026-07-10-power-construction-manager-compliance-rectification",
+      "title": "国家能源局综合司关于开展电力建设工程施工和监理项目负责人违规任职、现场履职不到位问题专项整治的通知",
+      "source": "国家能源局",
+      "published_date": "2026-07-10",
+      "authority_level": "national_ministry",
+      "economic_scope": "industry",
+      "url": "https://www.nea.gov.cn/20260721/dbe59a27ccd440c092795e5d292f5b8f/c.html",
+      "authority_score": 0.7,
+      "actionability_score": 0.5,
+      "economic_scope_score": 0.6,
+      "time_decay_score": 0.693041,
+      "policy_score_v2": 0.628608,
+      "summary": "国家能源局综合司开展电力工程建设施工和监理项目负责人违规任职、现场履职不到位专项整治，强化电力建设工程安全质量管理、项目负责人任职核查和监督执法。",
+      "evidence": "通知要求各单位梳理排查在建电力建设工程施工项目经理、总监理工程师违规任职和现场履职不到位问题，2026年8月31日前报送自查统计表和工作情况，并将相关履职情况纳入年度重点专项监管内容。",
+      "key_points": ["电力建设工程", "施工项目经理", "总监理工程师", "违规任职", "现场履职", "专项整治", "安全质量管理", "2026年8月31日前报送"],
+      "beneficiary_chain": ["电力工程建设", "电力工程监理", "电力工程施工", "电网建设", "新能源电站建设", "电力设备工程管理", "电力质监信息化", "工程项目管理系统"],
+      "related_industries": ["新能源/电力设备", "建材/稳增长修复", "高端制造/机器人/军工", "AI算力/通信"]
+    },
     {
       "id": "nea-2026-07-20-rural-energy-microgrid-pilot",
       "title": "国家能源局关于深入推进农村能源革命开展村镇新能源微能网试点建设的通知",
