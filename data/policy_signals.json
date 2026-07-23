@@ -1,7 +1,26 @@
 {
-  "updated_at": "2026-07-22T18:49:04+08:00",
+  "updated_at": "2026-07-23T18:50:04+08:00",
   "method": "Codex/LLM extracts official-source facts; Python policy_score_v2 scoring is deterministic.",
   "signals": [
+    {
+      "id": "ndrc-2026-07-06-renewable-energy-15th-five-year-plan",
+      "title": "关于印发《可再生能源发展“十五五”规划》的通知",
+      "source": "国家发展改革委",
+      "published_date": "2026-07-06",
+      "authority_level": "multi_ministry",
+      "economic_scope": "national",
+      "url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202607/t20260723_1406641.html",
+      "authority_score": 0.85,
+      "actionability_score": 0.7,
+      "economic_scope_score": 1.0,
+      "time_decay_score": 0.567414,
+      "policy_score_v2": 0.785983,
+      "summary": "国家发展改革委、国家能源局印发可再生能源发展“十五五”规划，围绕风光装机、可靠替代、分布式新能源、海上风电、抽水蓄能、绿色氢氨醇和绿电直连部署发展目标和重点工程。",
+      "evidence": "规划提出到2030年可再生能源消费总量约18亿吨标准煤、可再生能源发电总装机约35亿千瓦、风电和太阳能发电总装机28亿千瓦以上、年发电量4万亿千瓦时以上，并要求推进三北风电光伏基地、海上风电、分布式新能源、系统友好型风光电站、抽水蓄能和绿色氢氨醇规模化发展。",
+      "key_points": ["可再生能源", "十五五规划", "风电光伏基地", "海上风电", "分布式新能源", "抽水蓄能", "绿色氢氨醇", "绿电直连", "源网荷储", "2030年目标"],
+      "beneficiary_chain": ["风电光伏运营", "储能", "抽水蓄能", "智能电网", "电力设备", "海上风电装备", "光热发电", "绿色氢氨醇", "虚拟电厂", "数据中心绿电", "分布式光伏"],
+      "related_industries": ["新能源/电力设备", "AI算力/通信", "高端制造/机器人/军工", "资源周期", "建材/稳增长修复"]
+    },
     {
       "id": "miit-2026-07-22-national-zero-carbon-factory-buildout",
       "title": "工业和信息化部办公厅关于组织开展国家级零碳工厂建设工作的通知",
