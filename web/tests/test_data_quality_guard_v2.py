@@ -47,6 +47,22 @@ def mock_report_inputs(monkeypatch: pytest.MonkeyPatch, *, sw_stage=None, policy
         lambda pro, open_days: (basis, {"daily_rows": 1, "daily_basic_rows": 1, "basis": basis, "checked": []}),
     )
     monkeypatch.setattr(gen, "load_policy_store", lambda: {"updated_at": "2026-06-22", "signals": [{}]})
+    monkeypatch.setattr(
+        gen,
+        "audit_policy_candidates",
+        lambda policies, candidates: {
+            "scoring_version": "policy_candidate_audit_v1",
+            "status": "pass",
+            "candidate_count": len(policies),
+            "included_count": len(policies),
+            "excluded_count": 0,
+            "pending_count": 0,
+            "duplicate_count": 0,
+            "decision_rate": 1.0,
+            "legacy_imported_count": 0,
+            "issues": [],
+        },
+    )
     monkeypatch.setattr(gen, "policy_event_summary", lambda basis_date, themes: deepcopy(payload["event_cluster_summary"]))
     if policy_fails:
         def fail_policy_theme_summary(basis_date, themes):

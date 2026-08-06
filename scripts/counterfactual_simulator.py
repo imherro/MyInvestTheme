@@ -170,11 +170,6 @@ def _unique_policy_ids(event: dict[str, Any]) -> list[str]:
 
 def collect_policy_ids(report: dict[str, Any]) -> list[str]:
     ids: list[str] = []
-    for cluster in (report.get("event_cluster_summary") or {}).get("clusters") or []:
-        if not isinstance(cluster, dict):
-            continue
-        for policy_id in _unique_policy_ids(cluster):
-            ids.append(policy_id)
     for theme in _source_themes(report):
         for event in _event_rows(theme):
             for policy_id in _unique_policy_ids(event):

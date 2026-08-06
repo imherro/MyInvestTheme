@@ -30,6 +30,7 @@ from data_quality_guard import (
     load_data_quality_rules,
     run_optional_stage,
 )
+from data_freshness_guard import build_data_freshness_summary, freshness_narrative
 from mainline_contract_validator import validate_mainline_report_contract
 from mainline_cycle_stage import (
     SCORING_VERSION as CYCLE_STAGE_VERSION,
@@ -38,6 +39,9 @@ from mainline_cycle_stage import (
 )
 from policy_provenance import SCORING_VERSION as POLICY_PROVENANCE_VERSION
 from policy_provenance import build_policy_provenance_summary
+from policy_candidate_audit import assert_candidate_audit, audit_policy_candidates, load_candidates
+from policy_field_provenance import build_field_provenance_summary
+from policy_time_provenance import assert_policy_time_write_allowed, build_policy_time_provenance_summary
 from policy_snapshot_integrity import SCORING_VERSION as POLICY_SNAPSHOT_VERSION
 from policy_snapshot_integrity import (
     assert_policy_snapshot_integrity,
@@ -49,12 +53,21 @@ from snapshot_registry_finalizer import SCORING_VERSION as SNAPSHOT_REGISTRY_FIN
 from snapshot_registry_finalizer import finalize_report_artifacts_with_registry
 from reproducibility_manifest import build_pending_reproducibility_manifest
 from policy_signals import load_policy_store, policy_event_summary, policy_theme_summary, score_policy_by_theme
+from theme_relevance import build_theme_relevance_input_summary
 
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT_DIR = ROOT / "research" / "mainline"
 TZ = ZoneInfo("Asia/Shanghai")
 POLICY_WEIGHT = 0.15
+SCORE_SEMANTICS = {
+    "field": "policy_theme_conviction_score",
+    "compatibility_field": "mainline_score_v6",
+    "meaning": "policy evidence strength",
+    "meaning_zh": "政策支持证据的强度、持续性和广度",
+    "not_intended_for": ["expected_return", "price_direction", "buy_signal", "position_sizing"],
+    "disclaimer": "该分数表示政策支持证据的强度、持续性和广度，不表示未来收益率、上涨概率或投资建议。",
+}
 DATA_QUALITY_RULES = load_data_quality_rules()
 DATA_QUALITY_SCHEMAS = DATA_QUALITY_RULES.get("schemas", {})
 DATA_QUALITY_DEFAULTS = DATA_QUALITY_RULES.get("defaults", {})
@@ -817,6 +830,12 @@ def render_markdown(payload: dict[str, Any]) -> str:
     mainline_lifecycle_summary = payload.get("mainline_lifecycle_summary") or {}
     policy_provenance_summary = payload.get("policy_provenance_summary") or {}
     policy_snapshot_summary = payload.get("policy_snapshot_summary") or {}
+    policy_time_summary = payload.get("policy_time_provenance_summary") or {}
+    field_provenance_summary = payload.get("field_provenance_summary") or {}
+    candidate_summary = payload.get("policy_candidate_summary") or {}
+    relevance_input_summary = payload.get("theme_relevance_input_summary") or {}
+    freshness_summary = payload.get("data_freshness_summary") or {}
+    score_semantics = payload.get("score_semantics") or SCORE_SEMANTICS
     canonical_summary = payload.get("canonical_mainline_summary") or {}
     data_quality_summary = payload.get("data_quality_summary") or {}
     contract_summary = payload.get("contract_validation_summary") or {}
@@ -839,14 +858,16 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "## 一句话结论",
         "",
     ]
+    lines.append(f"- {payload.get('freshness_narrative') or freshness_narrative(freshness_summary, (mainline_ranking[0].get('theme_name') if mainline_ranking else ''))}")
     lines += [f"- {line}" for line in conclusion_lines(canonical_summary, mainline_ranking, payload["breadth"])]
     lines += [
         "",
         "## 口径：政策主线",
         "",
-        f"- 政策主线输出版本：{canonical_summary.get('scoring_version', 'canonical_mainline_output_v2')}",
-        f"- 政策主线排序字段：{canonical_summary.get('default_score_field', 'mainline_score_v6')}",
-        "- mainline_score_v6 = theme_score_v5 × lifecycle_quality_multiplier。",
+        f"- 政策主线输出版本：{canonical_summary.get('scoring_version', 'canonical_mainline_output_v3')}",
+        f"- 推荐排序字段：{canonical_summary.get('default_score_field', 'policy_theme_conviction_score')}（兼容字段 mainline_score_v6 数值一致）。",
+        "- policy_theme_conviction_score = mainline_score_v6 = theme_score_v5 × lifecycle_quality_multiplier。",
+        f"- 使用边界：{score_semantics.get('disclaimer', SCORE_SEMANTICS['disclaimer'])}",
         "- theme_score_v5 已包含政策强度、主题相关度、事件去重、政策方向性、事件-主题贡献分配。",
         f"- 主线周期阶段版本：{payload.get('mainline_cycle_stage_summary', {}).get('scoring_version', CYCLE_STAGE_VERSION)}。",
         "- 主线周期阶段使用政策生命周期、30/90日政策事件分布、政策事件广度和市场热度观察综合判定；它是解释层，不参与政策主线排序。",
@@ -922,9 +943,44 @@ def render_markdown(payload: dict[str, Any]) -> str:
             )
     lines += [
         "",
+        "## 点时数据完整性",
+        "",
+        f"- 版本：{policy_time_summary.get('scoring_version', 'policy_time_provenance_v1')}",
+        f"- 状态：{policy_time_summary.get('status', 'unknown')}；政策数：{policy_time_summary.get('policy_count', 0)}",
+        f"- 点时时间不可用：{policy_time_summary.get('point_in_time_unavailable_count', 0)}；未来时间：{policy_time_summary.get('future_timestamp_count', 0)}；冲突：{policy_time_summary.get('conflict_count', 0)}",
+        "- 文件落款时间不等同于市场可见时间；点时时间优先使用可验证的 official_publish_at，否则使用 first_seen_at。",
+        "",
+        "## 字段来源与推断依赖",
+        "",
+        f"- 字段来源版本：{field_provenance_summary.get('scoring_version', 'policy_field_provenance_v1')}；状态：{field_provenance_summary.get('status', 'unknown')}",
+        f"- 相关度输入版本：{relevance_input_summary.get('scoring_version', 'theme_relevance_input_v1')}；生产模式：{relevance_input_summary.get('production_mode', 'strict_point_in_time')}",
+        f"- 默认排序只使用 theme_relevance_strict；高推断依赖告警数：{relevance_input_summary.get('high_inference_dependency_count', 0)}",
+        f"- 禁止进入生产相关度的字段：{', '.join(relevance_input_summary.get('forbidden_production_fields') or []) or '无'}",
+        "",
+        "## 候选政策覆盖情况",
+        "",
+        f"- 版本：{candidate_summary.get('scoring_version', 'policy_candidate_audit_v1')}；状态：{candidate_summary.get('status', 'unknown')}",
+        f"- 候选/纳入/排除/待审/重复：{candidate_summary.get('candidate_count', 0)}/{candidate_summary.get('included_count', 0)}/{candidate_summary.get('excluded_count', 0)}/{candidate_summary.get('pending_count', 0)}/{candidate_summary.get('duplicate_count', 0)}",
+        f"- 决策完成率：{candidate_summary.get('decision_rate', 0)}；旧库迁移记录：{candidate_summary.get('legacy_imported_count', 0)}",
+        "",
+        "## 数据新鲜度",
+        "",
+        f"- 版本：{freshness_summary.get('scoring_version', 'data_freshness_guard_v1')}；状态：{freshness_summary.get('data_freshness_status', 'unknown')}",
+        f"- 应有最新交易日：{freshness_summary.get('expected_latest_trade_date', '')}；实际基准日：{freshness_summary.get('actual_basis_date', '')}；延迟交易日：{freshness_summary.get('stale_trading_days', 0)}",
+        f"- 政策抓取延迟小时：{freshness_summary.get('policy_ingestion_lag_hours')}；行情延迟小时：{freshness_summary.get('market_data_lag_hours')}",
+        f"- 告警：{', '.join(freshness_summary.get('freshness_warnings') or []) or '无'}",
+        "",
+        "## 指标语义与使用边界",
+        "",
+        f"- 推荐字段：{score_semantics.get('field', 'policy_theme_conviction_score')}；中文名称：政策主题确信度。",
+        f"- {score_semantics.get('disclaimer', SCORE_SEMANTICS['disclaimer'])}",
+        f"- 明确不用于：{', '.join(score_semantics.get('not_intended_for') or [])}",
+    ]
+    lines += [
+        "",
         "## 报告合约校验",
         "",
-        f"- 校验版本：{contract_summary.get('scoring_version', 'mainline_contract_validator_v2')}",
+        f"- 校验版本：{contract_summary.get('scoring_version', 'mainline_contract_validator_v3')}",
         f"- 校验状态：{contract_summary.get('status', 'not_run')}",
         f"- Error 数：{contract_summary.get('error_count', 0)}",
         f"- Warning 数：{contract_summary.get('warning_count', 0)}",
@@ -933,7 +989,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "",
         "## 政策主线",
         "",
-        "方法：policy_score_v2 → theme_relevance_v2 → policy_event_clustering_v2 → policy_theme_stance_v2 → event_theme_allocation_v2 → mainline_lifecycle_v2，得到 mainline_score_v6。",
+        "方法：policy_score_v2 → theme_relevance_strict_v1 → policy_event_clustering_v2 → policy_theme_stance_v2 → event_theme_allocation_v2 → mainline_lifecycle_v2，得到 policy_theme_conviction_score；mainline_score_v6 作为等值兼容字段。",
         "",
         "| 主题 | mainline_score_v6 | 生命周期 | 周期阶段 | theme_score_v5 | 30日分数 | 90日分数 | 事件数 | 来源机构数 | 主要支撑事件 |",
         "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
@@ -960,7 +1016,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "- 行业/主题强度：1日分位25% + 5日分位35% + 20日分位25% + 热度分位15%。申万热度为当日成交额相对近20日均值；同花顺热度为换手率。",
         "- ETF强度：1日分位20% + 5日分位35% + 20日分位30% + 成交额分位15%。",
         "- 市场热度分：申万映射25% + 同花顺主题30% + ETF代理25% + 涨停结构10% + 大单/特大单资金排名10%，仅作为市场热度观察。",
-        f"- 政策分：读取 `data/policy_signals.json`，按政策评分V2计算：权威级别35% + 行动性25% + 经济覆盖面20% + 时间衰减20%；`theme_relevance_v2` 计算政策-主题相关度，`policy_event_clustering_v2` 做事件去重，`policy_theme_stance_v2` 对监管/约束政策做方向性折扣，`event_theme_allocation_v2` 对同一政策事件的多主题贡献做预算分配，`mainline_lifecycle_v2` 识别主线生命周期。",
+        f"- 政策分：读取 `data/policy_signals.json`，按政策评分V2计算：权威级别35% + 行动性25% + 经济覆盖面20% + 时间衰减20%；`theme_relevance_strict_v1` 只使用官方或事实抽取字段计算政策-主题相关度，`policy_event_clustering_v2` 做事件去重，`policy_theme_stance_v2` 对监管/约束政策做方向性折扣，`event_theme_allocation_v2` 对同一政策事件的多主题贡献做预算分配，`mainline_lifecycle_v2` 识别主线生命周期。",
         "- 政策主线分：mainline_score_v6 = theme_score_v5 × lifecycle_quality_multiplier。",
         f"- 兼容证据分：市场热度分{(1 - policy_summary.get('policy_weight', POLICY_WEIGHT)) * 100:.0f}% + 政策分{policy_summary.get('policy_weight', POLICY_WEIGHT) * 100:.0f}%，不参与政策主线排序。",
         "- 热度阶段：85分以上为主线确认，72-85为次主线/强修复，50-72为观察线，50以下为弱势/退潮，仅用于市场热度观察。",
@@ -1098,7 +1154,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "## 政策-主题事件贡献V6",
         "",
         f"- 版本：{theme_summary.get('scoring_version', 'mainline_score_v6_lifecycle_adjusted')}",
-        f"- 基础相关度版本：{theme_summary.get('base_relevance_version', 'theme_relevance_v2')}",
+        f"- 基础相关度版本：{theme_summary.get('base_relevance_version', 'theme_relevance_strict_v1')}",
         f"- 事件去重版本：{theme_summary.get('event_clustering_version', 'policy_event_clustering_v2')}",
         f"- 政策方向性版本：{theme_summary.get('policy_stance_version', 'policy_theme_stance_v2')}",
         f"- 事件-主题分配版本：{theme_summary.get('event_theme_allocation_version', 'event_theme_allocation_v2')}",
@@ -1277,6 +1333,20 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
         data_quality_summary = build_data_quality_summary(stage_statuses)
         assert_required_data_quality(data_quality_summary)
         raise
+    policy_time_provenance_summary = build_policy_time_provenance_summary(raw_policies, report_basis=basis_date)
+    assert_policy_time_write_allowed(policy_time_provenance_summary)
+    stage_statuses.append(
+        build_stage_status(
+            "policy_time_provenance",
+            "pass" if policy_time_provenance_summary.get("status") != "fail" else "fail",
+            True,
+            len(raw_policies),
+        )
+    )
+    field_provenance_summary = build_field_provenance_summary(raw_policies)
+    policy_candidate_summary = audit_policy_candidates(raw_policies, load_candidates())
+    assert_candidate_audit(policy_candidate_summary)
+    stage_statuses.append(build_stage_status("policy_candidate_audit", "pass", True, policy_candidate_summary.get("candidate_count", 0)))
     try:
         previous_snapshot_registry = load_snapshot_registry()
         policy_snapshot_summary = build_policy_snapshot_summary(
@@ -1304,6 +1374,9 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
         raise
     event_cluster_summary = policy_event_summary(basis_date, [spec.name for spec in THEMES])
     theme_summary = policy_theme_summary(basis_date, [spec.name for spec in THEMES])
+    for theme_row in theme_summary.get("themes", []) or []:
+        theme_row["policy_theme_conviction_score"] = theme_row.get("mainline_score_v6", 0.0)
+    theme_relevance_input_summary = build_theme_relevance_input_summary(theme_summary)
     stage_statuses.append(build_stage_status("policy_theme_summary", "pass", True, len(theme_summary.get("themes", []))))
     stance_summary = theme_summary.get("policy_stance_summary", {})
     event_theme_allocation_summary = theme_summary.get("event_theme_allocation_summary", {})
@@ -1394,6 +1467,22 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
     canonical_mainline_summary["cycle_stage_summary"] = mainline_cycle_stage_summary
     stage_statuses.append(build_stage_status("canonical_mainline", "pass", True, len(mainline_ranking)))
     stage_statuses.append(build_stage_status("reproducibility_manifest", "pass", True, 1))
+    data_freshness_summary = build_data_freshness_summary(
+        actual_basis_date=basis_date,
+        generated_at=generated_dt,
+        trading_dates=open_days,
+        policies=raw_policies,
+    )
+    stage_statuses.append(
+        build_stage_status(
+            "data_freshness",
+            "fail" if data_freshness_summary.get("block_report_write") else "pass",
+            True,
+            1,
+            [],
+            "stale data" if data_freshness_summary.get("block_report_write") else None,
+        )
+    )
     data_quality_summary = build_data_quality_summary(stage_statuses)
     assert_required_data_quality(data_quality_summary)
 
@@ -1419,15 +1508,25 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
             "policy_snapshot_version": POLICY_SNAPSHOT_VERSION,
             "policy_weight": POLICY_WEIGHT,
             "scoring_version": "policy_score_v2",
-            "theme_relevance_version": "theme_relevance_v2",
+            "theme_relevance_version": "theme_relevance_strict_v1",
             "event_clustering_version": "policy_event_clustering_v2",
             "policy_stance_version": "policy_theme_stance_v2",
             "event_theme_allocation_version": "event_theme_allocation_v2",
             "mainline_lifecycle_version": "mainline_lifecycle_v2",
             "min_relevance_threshold": theme_summary.get("min_relevance_threshold", 0.25),
-            "scoring": "authority_score 35%, actionability_score 25%, economic_scope_score 20%, time_decay_score 20%; theme_relevance_v2 maps signals; policy_event_clustering_v2 deduplicates events; policy_theme_stance_v2 applies non-boosting direction multipliers; event_theme_allocation_v2 caps repeated event-theme contribution.",
+            "scoring": "authority_score 35%, actionability_score 25%, economic_scope_score 20%, time_decay_score 20%; theme_relevance_strict_v1 maps signals without inference labels; policy_event_clustering_v2 deduplicates events; policy_theme_stance_v2 applies non-boosting direction multipliers; event_theme_allocation_v2 caps repeated event-theme contribution.",
         },
         "policy_provenance_summary": policy_provenance_summary,
+        "policy_time_provenance_summary": policy_time_provenance_summary,
+        "field_provenance_summary": field_provenance_summary,
+        "policy_candidate_summary": policy_candidate_summary,
+        "theme_relevance_input_summary": theme_relevance_input_summary,
+        "data_freshness_summary": data_freshness_summary,
+        "score_semantics": SCORE_SEMANTICS,
+        "freshness_narrative": freshness_narrative(
+            data_freshness_summary,
+            mainline_ranking[0].get("theme_name", "") if mainline_ranking else "",
+        ),
         "policy_snapshot_summary": policy_snapshot_summary,
         "reproducibility_manifest": build_pending_reproducibility_manifest(
             {"basis_date": basis_date},

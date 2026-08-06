@@ -21,8 +21,8 @@ except ModuleNotFoundError:
     )
 
 
-SCORING_VERSION = "canonical_mainline_output_v2"
-DEFAULT_SCORE_FIELD = "mainline_score_v6"
+SCORING_VERSION = "canonical_mainline_output_v3"
+DEFAULT_SCORE_FIELD = "policy_theme_conviction_score"
 SOURCE_SCORING_VERSION = "mainline_score_v6_lifecycle_adjusted"
 LEGACY_STATUS = "market_context_not_default_mainline_rank"
 
@@ -58,10 +58,12 @@ def _top_event_ids(row: dict[str, Any]) -> list[str]:
 
 
 def _mainline_row(row: dict[str, Any]) -> dict[str, Any]:
+    conviction_score = round4(row.get("policy_theme_conviction_score", row.get("mainline_score_v6")))
     item = {
         "theme_id": row.get("theme_id", ""),
         "theme_name": _theme_name(row),
-        "mainline_score_v6": round4(row.get("mainline_score_v6")),
+        "policy_theme_conviction_score": conviction_score,
+        "mainline_score_v6": conviction_score,
         "theme_score_v5": round4(row.get("theme_score_v5")),
         "theme_score_v4_stance_adjusted": round4(row.get("theme_score_v4_stance_adjusted") or row.get("theme_score_v4")),
         "theme_score_v4": round4(row.get("theme_score_v4")),
@@ -119,7 +121,7 @@ def sort_mainline_ranking(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return sorted(
         rows,
         key=lambda row: (
-            -round4(row.get(DEFAULT_SCORE_FIELD)),
+            -round4(row.get(DEFAULT_SCORE_FIELD, row.get("mainline_score_v6"))),
             LIFECYCLE_PRIORITY.get(row.get("lifecycle_state"), 99),
             -round4(row.get("theme_score_v5")),
             -_int(row.get("primary_event_count")),
@@ -163,6 +165,7 @@ def build_canonical_mainline_summary(theme_summary: dict[str, Any]) -> dict[str,
             "theme_id": top.get("theme_id", ""),
             "theme_name": top.get("theme_name", ""),
             "mainline_score_v6": top.get("mainline_score_v6"),
+            "policy_theme_conviction_score": top.get("policy_theme_conviction_score", top.get("mainline_score_v6")),
             "theme_score_v5": top.get("theme_score_v5"),
             "lifecycle_state": top.get("lifecycle_state", ""),
             "lifecycle_state_label": top.get("lifecycle_state_label", ""),

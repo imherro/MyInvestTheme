@@ -166,7 +166,7 @@ def test_canonical_summary_top_mainline_is_correct():
     summary = theme_summary([theme("ai", "AI算力/通信", 0.526)])
     canonical = build_canonical_mainline_summary(summary)
     assert canonical["top_mainline"]["theme_name"] == "AI算力/通信"
-    assert canonical["default_score_field"] == "mainline_score_v6"
+    assert canonical["default_score_field"] == "policy_theme_conviction_score"
     assert canonical["top_mainline"]["lifecycle_state"] == "sustained"
     assert canonical["top_mainline"]["lifecycle_state_label"] == "持续有效"
     assert canonical["mainline_cycle_stage_version"] == "mainline_cycle_stage_v2"
@@ -197,8 +197,8 @@ def test_markdown_mainline_table_uses_v6_fields():
 
 def test_api_latest_exposes_canonical_mainline_summary():
     body = get("/api/latest").json()["result"]
-    assert body["canonical_mainline_summary"]["scoring_version"] == "canonical_mainline_output_v2"
-    assert body["canonical_mainline_summary"]["default_score_field"] == "mainline_score_v6"
+    assert body["canonical_mainline_summary"]["scoring_version"] == "canonical_mainline_output_v3"
+    assert body["canonical_mainline_summary"]["default_score_field"] == "policy_theme_conviction_score"
     assert body["mainline_ranking"][0]["mainline_score_v6"] is not None
     assert body["mainline_ranking"][0]["lifecycle_state"]
     assert body["mainline_ranking"][0]["lifecycle_state_label"]
@@ -211,7 +211,7 @@ def test_api_index_default_top_mainline_uses_v6():
     payload = get("/api/index").json()
     assert payload["latest_report"]["top_mainline_theme"] == payload["mainline_ranking"][0]["theme_name"]
     assert payload["latest_report"]["top_theme"] == payload["latest_report"]["top_mainline_theme"]
-    assert payload["latest_report"]["default_score_field"] == "mainline_score_v6"
+    assert payload["latest_report"]["default_score_field"] == "policy_theme_conviction_score"
     assert payload["latest_report"]["top_mainline_cycle_stage"]
     assert "top_mainline_cycle_review_remaining_days" in payload["latest_report"]
 
@@ -221,7 +221,8 @@ def test_score_series_uses_mainline_score_as_default_score():
     points = [point for theme in payload["themes"] for point in theme["points"]]
     assert points
     for point in points:
-        assert point["default_score_field"] == "mainline_score_v6"
+        assert point["default_score_field"] == "policy_theme_conviction_score"
+        assert point["policy_theme_conviction_score"] == point["mainline_score_v6"]
         assert point["score"] == point["mainline_score_v6"]
         assert point["default_score"] == point["mainline_score_v6"]
         assert "legacy_evidence_score" in point
@@ -237,8 +238,8 @@ def test_api_reports_summary_uses_canonical_top():
     latest = reports[0]
     assert latest["top_theme"] == latest["top_mainline_theme"]
     assert latest["top_score"] == latest["top_mainline_score"]
-    assert latest["default_score_field"] == "mainline_score_v6"
-    assert latest["canonical_mainline_version"] == "canonical_mainline_output_v2"
+    assert latest["default_score_field"] == "policy_theme_conviction_score"
+    assert latest["canonical_mainline_version"] == "canonical_mainline_output_v3"
 
 
 def test_readme_uses_canonical_mainline_wording():

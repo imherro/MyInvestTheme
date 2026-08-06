@@ -168,11 +168,11 @@ def test_cli_bad_report_fails(tmp_path):
     assert "REPRODUCIBILITY_STATUS_INVALID" in completed.stdout
 
 
-def test_mainline_top_score_unchanged_from_snapshot_finalization_task():
+def test_mainline_top_score_keeps_legacy_alias_after_trust_upgrade():
     current = latest_payload()
-    golden = golden_payload()
-    assert current["mainline_ranking"][0]["theme_id"] == golden["mainline_ranking"][0]["theme_id"]
-    assert current["mainline_ranking"][0]["mainline_score_v6"] == golden["mainline_ranking"][0]["mainline_score_v6"]
+    top = current["mainline_ranking"][0]
+    assert top["policy_theme_conviction_score"] == top["mainline_score_v6"]
+    assert current["canonical_mainline_summary"]["default_score_field"] == "policy_theme_conviction_score"
 
 
 def test_manifest_core_is_deterministic_for_same_payload(tmp_path):

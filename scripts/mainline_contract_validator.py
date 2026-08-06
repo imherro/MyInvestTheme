@@ -33,7 +33,7 @@ REPORT_DIR = ROOT / "research" / "mainline"
 RULES_PATH = ROOT / "config" / "mainline_contract_rules.json"
 TZ = ZoneInfo("Asia/Shanghai")
 
-SCORING_VERSION = "mainline_contract_validator_v2"
+SCORING_VERSION = "mainline_contract_validator_v3"
 SELF_SECTION = "contract_validation_summary"
 MISSING = object()
 
@@ -1327,6 +1327,91 @@ def validate_reproducibility_manifest_contract(
         )
 
 
+def validate_point_in_time_contract(report: dict[str, Any], rules: dict[str, Any], issues: list[dict[str, Any]]) -> None:
+    del rules
+    summary = _as_dict(report.get("policy_time_provenance_summary"))
+    if not summary:
+        add_issue(issues, "error", "POINT_IN_TIME_SUMMARY_MISSING", "policy_time_provenance_summary", "Point-in-time policy summary is required.")
+        return
+    if summary.get("status") == "fail" or summary.get("blocking_policy_ids"):
+        add_issue(issues, "error", "POLICY_TIME_CONFLICT", "policy_time_provenance_summary.status", "Severe policy time conflicts must block new report writes.", expected="pass or degraded", actual=summary.get("status"))
+    unavailable_count = 0
+    for index, policy in enumerate(_as_list(summary.get("policies"))):
+        if not isinstance(policy, dict):
+            continue
+        if policy.get("time_provenance_status") in {"future_timestamp", "conflict", "invalid"}:
+            add_issue(issues, "error", "FUTURE_POLICY_TIMESTAMP" if policy.get("time_provenance_status") == "future_timestamp" else "POLICY_TIME_CONFLICT", f"policy_time_provenance_summary.policies[{index}]", "Unsafe policy time provenance entered the report.", actual=policy.get("time_provenance_status"))
+        if policy.get("point_in_time_basis") == "unavailable":
+            unavailable_count += 1
+    if unavailable_count:
+        add_issue(issues, "warning", "POINT_IN_TIME_UNAVAILABLE", "policy_time_provenance_summary.point_in_time_unavailable_count", "Legacy policies without auditable point-in-time availability are not eligible for future point-in-time backtests.", expected=0, actual=unavailable_count)
+
+
+def validate_field_provenance_contract(report: dict[str, Any], rules: dict[str, Any], issues: list[dict[str, Any]]) -> None:
+    del rules
+    summary = _as_dict(report.get("field_provenance_summary"))
+    if not summary:
+        add_issue(issues, "error", "FIELD_PROVENANCE_SUMMARY_MISSING", "field_provenance_summary", "Field provenance summary is required.")
+        return
+    if summary.get("legacy_unknown_fields"):
+        add_issue(issues, "warning", "FIELD_PROVENANCE_LEGACY_UNKNOWN", "field_provenance_summary.legacy_unknown_fields", "Some legacy fields have unknown provenance.", actual=summary.get("legacy_unknown_fields"))
+
+
+def validate_candidate_audit_contract(report: dict[str, Any], rules: dict[str, Any], issues: list[dict[str, Any]]) -> None:
+    del rules
+    summary = _as_dict(report.get("policy_candidate_summary"))
+    if not summary:
+        add_issue(issues, "error", "POLICY_CANDIDATE_SUMMARY_MISSING", "policy_candidate_summary", "Candidate policy audit summary is required.")
+        return
+    for issue in _as_list(summary.get("issues")):
+        if isinstance(issue, dict):
+            add_issue(issues, "error", str(issue.get("code") or "CANDIDATE_AUDIT_ERROR"), str(issue.get("path") or "policy_candidate_summary"), "Candidate policy audit failed.", actual=issue.get("actual"))
+    if _int(summary.get("legacy_imported_count")):
+        add_issue(issues, "warning", "LEGACY_CANDIDATES_PRESENT", "policy_candidate_summary.legacy_imported_count", "Candidate records were reconstructed from the legacy selected-policy store; original discovery times were not fabricated.", actual=_int(summary.get("legacy_imported_count")))
+
+
+def validate_strict_relevance_contract(report: dict[str, Any], rules: dict[str, Any], issues: list[dict[str, Any]]) -> None:
+    del rules
+    summary = _as_dict(report.get("theme_relevance_input_summary"))
+    if summary.get("production_mode") != "strict_point_in_time" or summary.get("production_score_field") != "theme_relevance_strict":
+        add_issue(issues, "error", "STRICT_RELEVANCE_MODE_REQUIRED", "theme_relevance_input_summary.production_mode", "Default mainline ranking must use strict point-in-time relevance.", expected="strict_point_in_time/theme_relevance_strict", actual=f"{summary.get('production_mode')}/{summary.get('production_score_field')}")
+    forbidden = set(summary.get("forbidden_production_fields") or [])
+    for theme_index, theme in enumerate(_as_list(_as_dict(report.get("theme_summary")).get("themes"))):
+        if not isinstance(theme, dict):
+            continue
+        for event_index, event in enumerate(_as_list(theme.get("all_event_contributors"))):
+            for evidence in _as_list(event.get("top_matched_evidence") if isinstance(event, dict) else []):
+                if isinstance(evidence, dict) and evidence.get("source_field") in forbidden:
+                    add_issue(issues, "error", "FORBIDDEN_INFERENCE_FIELD_USED", f"theme_summary.themes[{theme_index}].all_event_contributors[{event_index}]", "A forbidden inference field entered production theme relevance.", actual=evidence.get("source_field"))
+                    return
+    high_count = _int(summary.get("high_inference_dependency_count"))
+    if high_count:
+        add_issue(issues, "warning", "HIGH_INFERENCE_DEPENDENCY", "theme_relevance_input_summary.high_inference_dependency_count", "Inference-only comparison materially lifts some policy-theme matches; production ranking remains strict.", actual=high_count)
+
+
+def validate_freshness_contract(report: dict[str, Any], rules: dict[str, Any], issues: list[dict[str, Any]]) -> None:
+    del rules
+    summary = _as_dict(report.get("data_freshness_summary"))
+    status = summary.get("data_freshness_status")
+    if status not in {"fresh", "degraded", "stale", "unknown"}:
+        add_issue(issues, "error", "DATA_FRESHNESS_STATUS_INVALID", "data_freshness_summary.data_freshness_status", "Data freshness status is invalid.", actual=status)
+    narrative = str(report.get("freshness_narrative") or "")
+    if status == "stale" and any(phrase in narrative for phrase in ("当前主线", "最新主线")):
+        add_issue(issues, "error", "STALE_CURRENT_MAINLINE_LANGUAGE", "freshness_narrative", "Stale reports must not claim a current or latest mainline.", actual=narrative)
+
+
+def validate_score_semantics_contract(report: dict[str, Any], rules: dict[str, Any], issues: list[dict[str, Any]]) -> None:
+    del rules
+    semantics = _as_dict(report.get("score_semantics"))
+    if semantics.get("field") != "policy_theme_conviction_score" or not semantics.get("disclaimer"):
+        add_issue(issues, "error", "SCORE_SEMANTICS_MISSING", "score_semantics", "Policy score semantics and usage boundary are required.")
+    for section in ("theme_summary", "mainline_ranking"):
+        rows = _as_list(_as_dict(report.get(section)).get("themes")) if section == "theme_summary" else _as_list(report.get(section))
+        for index, row in enumerate(rows):
+            if isinstance(row, dict) and not approx_equal(row.get("policy_theme_conviction_score"), row.get("mainline_score_v6")):
+                add_issue(issues, "error", "POLICY_THEME_CONVICTION_SCORE_MISMATCH", f"{section}[{index}].policy_theme_conviction_score", "Recommended score must equal the compatibility mainline_score_v6 formula in phase one.", expected=round4(row.get("mainline_score_v6")), actual=round4(row.get("policy_theme_conviction_score")))
+
+
 def validate_mainline_report_contract(
     report: dict[str, Any],
     rules: dict[str, Any] | None = None,
@@ -1336,7 +1421,39 @@ def validate_mainline_report_contract(
     allow_pending_registry: bool = False,
     allow_pending_reproducibility: bool = False,
 ) -> dict[str, Any]:
-    active_rules = rules or load_rules()
+    active_rules = deepcopy(rules or load_rules())
+    legacy_mode = not report.get("policy_time_provenance_summary") and (
+        _as_dict(report.get("canonical_mainline_summary")).get("scoring_version") == "canonical_mainline_output_v2"
+    )
+    if legacy_mode:
+        new_sections = {
+            "policy_time_provenance_summary",
+            "field_provenance_summary",
+            "policy_candidate_summary",
+            "theme_relevance_input_summary",
+            "data_freshness_summary",
+            "score_semantics",
+            "freshness_narrative",
+        }
+        active_rules["required_sections"] = [item for item in active_rules.get("required_sections", []) if item not in new_sections]
+        active_rules["data_quality_required_stages"] = [
+            item
+            for item in active_rules.get("data_quality_required_stages", [])
+            if item not in {"policy_time_provenance", "policy_candidate_audit", "data_freshness"}
+        ]
+        active_rules["default_score_field"] = "mainline_score_v6"
+        active_rules["version_contract"] = {
+            key: value
+            for key, value in active_rules.get("version_contract", {}).items()
+            if not key.startswith(("policy_time_provenance_summary.", "field_provenance_summary.", "policy_candidate_summary.", "theme_relevance_input_summary.", "data_freshness_summary."))
+        }
+        active_rules["version_contract"].update(
+            {
+                "theme_summary.base_relevance_version": "theme_relevance_v2",
+                "canonical_mainline_summary.scoring_version": "canonical_mainline_output_v2",
+                "canonical_mainline_summary.default_score_field": "mainline_score_v6",
+            }
+        )
     issues: list[dict[str, Any]] = []
     checked_sections = {
         "required_sections": True,
@@ -1353,6 +1470,12 @@ def validate_mainline_report_contract(
         "policy_snapshot_contract": True,
         "snapshot_registry_finalization_contract": True,
         "reproducibility_manifest_contract": True,
+        "point_in_time_contract": True,
+        "field_provenance_contract": True,
+        "candidate_audit_contract": True,
+        "strict_relevance_contract": True,
+        "freshness_contract": True,
+        "score_semantics_contract": True,
     }
     validate_required_sections(report, active_rules, issues, require_self_section=require_self_section)
     validate_version_contract(report, active_rules, issues)
@@ -1378,6 +1501,13 @@ def validate_mainline_report_contract(
         issues,
         allow_pending_reproducibility=allow_pending_reproducibility,
     )
+    if not legacy_mode:
+        validate_point_in_time_contract(report, active_rules, issues)
+        validate_field_provenance_contract(report, active_rules, issues)
+        validate_candidate_audit_contract(report, active_rules, issues)
+        validate_strict_relevance_contract(report, active_rules, issues)
+        validate_freshness_contract(report, active_rules, issues)
+        validate_score_semantics_contract(report, active_rules, issues)
 
     error_count, warning_count = _issue_counts(issues)
     return {

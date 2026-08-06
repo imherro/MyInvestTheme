@@ -46,7 +46,7 @@ def validate(payload: dict) -> dict:
 
 def test_latest_valid_report_passes_contract(report):
     summary = validate(report)
-    assert summary["scoring_version"] == "mainline_contract_validator_v2"
+    assert summary["scoring_version"] == "mainline_contract_validator_v3"
     assert summary["status"] == "pass"
     assert summary["error_count"] == 0
     assert summary["checked_sections"]["score_formulas"] is True
@@ -93,9 +93,8 @@ def test_theme_score_formula_error_is_detected(report):
 
 def test_allocation_cap_error_is_detected(report):
     broken = deepcopy(report)
-    event = next(
-        item for item in broken["event_theme_allocation_summary"]["events"] if item.get("allocation_capped")
-    )
+    event = broken["event_theme_allocation_summary"]["events"][0]
+    event["allocation_capped"] = True
     event["allocation_budget_used"] = round(event["event_contribution_budget"] + 0.05, 4)
     summary = validate(broken)
     assert "EVENT_BUDGET_OVERUSED" in issue_codes(summary)
@@ -144,13 +143,13 @@ def test_markdown_contains_contract_validation_section(report):
     attach_contract_validation(payload)
     markdown = render_markdown(payload)
     assert "## 报告合约校验" in markdown
-    assert "mainline_contract_validator_v2" in markdown
+    assert "mainline_contract_validator_v3" in markdown
 
 
 def test_api_latest_exposes_contract_summary():
     body = get("/api/latest").json()
     summary = body["result"]["contract_validation_summary"]
-    assert summary["scoring_version"] == "mainline_contract_validator_v2"
+    assert summary["scoring_version"] == "mainline_contract_validator_v3"
     assert summary["status"] == "pass"
     assert summary["error_count"] == 0
 
@@ -169,13 +168,14 @@ def test_api_health_exposes_contract_status():
     assert body["latest_contract_warning_count"] >= 0
 
 
-def test_score_series_default_contract_still_uses_v6():
+def test_score_series_default_contract_uses_recommended_alias():
     body = get("/api/score-series").json()
     points = [point for theme in body["themes"] for point in theme["points"]]
     assert points
     for point in points:
-        assert point["default_score_field"] == "mainline_score_v6"
+        assert point["default_score_field"] == "policy_theme_conviction_score"
         assert point["score"] == point["mainline_score_v6"]
+        assert point["policy_theme_conviction_score"] == point["mainline_score_v6"]
         assert point["default_score"] == point["mainline_score_v6"]
 
 
