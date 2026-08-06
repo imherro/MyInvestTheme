@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}政策库 - A股主线研究台{% endblock %}
+{% block content %}
+<section class="summary-grid">
+  <div class="metric">
+    <span>政策信号</span>
+    <strong>{{ policy_library.signal_count }}</strong>
+  </div>
+  <div class="metric">
+    <span>政策库更新时间</span>
+    <strong>{{ policy_library.updated_at }}</strong>
+  </div>
+  <div class="metric">
+    <span>观察池版本</span>
+    <strong>{{ policy_library.watchlist_version }}</strong>
+  </div>
+  <div class="metric">
+    <span>深研入口</span>
+    <strong>stock.okbbc.com</strong>
+  </div>
+</section>
+
+<section class="section-band">
+  <div class="section-head">
+    <div>
+      <div class="title-row">
+        <h1>政策库</h1>
+        <span class="hint">按发布日期倒叙</span>
+      </div>
+    </div>
+    <div class="actions">
+      <a class="button" href="/api/policies">读取政策库API</a>
+      <a class="button secondary" href="/api/latest">最新报告API</a>
+    </div>
+  </div>
+  <div class="policy-list">
+    {% for policy in policy_library.policies %}
+    <article class="policy-card">
+      <div class="policy-card-head">
+        <div class="policy-title-block">
+          <div class="policy-meta">
+            <span>{{ policy.published_date }}</span>
+            <span>{{ policy.source }}</span>
+            <span>{{ policy.authority_level }}</span>
+            <span>{{ policy.economic_scope }}</span>
+          </div>
+          <h2>
+            {% if policy.url %}
+            <a href="{{ policy.url }}" target="_blank" rel="noopener noreferrer">{{ policy.title }}</a>
+            {% else %}
+            {{ policy.title }}
+            {% endif %}
+          </h2>
+        </div>
+        <div class="policy-score">
+          <span>policy_score_v2</span>
+          <strong>{{ "%.4f"|format(policy.policy_score_v2) if policy.policy_score_v2 is not none else "无" }}</strong>
+        </div>
+      </div>
+
+      <p class="policy-summary">{{ policy.summary }}</p>
+      <p class="policy-evaluation">{{ policy.evaluation }}</p>
+
+      <div class="policy-body-grid">
+        <div class="policy-block">
+          <h3>利好板块</h3>
+          <div class="chip-list">
+            {% for theme in policy.matched_themes %}
+            <span class="theme-chip">{{ theme }}</span>
+            {% else %}
+            <span class="muted">待归类</span>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="policy-block">
+          <h3>个股观察</h3>
+          <div class="stock-watch-list">
+            {% for stock in policy.observation_stocks %}
+            <div class="stock-watch-item">
+              <a class="stock-name-link" href="{{ stock.research_url }}" target="_blank" rel="noopener noreferrer">{{ stock.name }}</a>
+              <a class="stock-code-link" href="{{ stock.xueqiu_url }}" target="_blank" rel="noopener noreferrer">{{ stock.code }}</a>
+              <span>{{ stock.role }}</span>
+            </div>
+            {% else %}
+            <span class="muted">暂无观察池映射</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <details class="policy-detail">
+        <summary>查看提取证据</summary>
+        <div class="policy-detail-grid">
+          <div>
+            <h3>关键点</h3>
+            <p>{{ policy.key_points|join("、") }}</p>
+          </div>
+          <div>
+            <h3>受益链</h3>
+            <p>{{ policy.beneficiary_chain|join("、") }}</p>
+          </div>
+          <div>
+            <h3>原始行业</h3>
+            <p>{{ policy.related_industries|join("、") }}</p>
+          </div>
+          <div>
+            <h3>证据</h3>
+            <p>{{ policy.evidence }}</p>
+          </div>
+        </div>
+      </details>
+    </article>
+    {% else %}
+    <p>政策库为空。</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

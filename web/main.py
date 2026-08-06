@@ -2,9 +2,15 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
+
+SCRIPTS_DIR = Path(__file__).resolve().parents[1] / "scripts"
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
 
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.responses import HTMLResponse, PlainTextResponse
@@ -25,6 +31,11 @@ from scripts.mainline_cycle_stage import (
     enrich_mainline_rows_with_cycle_stage,
 )
 from scripts.mainline_contract_validator import validate_mainline_report_contract
+from scripts.policy_candidate_audit import audit_policy_candidates, load_candidates
+from scripts.policy_field_provenance import field_provenance_for_policy
+from scripts.policy_provenance import compute_policy_content_hash
+from scripts.policy_time_provenance import audit_policy_time
+from scripts.theme_relevance import compute_theme_relevance_v2, load_theme_config
 from scripts.golden_snapshot_builder import GOLDEN_PATH
 from scripts.system_drift_detector import build_drift_report, load_golden_snapshot
 from scripts.theme_explanation_engine import ThemeExplanationNotFound, build_theme_explanation
@@ -45,12 +56,27 @@ from scripts.theme_taxonomy_v2 import (
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 REPORT_DIR = ROOT_DIR / "research" / "mainline"
+POLICY_PATH = ROOT_DIR / "data" / "policy_signals.json"
+POLICY_STOCK_WATCHLIST_PATH = ROOT_DIR / "config" / "policy_stock_watchlist.json"
 REPORT_ID_RE = re.compile(r"^mainline_review_\d{4}-\d{2}-\d{2}_\d{6}$")
 REPORT_ID_TIME_RE = re.compile(r"^mainline_review_(\d{4})-(\d{2})-(\d{2})_(\d{2})(\d{2})(\d{2})$")
+A_SHARE_CODE_RE = re.compile(r"^(?P<number>\d{6})\.(?P<market>SH|SZ|BJ)$", re.IGNORECASE)
+DEFAULT_STOCK_RESEARCH_BASE_URL = "https://stock.okbbc.com/research?stock="
+
+POLICY_THEME_KEYWORDS = {
+    "硬科技电子/半导体": ("硬科技电子/半导体", "半导体", "集成电路", "芯片", "电子", "硬科技", "PCB", "元器件"),
+    "高端制造/机器人/军工": ("高端制造/机器人/军工", "高端制造", "机器人", "军工", "智能制造", "高端装备", "自动化", "航空"),
+    "建材/稳增长修复": ("建材/稳增长修复", "建材", "建筑材料", "基建", "基础设施", "水泥", "玻璃", "稳增长"),
+    "AI算力/通信": ("AI算力/通信", "AI算力", "人工智能", "算力", "数据中心", "通信", "数据要素", "软件服务", "数字经济", "算电协同"),
+    "新能源/电力设备": ("新能源/电力设备", "新能源", "电力设备", "储能", "光伏", "风电", "电池", "智能电网", "绿色低碳"),
+    "资源周期": ("资源周期", "资源", "有色", "煤炭", "石油", "钢铁", "稀土", "黄金", "铜", "化工", "新材料"),
+    "消费/传媒": ("消费/传媒", "消费", "传媒", "旅游", "零售", "免税", "文旅", "商业", "服务消费", "食品饮料"),
+    "创新药/医药": ("创新药/医药", "创新药", "医药", "医疗器械", "生物制品", "疫苗", "CRO", "中医药", "药品"),
+}
 
 app = FastAPI(
     title="A股主线研究台",
-    version="1.0.0",
+    version="1.1.0",
     description="Read-only browser and API for A-share mainline research results.",
 )
 
@@ -61,6 +87,7 @@ API_RECOMMENDED_ENTRYPOINTS = [
     {"name": "接口说明", "path": "/api", "reason": "查看当前系统全部公开接口、参数和只读边界。"},
     {"name": "首页主要内容", "path": "/api/index", "reason": "读取 Web 首页使用的主线、市场热度、曲线和报告列表。"},
     {"name": "最新报告", "path": "/api/latest", "reason": "读取最新主线研究 JSON，适合作为系统集成入口。"},
+    {"name": "政策库", "path": "/api/policies", "reason": "读取倒叙政策库、板块评价和个股观察链接。"},
     {"name": "二级主线观察", "path": "/api/taxonomy-v2", "reason": "读取最新报告派生出的二级主线重映射结果。"},
     {"name": "主线分数历史", "path": "/api/score-series", "reason": "读取政策主线分和市场热度观察分的时间序列。"},
     {"name": "健康状态", "path": "/api/health", "reason": "检查报告数量、最新报告 ID 和质量校验状态。"},
@@ -93,6 +120,14 @@ API_GROUPS = [
                 "purpose": "打开历史研究结果列表页。",
                 "parameters": [],
                 "returns": "HTML 页面，列出可读取的历史报告。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/policies",
+                "purpose": "打开政策库倒叙展示页。",
+                "parameters": [],
+                "returns": "HTML 页面，展示官方政策信号、板块评价和个股观察链接。",
                 "read_only": True,
             },
             {
@@ -173,6 +208,14 @@ API_GROUPS = [
                 "purpose": "读取最新主线研究报告 JSON。",
                 "parameters": [],
                 "returns": "JSON，包含 report_id 和 result 完整报告内容。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/api/policies",
+                "purpose": "读取倒叙政策库和政策对应的板块、个股观察链接。",
+                "parameters": [],
+                "returns": "JSON，包含 updated_at、signal_count、watchlist_version 和 policies 数组。",
                 "read_only": True,
             },
             {
@@ -258,6 +301,16 @@ API_GROUPS = [
                     {"name": "report_id", "in": "query", "required": False, "description": "可选历史报告 ID。"},
                 ],
                 "returns": "JSON，包含 trace_graph、top_policy_paths、event_breakdowns 和校验结果。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/api/policies/{policy_id}/audit",
+                "purpose": "读取单条政策的点时时间、字段来源、候选决策和严格主题匹配审计。",
+                "parameters": [
+                    {"name": "policy_id", "in": "path", "required": True, "description": "政策 ID。"}
+                ],
+                "returns": "JSON，包含时间来源、字段来源、候选记录、内容哈希、严格相关度及报告纳入状态。",
                 "read_only": True,
             },
             {
@@ -388,6 +441,174 @@ def _load_json(path: Path) -> dict[str, Any]:
         return json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise HTTPException(status_code=500, detail=f"研究JSON无法解析: {path.name}") from exc
+
+
+def _load_optional_json(path: Path, default: dict[str, Any]) -> dict[str, Any]:
+    if not path.exists():
+        return default
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=500, detail=f"JSON无法解析: {path.name}") from exc
+    return payload if isinstance(payload, dict) else default
+
+
+def _load_policy_store() -> dict[str, Any]:
+    return _load_optional_json(POLICY_PATH, {"updated_at": "", "signals": []})
+
+
+def _load_policy_stock_watchlist() -> dict[str, Any]:
+    return _load_optional_json(
+        POLICY_STOCK_WATCHLIST_PATH,
+        {
+            "version": "",
+            "deep_research_base_url": DEFAULT_STOCK_RESEARCH_BASE_URL,
+            "themes": {},
+        },
+    )
+
+
+def _list_text(value: Any) -> list[str]:
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    text = str(value or "").strip()
+    return [text] if text else []
+
+
+def _joined_policy_text(policy: dict[str, Any]) -> str:
+    parts: list[str] = []
+    for field in ("title", "source", "summary", "evidence"):
+        parts.append(str(policy.get(field) or ""))
+    for field in ("key_points", "beneficiary_chain", "related_industries"):
+        parts.extend(_list_text(policy.get(field)))
+    return " ".join(part for part in parts if part)
+
+
+def _policy_matched_themes(policy: dict[str, Any]) -> list[str]:
+    related_text = " ".join(_list_text(policy.get("related_industries")))
+    full_text = _joined_policy_text(policy)
+    scores: list[tuple[int, str]] = []
+    for theme, keywords in POLICY_THEME_KEYWORDS.items():
+        score = 0
+        if theme in related_text:
+            score += 6
+        for keyword in keywords:
+            if keyword in related_text:
+                score += 3
+            elif keyword in full_text:
+                score += 1
+        if score > 0:
+            scores.append((score, theme))
+    scores.sort(key=lambda item: (-item[0], item[1]))
+    return [theme for _, theme in scores[:3]]
+
+
+def _xueqiu_symbol(code: str | None) -> str:
+    match = A_SHARE_CODE_RE.match(str(code or "").strip())
+    if not match:
+        return ""
+    return f"{match.group('market').upper()}{match.group('number')}"
+
+
+def _xueqiu_stock_url(code: str | None) -> str:
+    symbol = _xueqiu_symbol(code)
+    return f"https://xueqiu.com/S/{symbol}" if symbol else ""
+
+
+def _stock_research_url(code: str | None, base_url: str) -> str:
+    text = str(code or "").strip()
+    if not text:
+        return ""
+    return f"{base_url}{quote(text, safe='')}"
+
+
+def _watchlist_stocks_for_themes(
+    themes: list[str],
+    watchlist: dict[str, Any],
+    *,
+    limit: int = 5,
+) -> list[dict[str, Any]]:
+    base_url = str(watchlist.get("deep_research_base_url") or DEFAULT_STOCK_RESEARCH_BASE_URL)
+    theme_map = watchlist.get("themes") if isinstance(watchlist.get("themes"), dict) else {}
+    result: list[dict[str, Any]] = []
+    seen_codes: set[str] = set()
+    for theme in themes:
+        for stock in theme_map.get(theme, []) or []:
+            if not isinstance(stock, dict):
+                continue
+            code = str(stock.get("code") or "").strip()
+            if not code or code in seen_codes:
+                continue
+            seen_codes.add(code)
+            item = dict(stock)
+            item["theme"] = theme
+            item["xueqiu_url"] = _xueqiu_stock_url(code)
+            item["research_url"] = _stock_research_url(code, base_url)
+            result.append(item)
+            if len(result) >= limit:
+                return result
+    return result
+
+
+def _policy_evaluation_sentence(themes: list[str], stocks: list[dict[str, Any]]) -> str:
+    if not themes:
+        return "评价：政策方向仍需人工归类，暂不映射具体板块和个股观察池。"
+    theme_text = "、".join(themes)
+    if stocks:
+        stock_text = "、".join(str(stock.get("name") or stock.get("code") or "") for stock in stocks[:3])
+        return f"评价：对{theme_text}板块偏利好，个股观察可先看{stock_text}等；仅作研究线索，不构成买卖建议。"
+    return f"评价：对{theme_text}板块偏利好，当前观察池暂无可展示个股；仅作研究线索，不构成买卖建议。"
+
+
+def _policy_rows() -> list[dict[str, Any]]:
+    store = _load_policy_store()
+    watchlist = _load_policy_stock_watchlist()
+    rows: list[dict[str, Any]] = []
+    for index, policy in enumerate(store.get("signals") or []):
+        if not isinstance(policy, dict):
+            continue
+        matched_themes = _policy_matched_themes(policy)
+        stocks = _watchlist_stocks_for_themes(matched_themes, watchlist)
+        row = {
+            "id": policy.get("id") or policy.get("policy_id") or f"policy-{index + 1}",
+            "title": policy.get("title", ""),
+            "source": policy.get("source") or policy.get("source_org") or "",
+            "published_date": policy.get("published_date") or policy.get("publish_date") or "",
+            "url": policy.get("url") or policy.get("source_url") or policy.get("official_url") or "",
+            "authority_level": policy.get("authority_level", ""),
+            "economic_scope": policy.get("economic_scope", ""),
+            "policy_score_v2": policy.get("policy_score_v2"),
+            "authority_score": policy.get("authority_score"),
+            "actionability_score": policy.get("actionability_score"),
+            "economic_scope_score": policy.get("economic_scope_score"),
+            "time_decay_score": policy.get("time_decay_score"),
+            "summary": policy.get("summary", ""),
+            "evidence": policy.get("evidence", ""),
+            "key_points": _list_text(policy.get("key_points")),
+            "beneficiary_chain": _list_text(policy.get("beneficiary_chain")),
+            "related_industries": _list_text(policy.get("related_industries")),
+            "matched_themes": matched_themes,
+            "observation_stocks": stocks,
+            "evaluation": _policy_evaluation_sentence(matched_themes, stocks),
+        }
+        rows.append(row)
+    rows.sort(key=lambda item: (str(item.get("published_date") or ""), str(item.get("id") or "")), reverse=True)
+    return rows
+
+
+def build_policy_library_payload() -> dict[str, Any]:
+    store = _load_policy_store()
+    watchlist = _load_policy_stock_watchlist()
+    rows = _policy_rows()
+    return {
+        "page": "policies",
+        "updated_at": store.get("updated_at", ""),
+        "method": store.get("method", ""),
+        "signal_count": len(rows),
+        "watchlist_version": watchlist.get("version", ""),
+        "deep_research_base_url": watchlist.get("deep_research_base_url", DEFAULT_STOCK_RESEARCH_BASE_URL),
+        "policies": rows,
+    }
 
 
 def _safe_report_path(report_id: str, suffix: str) -> Path:
@@ -615,6 +836,14 @@ def _rows_with_supporting_events(rows: list[dict[str, Any]]) -> list[dict[str, A
 def _mainline_rows(payload: dict[str, Any]) -> list[dict[str, Any]]:
     rows = payload.get("mainline_ranking") or []
     if rows:
+        rows = [
+            {
+                **row,
+                "policy_theme_conviction_score": row.get("policy_theme_conviction_score", row.get("mainline_score_v6")),
+            }
+            for row in rows
+            if isinstance(row, dict)
+        ]
         enriched = enrich_mainline_rows_with_cycle_stage(
             _rows_with_cycle_event_source(rows, payload), _legacy_theme_rows(payload)
         )
@@ -791,6 +1020,12 @@ def _with_canonical_fields(payload: dict[str, Any]) -> dict[str, Any]:
     result.setdefault("snapshot_registry_update_summary", _snapshot_registry_update_summary(result))
     result.setdefault("reproducibility_manifest", _reproducibility_manifest(result))
     result.setdefault("contract_validation_summary", _contract_summary(result))
+    result.setdefault("policy_time_provenance_summary", {"scoring_version": "policy_time_provenance_v1", "status": "legacy", "point_in_time_unavailable_count": 0, "policies": []})
+    result.setdefault("field_provenance_summary", {"scoring_version": "policy_field_provenance_v1", "status": "legacy", "policies": []})
+    result.setdefault("policy_candidate_summary", {"scoring_version": "policy_candidate_audit_v1", "status": "legacy", "candidate_count": 0})
+    result.setdefault("theme_relevance_input_summary", {"scoring_version": "theme_relevance_input_v1", "production_mode": "legacy", "high_inference_dependency_count": 0})
+    result.setdefault("data_freshness_summary", {"scoring_version": "data_freshness_guard_v1", "data_freshness_status": "unknown", "stale_trading_days": 0})
+    result.setdefault("score_semantics", {"field": "policy_theme_conviction_score", "compatibility_field": "mainline_score_v6", "meaning": "policy evidence strength", "not_intended_for": ["expected_return", "price_direction", "buy_signal", "position_sizing"]})
     return result
 
 
@@ -828,6 +1063,11 @@ def _report_summary(path: Path) -> dict[str, Any]:
     reproducibility_artifacts = reproducibility_manifest.get("artifact_fingerprints") or {}
     reproducibility_git = reproducibility_manifest.get("git") or {}
     contract_validation_summary = _contract_summary(payload)
+    policy_time_provenance_summary = payload.get("policy_time_provenance_summary") or {}
+    field_provenance_summary = payload.get("field_provenance_summary") or {}
+    policy_candidate_summary = payload.get("policy_candidate_summary") or {}
+    theme_relevance_input_summary = payload.get("theme_relevance_input_summary") or {}
+    data_freshness_summary = payload.get("data_freshness_summary") or {}
     return {
         "report_id": _report_id(path),
         "generated_at": payload.get("generated_at", ""),
@@ -874,6 +1114,11 @@ def _report_summary(path: Path) -> dict[str, Any]:
         "contract_validation_status": contract_validation_summary.get("status", ""),
         "contract_validation_error_count": contract_validation_summary.get("error_count", 0),
         "contract_validation_warning_count": contract_validation_summary.get("warning_count", 0),
+        "policy_time_provenance_summary": policy_time_provenance_summary,
+        "field_provenance_summary": field_provenance_summary,
+        "policy_candidate_summary": policy_candidate_summary,
+        "theme_relevance_input_summary": theme_relevance_input_summary,
+        "data_freshness_summary": data_freshness_summary,
         "legacy_top_theme": legacy_top.get("theme", ""),
         "legacy_top_score": legacy_top.get("evidence_score"),
         "has_markdown": md_path.exists(),
@@ -1028,6 +1273,7 @@ def build_score_series() -> dict[str, Any]:
                     "market_score": legacy.get("market_score") if legacy else item.get("market_score"),
                     "policy_score": legacy.get("policy_score") if legacy else item.get("policy_score"),
                     "mainline_score_v6": item.get("mainline_score_v6"),
+                    "policy_theme_conviction_score": item.get("policy_theme_conviction_score", item.get("mainline_score_v6")),
                     "theme_score_v5": item.get("theme_score_v5"),
                     "theme_score_v4_stance_adjusted": item.get("theme_score_v4_stance_adjusted"),
                     "theme_score_v4": item.get("theme_score_v4"),
@@ -1095,6 +1341,12 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
     reproducibility_artifacts = reproducibility_manifest.get("artifact_fingerprints") or {}
     reproducibility_git = reproducibility_manifest.get("git") or {}
     contract_validation_summary = _contract_summary(payload)
+    policy_time_provenance_summary = payload.get("policy_time_provenance_summary") or {}
+    field_provenance_summary = payload.get("field_provenance_summary") or {}
+    policy_candidate_summary = payload.get("policy_candidate_summary") or {}
+    theme_relevance_input_summary = payload.get("theme_relevance_input_summary") or {}
+    data_freshness_summary = payload.get("data_freshness_summary") or {}
+    score_semantics = payload.get("score_semantics") or {}
     top_mainline = mainline_ranking[0] if mainline_ranking else {}
     breadth = payload.get("breadth") or {}
     top_mainline_theme = top_mainline.get("theme_name", "")
@@ -1155,6 +1407,8 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
             "top_mainline_theme_v6": top_mainline_theme,
             "top_mainline_score_v6": top_mainline_score,
             "up_ratio": breadth.get("up_ratio"),
+            "data_freshness_status": data_freshness_summary.get("data_freshness_status", "unknown"),
+            "stale_trading_days": data_freshness_summary.get("stale_trading_days", 0),
         },
         "mainline_ranking": mainline_ranking,
         "canonical_mainline_summary": canonical_mainline_summary,
@@ -1164,6 +1418,13 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
         "snapshot_registry_update_summary": snapshot_registry_update_summary,
         "reproducibility_manifest": reproducibility_manifest,
         "contract_validation_summary": contract_validation_summary,
+        "policy_time_provenance_summary": policy_time_provenance_summary,
+        "field_provenance_summary": field_provenance_summary,
+        "policy_candidate_summary": policy_candidate_summary,
+        "theme_relevance_input_summary": theme_relevance_input_summary,
+        "data_freshness_summary": data_freshness_summary,
+        "score_semantics": score_semantics,
+        "freshness_narrative": payload.get("freshness_narrative", ""),
         "theme_ranking": legacy_theme_ranking,
         "legacy_theme_ranking": legacy_theme_ranking,
         "taxonomy_v2_backfill": taxonomy_v2,
@@ -1198,6 +1459,12 @@ def latest_page(request: Request) -> HTMLResponse:
     page_report["snapshot_registry_update_summary"] = _snapshot_registry_update_summary(payload)
     page_report["reproducibility_manifest"] = _reproducibility_manifest(payload)
     page_report["contract_validation_summary"] = _contract_summary(payload)
+    page_report["policy_time_provenance_summary"] = payload.get("policy_time_provenance_summary") or {}
+    page_report["field_provenance_summary"] = payload.get("field_provenance_summary") or {}
+    page_report["policy_candidate_summary"] = payload.get("policy_candidate_summary") or {}
+    page_report["theme_relevance_input_summary"] = payload.get("theme_relevance_input_summary") or {}
+    page_report["data_freshness_summary"] = payload.get("data_freshness_summary") or {}
+    page_report["score_semantics"] = payload.get("score_semantics") or {}
     page_report["mainline_cycle_stage_summary"] = build_cycle_stage_summary(page_report["mainline_ranking"])
     page_report["legacy_theme_ranking"] = enrich_theme_ranking(_legacy_theme_rows(payload))
     page_report["theme_ranking"] = page_report["legacy_theme_ranking"]
@@ -1225,6 +1492,15 @@ def reports_page(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(request, "reports.html", {"reports": list_reports(), "page": "reports"})
 
 
+@app.get("/policies", response_class=HTMLResponse)
+def policies_page(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request,
+        "policies.html",
+        {"policy_library": build_policy_library_payload(), "page": "policies"},
+    )
+
+
 @app.get("/reports/{report_id}", response_class=HTMLResponse)
 def report_page(request: Request, report_id: str) -> HTMLResponse:
     payload = _with_canonical_fields(load_report(report_id))
@@ -1240,6 +1516,10 @@ def report_page(request: Request, report_id: str) -> HTMLResponse:
 def health() -> dict[str, Any]:
     reports = list_reports()
     latest = reports[0] if reports else {}
+    time_summary = latest.get("policy_time_provenance_summary") or {}
+    candidate_summary = latest.get("policy_candidate_summary") or {}
+    relevance_summary = latest.get("theme_relevance_input_summary") or {}
+    freshness_summary = latest.get("data_freshness_summary") or {}
     return {
         "ok": True,
         "read_only": True,
@@ -1266,6 +1546,12 @@ def health() -> dict[str, Any]:
         "latest_contract_status": latest.get("contract_validation_status"),
         "latest_contract_error_count": latest.get("contract_validation_error_count"),
         "latest_contract_warning_count": latest.get("contract_validation_warning_count"),
+        "time_provenance_status": time_summary.get("status", "unknown"),
+        "point_in_time_unavailable_count": time_summary.get("point_in_time_unavailable_count", 0),
+        "candidate_audit_status": candidate_summary.get("status", "unknown"),
+        "high_inference_dependency_count": relevance_summary.get("high_inference_dependency_count", 0),
+        "data_freshness_status": freshness_summary.get("data_freshness_status", "unknown"),
+        "stale_trading_days": freshness_summary.get("stale_trading_days", 0),
         "checked_at": datetime.now().isoformat(timespec="seconds"),
     }
 
@@ -1312,6 +1598,11 @@ def api_index() -> dict[str, Any]:
     return build_index_payload(report_id, payload, markdown)
 
 
+@app.get("/api/policies")
+def api_policies() -> dict[str, Any]:
+    return build_policy_library_payload()
+
+
 @app.get("/api/taxonomy-v2")
 def api_taxonomy_v2() -> dict[str, Any]:
     report_id, payload, _ = load_latest_report()
@@ -1337,6 +1628,46 @@ def api_explain_theme(theme_id: str, report_id: str | None = None) -> dict[str, 
     except ThemeExplanationNotFound as exc:
         raise HTTPException(status_code=404, detail="主题解释不存在") from exc
     return {"report_id": effective_report_id, "result": explanation}
+
+
+@app.get("/api/policies/{policy_id}/audit")
+def api_policy_audit(policy_id: str) -> dict[str, Any]:
+    store = _load_policy_store()
+    policy = next(
+        (item for item in store.get("signals") or [] if str(item.get("id") or item.get("policy_id") or "") == policy_id),
+        None,
+    )
+    if not isinstance(policy, dict):
+        raise HTTPException(status_code=404, detail="政策不存在")
+    report_id, report, _ = load_latest_report()
+    candidates = [item for item in load_candidates() if str(item.get("policy_id") or "") == policy_id]
+    matches = []
+    for theme in load_theme_config():
+        relevance = compute_theme_relevance_v2(policy, theme)
+        if relevance["theme_relevance_strict"] or relevance["theme_relevance_with_inference"]:
+            matches.append(relevance)
+    matches.sort(key=lambda item: (-item["theme_relevance_strict"], -item["theme_relevance_with_inference"], item["theme_id"]))
+    time_audit = audit_policy_time(policy, report_basis=report.get("basis_date"))
+    report_text = json.dumps(report.get("theme_summary") or {}, ensure_ascii=False)
+    return {
+        "policy_id": policy_id,
+        "report_id": report_id,
+        "time_provenance": time_audit,
+        "field_provenance": field_provenance_for_policy(policy),
+        "candidate_records": candidates,
+        "candidate_decision": candidates[0].get("decision", "") if candidates else "missing",
+        "content_hash": compute_policy_content_hash(policy),
+        "theme_matches": matches,
+        "theme_match_inputs": {
+            "production_mode": "strict_point_in_time",
+            "production_score_field": "theme_relevance_strict",
+            "comparison_score_field": "theme_relevance_with_inference",
+        },
+        "entered_current_report": policy_id in report_text,
+        "report_point_in_time_available_at": time_audit.get("point_in_time_available_at", ""),
+        "report_point_in_time_basis": time_audit.get("point_in_time_basis", "unavailable"),
+        "read_only": True,
+    }
 
 
 def _simulation_report(report_id: str | None) -> tuple[str, dict[str, Any]]:

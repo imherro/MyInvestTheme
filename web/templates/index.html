@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 {% block title %}最新研究 - A股主线研究台{% endblock %}
 {% block content %}
+{% if report.data_freshness_summary.data_freshness_status in ['stale', 'degraded', 'unknown'] %}
+<section class="freshness-banner freshness-{{ report.data_freshness_summary.data_freshness_status }}" role="status">
+  <strong>数据新鲜度：{{ report.data_freshness_summary.data_freshness_status }}</strong>
+  <span>{{ report.freshness_narrative or ('最近一次有效数据截至 ' ~ report.basis_date ~ '。以下结果需结合数据时点理解。') }}</span>
+</section>
+{% endif %}
 <section class="summary-grid">
   <div class="metric">
     <span>基准日</span>
@@ -115,13 +121,13 @@
           <button class="info-icon" type="button" aria-label="查看政策主线说明" aria-describedby="policy-mainline-help">?</button>
           <span id="policy-mainline-help" class="info-panel" role="tooltip">
             <strong>计算方法</strong>
-            <span>policy_score_v2 → theme_relevance_v2 → event allocation → lifecycle，得到 mainline_score_v6。</span>
+            <span>policy_score_v2 → theme_relevance_strict → event allocation → lifecycle，得到政策主题确信度；兼容字段 mainline_score_v6 数值一致。</span>
             <strong>生命周期优先级</strong>
             <span>升温加速 &gt; 持续有效 &gt; 新出现 &gt; 单事件新出现 &gt; 降温 &gt; 旧政策尾部 &gt; 日期不足 &gt; 休眠。</span>
             <strong>周期阶段优先级</strong>
             <span>主升扩散期 &gt; 启动确认期 &gt; 政策孕育期 &gt; 高位拥挤期 &gt; 降温退潮期 &gt; 旧线残余期 &gt; 未形成主线。</span>
             <strong>使用建议</strong>
-            <span>先用政策主线定候选方向；生命周期看政策状态，周期阶段看交易主线大致位置；启动确认期和主升扩散期优先，降温退潮期与旧线残余期不宜作为新开核心依据。</span>
+            <span>该分数只表示政策支持证据的强度、持续性和广度，不表示未来收益、上涨概率、买入信号或仓位建议。</span>
           </span>
         </span>
       </div>
@@ -149,7 +155,7 @@
           <th>排序</th>
           <th>主题</th>
           <th>
-            <span class="th-main" title="默认排序字段：mainline_score_v6">主线分</span>
+            <span class="th-main" title="推荐字段：policy_theme_conviction_score；兼容字段 mainline_score_v6 数值一致">政策主题确信度</span>
           </th>
           <th>生命周期</th>
           <th>周期阶段</th>
@@ -168,7 +174,7 @@
         <tr>
           <td>{{ item.rank }}</td>
           <td class="strong">{{ item.theme_name }}</td>
-          <td class="score-cell">{{ "%.4f"|format(item.mainline_score_v6) }}</td>
+          <td class="score-cell">{{ "%.4f"|format(item.policy_theme_conviction_score) }}</td>
           <td><span class="stage" title="{{ item.lifecycle_state_label or item.lifecycle_state }}">{{ item.lifecycle_state_label or item.lifecycle_state }}</span></td>
           <td>
             <span class="cycle-stage" title="{{ item.cycle_stage_reason }}；距90天复核是政策证据窗口，不是行情倒计时">

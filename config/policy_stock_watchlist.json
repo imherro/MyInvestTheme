@@ -1,0 +1,58 @@
+{
+  "version": "policy_stock_watchlist.v1",
+  "notes": "Read-only A-share observation pool for policy-library display. It is a research prior, not a trade recommendation.",
+  "deep_research_base_url": "https://stock.okbbc.com/research?stock=",
+  "themes": {
+    "硬科技电子/半导体": [
+      {"code": "688981.SH", "name": "中芯国际", "role": "晶圆制造龙头", "strategic_score": 98},
+      {"code": "002371.SZ", "name": "北方华创", "role": "半导体设备龙头", "strategic_score": 96},
+      {"code": "688012.SH", "name": "中微公司", "role": "刻蚀/薄膜设备龙头", "strategic_score": 94},
+      {"code": "688041.SH", "name": "海光信息", "role": "国产CPU/GPU算力芯片龙头", "strategic_score": 93},
+      {"code": "688256.SH", "name": "寒武纪-U", "role": "AI芯片龙头", "strategic_score": 93},
+      {"code": "603986.SH", "name": "兆易创新", "role": "存储/MCU设计龙头", "strategic_score": 90}
+    ],
+    "AI算力/通信": [
+      {"code": "300308.SZ", "name": "中际旭创", "role": "高速光模块龙头", "strategic_score": 98},
+      {"code": "300502.SZ", "name": "新易盛", "role": "高速光模块龙头", "strategic_score": 96},
+      {"code": "601138.SH", "name": "工业富联", "role": "AI服务器制造龙头", "strategic_score": 94},
+      {"code": "688256.SH", "name": "寒武纪-U", "role": "AI芯片龙头", "strategic_score": 93},
+      {"code": "000977.SZ", "name": "浪潮信息", "role": "服务器龙头", "strategic_score": 91},
+      {"code": "300394.SZ", "name": "天孚通信", "role": "光器件平台龙头", "strategic_score": 88}
+    ],
+    "高端制造/机器人/军工": [
+      {"code": "300124.SZ", "name": "汇川技术", "role": "工业自动化龙头", "strategic_score": 96},
+      {"code": "002747.SZ", "name": "埃斯顿", "role": "工业机器人龙头", "strategic_score": 88},
+      {"code": "688017.SH", "name": "绿的谐波", "role": "机器人减速器龙头", "strategic_score": 86},
+      {"code": "600760.SH", "name": "中航沈飞", "role": "航空装备龙头", "strategic_score": 88}
+    ],
+    "新能源/电力设备": [
+      {"code": "300750.SZ", "name": "宁德时代", "role": "动力电池龙头", "strategic_score": 98},
+      {"code": "300274.SZ", "name": "阳光电源", "role": "光伏逆变器/储能龙头", "strategic_score": 94},
+      {"code": "601012.SH", "name": "隆基绿能", "role": "光伏龙头", "strategic_score": 90},
+      {"code": "002459.SZ", "name": "晶澳科技", "role": "光伏组件龙头", "strategic_score": 86}
+    ],
+    "创新药/医药": [
+      {"code": "600276.SH", "name": "恒瑞医药", "role": "创新药龙头", "strategic_score": 96},
+      {"code": "688235.SH", "name": "百济神州-U", "role": "创新药龙头", "strategic_score": 94},
+      {"code": "300760.SZ", "name": "迈瑞医疗", "role": "医疗器械龙头", "strategic_score": 96},
+      {"code": "603259.SH", "name": "药明康德", "role": "CXO龙头", "strategic_score": 88}
+    ],
+    "资源周期": [
+      {"code": "600309.SH", "name": "万华化学", "role": "化工材料龙头", "strategic_score": 94},
+      {"code": "601899.SH", "name": "紫金矿业", "role": "有色金属龙头", "strategic_score": 94},
+      {"code": "603799.SH", "name": "华友钴业", "role": "新能源金属龙头", "strategic_score": 86},
+      {"code": "600547.SH", "name": "山东黄金", "role": "黄金龙头", "strategic_score": 86}
+    ],
+    "消费/传媒": [
+      {"code": "600519.SH", "name": "贵州茅台", "role": "高端白酒龙头", "strategic_score": 98},
+      {"code": "000858.SZ", "name": "五粮液", "role": "白酒龙头", "strategic_score": 92},
+      {"code": "300413.SZ", "name": "芒果超媒", "role": "内容平台龙头", "strategic_score": 86},
+      {"code": "601888.SH", "name": "中国中免", "role": "免税旅游消费龙头", "strategic_score": 86}
+    ],
+    "建材/稳增长修复": [
+      {"code": "000786.SZ", "name": "北新建材", "role": "建材龙头", "strategic_score": 90},
+      {"code": "600585.SH", "name": "海螺水泥", "role": "水泥龙头", "strategic_score": 88},
+      {"code": "601668.SH", "name": "中国建筑", "role": "建筑央企龙头", "strategic_score": 88}
+    ]
+  }
+}

@@ -37,8 +37,8 @@ def test_latest_report_contract():
     assert body["result"].get("event_theme_allocation_summary", {}).get("scoring_version") == "event_theme_allocation_v2"
     assert body["result"].get("mainline_lifecycle_summary", {}).get("scoring_version") == "mainline_lifecycle_v2"
     assert body["result"].get("theme_summary", {}).get("scoring_version") == "mainline_score_v6_lifecycle_adjusted"
-    assert body["result"].get("canonical_mainline_summary", {}).get("scoring_version") == "canonical_mainline_output_v2"
-    assert body["result"].get("canonical_mainline_summary", {}).get("default_score_field") == "mainline_score_v6"
+    assert body["result"].get("canonical_mainline_summary", {}).get("scoring_version") == "canonical_mainline_output_v3"
+    assert body["result"].get("canonical_mainline_summary", {}).get("default_score_field") == "policy_theme_conviction_score"
     assert body["result"].get("mainline_ranking", [])[0]["mainline_score_v6"] is not None
     assert body["result"].get("mainline_ranking", [])[0]["lifecycle_state"]
     assert body["result"].get("mainline_ranking", [])[0]["lifecycle_state_label"]
@@ -57,7 +57,7 @@ def test_api_directory_contract():
     assert response.status_code == 200
     body = response.json()
     assert body["system_name"] == "A股主线研究台"
-    assert body["version"] == "1.0.0"
+    assert body["version"] == "1.1.0"
     assert body["base_url"] == "http://testserver"
     assert body["docs"] == {
         "swagger_ui": "/docs",
@@ -66,7 +66,7 @@ def test_api_directory_contract():
     }
     assert body["recommended_entrypoints"][0]["path"] == "/api"
     assert {item["path"] for item in body["recommended_entrypoints"]}.issuperset(
-        {"/api/index", "/api/latest", "/api/taxonomy-v2", "/api/health"}
+        {"/api/index", "/api/latest", "/api/policies", "/api/taxonomy-v2", "/api/health"}
     )
     assert body["safety"]["read_only"] is True
     assert body["safety"]["no_recompute"] is True
@@ -85,8 +85,10 @@ def test_api_directory_contract():
         "/api",
         "/api/index",
         "/api/latest",
+        "/api/policies",
         "/api/mainline/latest",
         "/api/taxonomy-v2",
+        "/policies",
         "/api/reports/{report_id}/taxonomy-v2",
         "/api/reports/{report_id}/markdown",
         "/api/score-series",
@@ -101,6 +103,31 @@ def test_api_directory_contract():
     assert all({"method", "path", "purpose", "parameters", "returns", "read_only"}.issubset(endpoint) for endpoint in endpoints)
 
 
+def test_policy_library_api_contract():
+    response = get("/api/policies")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["page"] == "policies"
+    assert body["signal_count"] >= 1
+    assert body["watchlist_version"] == "policy_stock_watchlist.v1"
+    assert body["deep_research_base_url"] == "https://stock.okbbc.com/research?stock="
+    policies = body["policies"]
+    assert policies
+    dates = [item["published_date"] for item in policies]
+    assert dates == sorted(dates, reverse=True)
+    first = policies[0]
+    assert first["matched_themes"]
+    assert first["evaluation"].startswith("评价：对")
+    assert "板块偏利好" in first["evaluation"]
+    assert "不构成买卖建议" in first["evaluation"]
+    assert first["observation_stocks"]
+    stock = first["observation_stocks"][0]
+    assert stock["code"]
+    assert stock["name"]
+    assert stock["xueqiu_url"].startswith("https://xueqiu.com/S/")
+    assert stock["research_url"].startswith("https://stock.okbbc.com/research?stock=")
+
+
 def test_index_api_returns_homepage_content():
     response = get("/api/index")
     assert response.status_code == 200
@@ -110,8 +137,8 @@ def test_index_api_returns_homepage_content():
     assert body["latest_report"]["basis_date"]
     assert body["latest_report"]["theme_scoring_version"] == "mainline_score_v6_lifecycle_adjusted"
     assert body["latest_report"]["mainline_lifecycle_version"] == "mainline_lifecycle_v2"
-    assert body["latest_report"]["canonical_mainline_version"] == "canonical_mainline_output_v2"
-    assert body["latest_report"]["default_score_field"] == "mainline_score_v6"
+    assert body["latest_report"]["canonical_mainline_version"] == "canonical_mainline_output_v3"
+    assert body["latest_report"]["default_score_field"] == "policy_theme_conviction_score"
     assert body["latest_report"]["top_mainline_theme"]
     assert body["latest_report"]["top_theme"] == body["latest_report"]["top_mainline_theme"]
     assert body["latest_report"]["top_mainline_score"] is not None
@@ -125,7 +152,7 @@ def test_index_api_returns_homepage_content():
     assert body["latest_report"]["taxonomy_v2_scoring_version"] == "theme_taxonomy_v2_backfill_v1"
     assert body["latest_report"]["taxonomy_v2_top_theme"]
     assert body["mainline_ranking"]
-    assert body["canonical_mainline_summary"]["scoring_version"] == "canonical_mainline_output_v2"
+    assert body["canonical_mainline_summary"]["scoring_version"] == "canonical_mainline_output_v3"
     assert body["taxonomy_v2_backfill"]["scoring_version"] == "theme_taxonomy_v2_backfill_v1"
     assert body["taxonomy_v2_ranking"]
     taxonomy_names = {item["theme_name"] for item in body["taxonomy_v2_ranking"]}
@@ -228,7 +255,7 @@ def test_reports_and_score_series():
     assert "legacy_evidence_score" in first_point
     assert "legacy_market_score" in first_point
     assert "legacy_policy_score" in first_point
-    assert first_point["default_score_field"] == "mainline_score_v6"
+    assert first_point["default_score_field"] == "policy_theme_conviction_score"
     assert first_point["score"] == first_point["mainline_score_v6"]
     assert "mainline_score_v6" in first_point
     assert "theme_score_v5" in first_point
@@ -312,7 +339,17 @@ def test_pages_render():
     assert "推荐入口" in latest.text
     assert "安全边界" in latest.text
     assert "打开 /api" in latest.text
+    assert "/policies" in latest.text
     assert "taxonomy-v2-20260707" in latest.text
+    policies_page = get("/policies")
+    assert policies_page.status_code == 200
+    assert "政策库" in policies_page.text
+    assert "按发布日期倒叙" in policies_page.text
+    assert "利好板块" in policies_page.text
+    assert "个股观察" in policies_page.text
+    assert "板块偏利好" in policies_page.text
+    assert "https://xueqiu.com/S/" in policies_page.text
+    assert "https://stock.okbbc.com/research?stock=" in policies_page.text
     reports = get("/reports")
     assert reports.status_code == 200
     assert "历次研究结果" in reports.text
