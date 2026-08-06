@@ -43,7 +43,7 @@ def source_reports() -> list[tuple[str, dict[str, Any]]]:
 def _state_title(state: dict[str, Any] | None) -> str:
     if not state:
         return "暂无"
-    return f"{state['theme_name']}（{state['lifecycle_stage_label']}，确信度 {state['era_mainline_confidence']:.0f}）"
+    return f"{state['theme_name']}（{state['lifecycle_stage_label']}，状态置信度 {state['current_state_confidence']:.0f}）"
 
 
 def render_markdown(payload: dict[str, Any]) -> str:
@@ -57,6 +57,8 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "## 当前结论",
         "",
         payload.get("summary", ""),
+        "",
+        "> 这是当前模型对历史数据的回放，不等于当时发布的研究判断。",
         "",
         "## 当前主线格局",
         "",
@@ -74,18 +76,20 @@ def render_markdown(payload: dict[str, Any]) -> str:
     lines.extend(_theme_markdown(secondary))
     lines.extend(["", "## 潜在新主线", "", "、".join(item["theme_name"] for item in emerging) or "暂无明确候选。"])
     lines.extend(["", "## 正在退潮的主线", "", "、".join(item["theme_name"] for item in declining) or "暂无明确退潮主线。"])
-    lines.extend(["", "## 主线生命周期总览", "", "| 排名 | 主题 | 状态 | 阶段 | 开始 | 确认 | 强化 | 分数 | 置信度 |", "|---:|---|---|---|---|---|---|---:|---:|"])
+    lines.extend(["", "## 数据覆盖限制", "", "- 产业维度暂无可靠观测。本期综合分使用政策、市场和官方战略叙事三维动态重算，因此不属于完整四维确认。", f"- {payload.get('history_semantics', {}).get('description', '')}"])
+    lines.extend(["", "## 主线生命周期总览", "", "| 排名 | 主题 | 主线资格 | 证据阶段 | 开始 | 确认 | 分数 | 状态置信度 | 阶段置信度 |", "|---:|---|---|---|---|---|---:|---:|---:|"])
     for state in payload.get("theme_states") or []:
         lines.append(
-            f"| {state['era_rank']} | {state['theme_name']} | {state['era_mainline_status']} | {state['lifecycle_stage_label']} | "
-            f"{state.get('estimated_start_date') or '未知'} | {state.get('confirmation_date') or '未确认'} | {state.get('latest_reinforcement_date') or '未知'} | "
-            f"{state['era_mainline_score']:.1f} | {state['era_mainline_confidence']:.0f} |"
+            f"| {state['era_rank']} | {state['theme_name']} | {state['mainline_qualification_label']} | {state['lifecycle_stage_label']} | "
+            f"{state.get('estimated_start_date') or ('早于覆盖范围' if state.get('start_date_status') == 'before_available_history' else '未知')} | {state.get('confirmation_date') or '未确认'} | "
+            f"{state['era_mainline_score']:.1f} | {state['current_state_confidence']:.0f} | {state['lifecycle_stage_confidence']:.0f} |"
         )
     lines.extend(["", "## 四维证据拆解", ""])
     for state in payload.get("theme_states") or []:
         industry = "未知" if state.get("industry_score") is None else f"{state['industry_score']:.1f}"
-        lines.append(f"- {state['theme_name']}：政策 {state['policy_score']:.1f}；产业 {industry}；市场 {state['market_score']:.1f}；叙事 {state['narrative_score']:.1f}。")
-    lines.extend(["", "## 主线开始时间判断", "", "开始日期取政策信号持续并出现市场或产业响应后的形成时点，不直接使用第一条相关政策日期。"])
+        weights = state.get("effective_dimension_weights") or {}
+        lines.append(f"- {state['theme_name']}：政策 {state['policy_score']:.1f}；产业 {industry}；市场 {state['market_score']:.1f}；官方战略叙事 {state['narrative_score']:.1f}。实际权重：政策 {weights.get('policy', 0):.1%}、产业 {weights.get('industry', 0):.1%}、市场 {weights.get('market', 0):.1%}、叙事 {weights.get('narrative', 0):.1%}。")
+    lines.extend(["", "## 主线开始时间判断", "", "开始日期仅在形成条件达到最低持续周期后回填形成窗口起点，并同时记录模型决定日期；历史左侧截断时不输出伪精确起点。"])
     lines.extend(["", "## 主线结束风险判断", "", "结束需要政策、产业、市场和叙事多个观察期共同转弱；短期市场调整或90天无新增政策均不足以单独判定结束。"])
     lines.extend(["", "## 支撑证据", ""])
     for state in payload.get("theme_states") or []:
@@ -104,7 +108,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
     lines.extend(["", "## 历史阶段变化", ""])
     for item in payload.get("transitions") or []:
         lines.append(f"- {item['change_date']} {item['theme_id']}：{item['from_stage']} → {item['to_stage']}。")
-    lines.extend(["", "## 数据不足和不确定性", "", "- 产业层多数代理指标尚无可靠观测，统一显示未知并降低置信度。", "- 市场层当前使用现有申万、同花顺、ETF、涨停与资金流数据，长期相对强度和回撤指标仍待补充。", "- 历史阶段由既有报告确定性回放，不等同于当时已发布的时代主线结论。", "", payload.get("score_semantics", "")])
+    lines.extend(["", "## 数据不足和不确定性", "", "- 产业层多数代理指标尚无可靠观测，统一显示未知并降低置信度。", "- 市场层当前使用现有申万、同花顺、ETF、涨停与资金流数据，长期相对强度和回撤指标仍待补充。", "- 历史阶段由既有报告确定性回放，不等同于当时已发布的时代主线结论。", "- 当前叙事维度仅表示官方战略表述和子主题扩散，不代表社会舆论热度。", "", payload.get("score_semantics", "")])
     return "\n".join(lines) + "\n"
 
 
@@ -113,10 +117,15 @@ def _theme_markdown(state: dict[str, Any] | None) -> list[str]:
         return ["当前没有满足确认门槛的主题。"]
     return [
         f"- 主题：{state['theme_name']}",
-        f"- 当前阶段：{state['lifecycle_stage_label']}",
-        f"- 估计开始时间：{state.get('estimated_start_date') or '证据不足'}",
-        f"- 确认时间：{state.get('confirmation_date') or '尚未确认'}",
-        f"- 最近强化：{state.get('latest_reinforcement_date') or '未知'}",
+        f"- 主线资格：{state['mainline_qualification_label']}",
+        f"- 证据阶段：{state['lifecycle_stage_label']}",
+        f"- 当前状态置信度：{state['current_state_confidence']:.0f}",
+        f"- 阶段置信度：{state['lifecycle_stage_confidence']:.0f}",
+        f"- 估计开始时间：{state.get('estimated_start_date') or ('早于当前历史覆盖范围' if state.get('start_date_status') == 'before_available_history' else '证据不足')}（日期置信度 {state.get('estimated_start_date_confidence', 0):.0f}）",
+        f"- 开始日期决定于：{state.get('start_date_decided_at') or '尚未决定'}",
+        f"- 确认时间：{state.get('confirmation_date') or '持续条件尚未满足'}（日期置信度 {state.get('confirmation_date_confidence', 0):.0f}）",
+        f"- 最新政策事件：{state.get('latest_policy_event_date') or '未知'}",
+        f"- 最近强化：{state.get('latest_reinforcement_date') or '无可确认强化事件'}",
         f"- 核心驱动力：{'；'.join(state.get('core_drivers') or [])}",
         f"- 最大反面证据：{(state.get('contradicting_evidence') or ['暂无明确反证'])[0]}",
         f"- 失效条件：{'；'.join(state.get('invalidating_conditions') or [])}",

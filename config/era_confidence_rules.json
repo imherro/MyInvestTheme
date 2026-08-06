@@ -1,0 +1,21 @@
+{
+  "version": "era_confidence_rules_v1",
+  "state_confidence": {
+    "coverage_weight": 0.35,
+    "dimension_consistency_weight": 0.25,
+    "signal_strength_weight": 0.2,
+    "duration_weight": 0.1,
+    "rank_stability_weight": 0.1
+  },
+  "caps": {
+    "industry_unknown": 75,
+    "point_in_time_degraded": 70,
+    "history_shorter_than_60_days": 65,
+    "single_observation_stage": 55
+  },
+  "date_confidence_caps": {
+    "historical_replay_only": 60,
+    "point_in_time_unknown": 55,
+    "sparse_observation": 60
+  }
+}

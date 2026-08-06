@@ -7,12 +7,14 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from era_lifecycle_engine import enrich_lifecycle, lifecycle_dates
+    from era_lifecycle_engine import enrich_lifecycle, lifecycle_dates, load_rules as load_lifecycle_rules
+    from era_evidence_windows import deduplicate_observations
     from industry_validation import build_industry_dimension
     from market_confirmation import build_market_dimensions
     from narrative_momentum import build_narrative_dimension
 except ModuleNotFoundError:
-    from scripts.era_lifecycle_engine import enrich_lifecycle, lifecycle_dates
+    from scripts.era_lifecycle_engine import enrich_lifecycle, lifecycle_dates, load_rules as load_lifecycle_rules
+    from scripts.era_evidence_windows import deduplicate_observations
     from scripts.industry_validation import build_industry_dimension
     from scripts.market_confirmation import build_market_dimensions
     from scripts.narrative_momentum import build_narrative_dimension
@@ -22,7 +24,15 @@ ROOT = Path(__file__).resolve().parents[1]
 RULES_PATH = ROOT / "config" / "era_mainline_rules.json"
 EVENT_RULES_PATH = ROOT / "config" / "policy_event_type_rules.json"
 TAXONOMY_PATH = ROOT / "config" / "era_theme_taxonomy.json"
-VERSION = "era_mainline_model_v1"
+CONFIDENCE_RULES_PATH = ROOT / "config" / "era_confidence_rules.json"
+VERSION = "era_mainline_model_v2"
+QUALIFICATION_LABELS = {
+    "primary_era_mainline": "第一时代主线", "secondary_era_mainline": "次级时代主线",
+    "emerging_candidate": "潜在候选", "policy_theme_only": "仅政策主题",
+    "market_theme_only": "仅市场主题", "legacy_mainline": "旧时代主线",
+    "declining_mainline": "衰退主线", "not_a_mainline": "不构成主线", "uncertain": "不确定",
+    "confirmed_candidate": "已满足确认条件",
+}
 
 
 def _load(path: Path) -> dict[str, Any]:
@@ -115,13 +125,14 @@ def _dimension_score(dimension: dict[str, Any], field: str) -> float | None:
     return round(float(value), 2) if value is not None else None
 
 
-def _weighted_score(dimensions: dict[str, float | None], rules: dict[str, Any]) -> tuple[float, float]:
+def _weighted_score(dimensions: dict[str, float | None], rules: dict[str, Any]) -> tuple[float, float, dict[str, float]]:
     weights = rules.get("dimension_weights") or {}
     available = [(name, score) for name, score in dimensions.items() if score is not None]
     denominator = sum(float(weights.get(name) or 0) for name, _ in available)
     score = sum(float(score) * float(weights.get(name) or 0) for name, score in available) / denominator if denominator else 0.0
     coverage = sum(float(weights.get(name) or 0) for name, _ in available)
-    return round(score, 2), round(coverage, 4)
+    effective = {name: round(float(weights.get(name) or 0) / denominator, 4) if score is not None and denominator else 0.0 for name, score in dimensions.items()}
+    return round(score, 2), round(coverage, 4), effective
 
 
 def _conflicts(policy: float, industry: float | None, market: float, narrative: float) -> list[dict[str, str]]:
@@ -163,18 +174,20 @@ def build_report_snapshot(report_id: str, report: dict[str, Any], *, rules: dict
             "policy": _dimension_score(policy_dimension, "policy_conviction_score"),
             "industry": _dimension_score(industry_dimension, "industry_validation_score"),
             "market": _dimension_score(market_dimension, "market_confirmation_score"),
-            "narrative": _dimension_score(narrative_dimension, "narrative_momentum_score"),
+            "narrative": _dimension_score(narrative_dimension, "official_narrative_diffusion_score"),
         }
-        era_score, weighted_coverage = _weighted_score(scores, active)
+        era_score, weighted_coverage, effective_weights = _weighted_score(scores, active)
         conflicts = _conflicts(scores["policy"] or 0, scores["industry"], scores["market"] or 0, scores["narrative"] or 0)
-        source_coverage = [policy_dimension.get("event_count", 0) > 0, industry_dimension.get("observed_indicator_count", 0) > 0, market_dimension.get("data_coverage", 0) > 0, narrative_dimension.get("data_coverage", 0) > 0]
-        confidence = max(0.0, min(100.0, 45 + weighted_coverage * 35 + sum(source_coverage) * 5 - len(conflicts) * 8))
+        available_dimensions = [name for name, value in scores.items() if value is not None]
+        evidence_flags = [f"{name}_available" for name in available_dimensions]
+        provenance = report.get("policy_time_provenance_summary") or {}
         rows.append(
             {
                 "theme_id": theme_id,
                 "theme_name": names.get(theme_id, theme.get("theme_name", theme_id)),
                 "source_theme_name": theme.get("theme_name", ""),
                 "date": report.get("basis_date", ""),
+                "observation_date": report.get("basis_date", ""),
                 "observation_id": report_id,
                 "policy_dimension": policy_dimension,
                 "industry_dimension": industry_dimension,
@@ -187,8 +200,11 @@ def build_report_snapshot(report_id: str, report: dict[str, Any], *, rules: dict
                 "source_lifecycle_state": str(mainlines.get(theme_id, theme).get("lifecycle_state") or theme.get("lifecycle_state") or ""),
                 "era_mainline_score": era_score,
                 "data_coverage": weighted_coverage,
-                "era_mainline_confidence": round(confidence, 2),
-                "confidence": round(confidence, 2),
+                "configured_dimension_weights": deepcopy(active.get("dimension_weights") or {}),
+                "effective_dimension_weights": effective_weights,
+                "available_dimensions": available_dimensions,
+                "evidence_flags": evidence_flags,
+                "point_in_time_status": provenance.get("status", "unknown"),
                 "conflicts": conflicts,
             }
         )
@@ -214,21 +230,114 @@ def _status(row: dict[str, Any], thresholds: dict[str, Any]) -> str:
     market = float(row.get("market_score") or 0)
     industry = row.get("industry_score")
     score = float(row.get("era_mainline_score") or 0)
-    stage = row.get("lifecycle_stage")
+    stage = row.get("evidence_stage", row.get("lifecycle_stage"))
     confirmed = policy >= float(thresholds["policy_minimum"]) and (market >= float(thresholds["market_confirmation"]) or (industry is not None and float(industry) >= float(thresholds["industry_confirmation"])))
     if row.get("source_lifecycle_state") == "legacy_tail" and policy >= 25:
         return "legacy_mainline"
-    if stage in {"cooling", "declining", "ended"} and score >= float(thresholds["declining_score"]):
+    was_confirmed = bool((row.get("condition_windows") or {}).get("confirmation", {}).get("first_qualified_date"))
+    if stage in {"cooling", "declining", "ended"} and was_confirmed and score >= float(thresholds["declining_score"]):
         return "declining_mainline"
-    if confirmed and score >= float(thresholds["absolute_mainline_score"]):
+    if confirmed and score >= float(thresholds["absolute_mainline_score"]) and stage in {"confirmed", "expanding", "mature"}:
         return "confirmed_candidate"
     if policy >= float(thresholds["policy_minimum"]) and market < float(thresholds["market_confirmation"]):
         return "policy_theme_only"
     if market >= 60 and policy < float(thresholds["policy_minimum"]):
         return "market_theme_only"
-    if score >= float(thresholds["emerging_score"]):
+    if score >= float(thresholds["emerging_score"]) and stage not in {"dormant", "ended"}:
         return "emerging_candidate"
     return "not_a_mainline"
+
+
+def _rank_stability(history: list[dict[str, Any]]) -> float:
+    ranks = [int(item.get("era_rank") or 999) for item in history]
+    if not ranks:
+        return 0.0
+    top_three_share = sum(rank <= 3 for rank in ranks) / len(ranks)
+    changes = sum(1 for left, right in zip(ranks, ranks[1:]) if left != right)
+    change_penalty = changes / max(1, len(ranks) - 1)
+    return round(max(0.0, min(1.0, 0.7 * top_three_share + 0.3 * (1 - change_penalty))), 4)
+
+
+def _confidence_values(state: dict[str, Any], confidence_rules: dict[str, Any]) -> dict[str, float]:
+    history = state.get("score_history") or []
+    coverage = state.get("history_coverage") or {}
+    weights = confidence_rules["state_confidence"]
+    dimension_values = [float(state[name]) for name in ("policy_score", "industry_score", "market_score", "narrative_score") if state.get(name) is not None]
+    spread = max(dimension_values) - min(dimension_values) if dimension_values else 100.0
+    consistency = max(0.0, 100.0 - spread - len(state.get("conflicts") or []) * 10.0)
+    duration = min(100.0, float(coverage.get("coverage_days") or 0) / 60.0 * 100.0)
+    rank_stability = _rank_stability(history)
+    raw_state = (
+        float(state.get("data_coverage") or 0) * 100 * weights["coverage_weight"]
+        + consistency * weights["dimension_consistency_weight"]
+        + float(state.get("era_mainline_score") or 0) * weights["signal_strength_weight"]
+        + duration * weights["duration_weight"]
+        + rank_stability * 100 * weights["rank_stability_weight"]
+    )
+    caps = [float(state.get("data_coverage") or 0) * 100]
+    if state.get("industry_score") is None:
+        caps.append(confidence_rules["caps"]["industry_unknown"])
+    if state.get("point_in_time_status") != "verified":
+        caps.append(confidence_rules["caps"]["point_in_time_degraded"])
+    if int(coverage.get("coverage_days") or 0) < 60:
+        caps.append(confidence_rules["caps"]["history_shorter_than_60_days"])
+    current_state = max(0.0, min(raw_state, *caps))
+    window = (state.get("condition_windows") or {}).get("confirmation") or {}
+    stability_ratio = min(1.0, float(window.get("consecutive_observations") or 0) / 3.0)
+    stage = min(current_state, 0.55 * current_state + 45 * stability_ratio)
+    if len(history) <= 1:
+        stage = min(stage, confidence_rules["caps"]["single_observation_stage"])
+    max_gap = int(coverage.get("maximum_observation_gap_days") or 0)
+    frequency_quality = max(0.0, 100.0 - max(0, max_gap - 7) * 3.0)
+    date_confidence = 0.45 * current_state + 0.30 * duration + 0.25 * frequency_quality
+    date_caps = confidence_rules["date_confidence_caps"]
+    date_confidence = min(date_confidence, date_caps["historical_replay_only"])
+    if state.get("point_in_time_status") != "verified":
+        date_confidence = min(date_confidence, date_caps["point_in_time_unknown"])
+    if max_gap > 14:
+        date_confidence = min(date_confidence, date_caps["sparse_observation"])
+    return {
+        "current_state_confidence": round(current_state, 2),
+        "lifecycle_stage_confidence": round(max(0.0, stage), 2),
+        "lifecycle_date_confidence": round(max(0.0, date_confidence), 2),
+        "rank_stability": rank_stability,
+    }
+
+
+def _date_confidence(state: dict[str, Any], field: str) -> float:
+    if not state.get(field):
+        return 0.0
+    confidence = float(state.get("lifecycle_date_confidence") or 0)
+    if field == "confirmation_date" and state.get("industry_score") is None:
+        confidence = min(confidence, 70.0)
+    if field == "estimated_start_date" and state.get("history_coverage", {}).get("is_left_censored"):
+        return 0.0
+    return round(confidence, 2)
+
+
+def determine_regime(states: list[dict[str, Any]], thresholds: dict[str, Any]) -> str:
+    if not states or max(float(item.get("data_coverage") or 0) for item in states) < float(thresholds["minimum_data_coverage"]):
+        return "data_insufficient"
+    confirmed = [item for item in states if item.get("mainline_qualification") == "confirmed_candidate" and float(item.get("current_state_confidence") or 0) >= thresholds["minimum_state_confidence"]]
+    old_declining = any(item.get("mainline_qualification") in {"legacy_mainline", "declining_mainline"} for item in states)
+    new_launching = any(item.get("evidence_stage") in {"launching", "restarting"} and item.get("mainline_qualification") == "emerging_candidate" for item in states)
+    if old_declining and new_launching:
+        return "transition"
+    if not confirmed:
+        return "no_clear_mainline"
+    rank_changes = sum(1 for state in states[:3] for left, right in zip(state.get("score_history") or [], (state.get("score_history") or [])[1:]) if left.get("era_rank") != right.get("era_rank"))
+    stable = bool(confirmed) and float(confirmed[0].get("rank_stability") or 0) >= thresholds["minimum_rank_stability"]
+    if rank_changes >= thresholds["rotation_rank_changes"] and not stable:
+        return "rotation"
+    gap = float(confirmed[0]["era_mainline_score"] - confirmed[1]["era_mainline_score"]) if len(confirmed) > 1 else 999.0
+    third_gap = float(confirmed[1]["era_mainline_score"] - confirmed[2]["era_mainline_score"]) if len(confirmed) > 2 else 999.0
+    if len(confirmed) == 1 or (gap >= thresholds["dominance_gap"] and stable):
+        return "single_dominant"
+    if len(confirmed) >= 3 and all(float(item.get("rank_stability") or 0) >= thresholds["minimum_rank_stability"] for item in confirmed[:3]):
+        return "multi_mainline"
+    if len(confirmed) >= 2 and gap <= thresholds["dual_mainline_gap"] and third_gap >= thresholds["third_place_gap"]:
+        return "dual_mainline"
+    return "rotation"
 
 
 def build_era_mainline_report(
@@ -239,6 +348,8 @@ def build_era_mainline_report(
     rules: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     active = rules or load_rules()
+    lifecycle_rules = load_lifecycle_rules()
+    confidence_rules = _load(CONFIDENCE_RULES_PATH)
     snapshots_by_theme: dict[str, list[dict[str, Any]]] = {}
     for source_id, source_report in historical_reports:
         try:
@@ -254,7 +365,7 @@ def build_era_mainline_report(
     states: list[dict[str, Any]] = []
     transitions: list[dict[str, Any]] = []
     for theme_id, history in snapshots_by_theme.items():
-        history.sort(key=lambda item: (item.get("date", ""), item.get("observation_id", "")))
+        history = deduplicate_observations(history)
         previous_scores: dict[str, Any] | None = None
         for item in history:
             if previous_scores:
@@ -265,18 +376,18 @@ def build_era_mainline_report(
             else:
                 item["dimension_changes"] = {}
             previous_scores = item
-        lifecycle_history, theme_transitions = enrich_lifecycle(history)
+        lifecycle_history, theme_transitions = enrich_lifecycle(history, rules=lifecycle_rules)
         latest = deepcopy(lifecycle_history[-1])
         events = latest["policy_dimension"].get("events") or []
-        dates = lifecycle_dates(lifecycle_history, events, report.get("basis_date", ""))
+        dates = lifecycle_dates(lifecycle_history, events, report.get("basis_date", ""), rules=lifecycle_rules)
         latest.update(dates)
-        latest["lifecycle_confidence"] = latest.pop("confidence")
-        latest["stage_confidence"] = latest["lifecycle_confidence"]
         latest["score_history"] = [
             {
-                "date": item["date"], "report_id": item["observation_id"], "era_mainline_score": item["era_mainline_score"],
+                "date": item["date"], "observation_date": item["date"], "report_id": item["observation_id"], "era_mainline_score": item["era_mainline_score"],
                 "policy_score": item["policy_score"], "industry_score": item["industry_score"], "market_score": item["market_score"],
-                "narrative_score": item["narrative_score"], "confidence": item["era_mainline_confidence"], "lifecycle_stage": item["lifecycle_stage"],
+                "narrative_score": item["narrative_score"], "data_coverage": item["data_coverage"], "available_dimensions": item["available_dimensions"],
+                "evidence_flags": item["evidence_flags"], "lifecycle_stage": item["lifecycle_stage"], "evidence_stage": item["evidence_stage"],
+                "condition_windows": item["condition_windows"],
             }
             for item in lifecycle_history
         ]
@@ -297,13 +408,9 @@ def build_era_mainline_report(
         latest["reinforcement_reasons"] = ["出现新的可识别政策事件"] if latest.get("latest_reinforcement_date") else []
         latest["weakening_reasons"] = latest.get("stage_reasons") if latest.get("lifecycle_stage") in {"cooling", "declining"} else []
         latest["end_reasons"] = latest.get("stage_reasons") if latest.get("lifecycle_stage") == "ended" else []
-        latest["era_mainline_status"] = _status(latest, active["thresholds"])
         transitions.extend(theme_transitions)
         states.append(latest)
 
-    states.sort(key=lambda item: (-float(item.get("era_mainline_score") or 0), item["theme_id"]))
-    for rank, state in enumerate(states, start=1):
-        state["era_rank"] = rank
     points_by_date: dict[str, list[tuple[dict[str, Any], dict[str, Any]]]] = {}
     for state in states:
         for point in state.get("score_history") or []:
@@ -312,6 +419,22 @@ def build_era_mainline_report(
         points.sort(key=lambda pair: (-float(pair[1].get("era_mainline_score") or 0), pair[0]["theme_id"]))
         for historical_rank, (_, point) in enumerate(points, start=1):
             point["era_rank"] = historical_rank
+    for state in states:
+        state.update(_confidence_values(state, confidence_rules))
+        state["era_mainline_confidence"] = state["current_state_confidence"]
+        state["confidence"] = state["current_state_confidence"]
+        state["lifecycle_confidence"] = state["lifecycle_stage_confidence"]
+        state["stage_confidence"] = state["lifecycle_stage_confidence"]
+        state["estimated_start_date_confidence"] = _date_confidence(state, "estimated_start_date")
+        state["confirmation_date_confidence"] = _date_confidence(state, "confirmation_date")
+        state["weakening_start_date_confidence"] = _date_confidence(state, "weakening_start_date")
+        state["estimated_end_date_confidence"] = _date_confidence(state, "estimated_end_date")
+        state["mainline_qualification"] = _status(state, active["thresholds"])
+        state["era_mainline_status"] = state["mainline_qualification"]
+        state["mainline_qualification_label"] = QUALIFICATION_LABELS.get(state["mainline_qualification"], state["mainline_qualification"])
+    states.sort(key=lambda item: (-float(item.get("era_mainline_score") or 0), item["theme_id"]))
+    for rank, state in enumerate(states, start=1):
+        state["era_rank"] = rank
     milestones: dict[str, dict[str, Any]] = {}
     for state in states:
         history = state.get("score_history") or []
@@ -330,37 +453,36 @@ def build_era_mainline_report(
             "ended_date": transitions_by_stage.get("ended", ""),
             "restarting_date": transitions_by_stage.get("restarting", ""),
         }
-    confirmed = [item for item in states if item["era_mainline_status"] == "confirmed_candidate"]
-    gap = float(confirmed[0]["era_mainline_score"] - confirmed[1]["era_mainline_score"]) if len(confirmed) > 1 else 999.0
-    if not states or max(float(item.get("data_coverage") or 0) for item in states) < float(active["thresholds"]["minimum_data_coverage"]):
-        regime = "data_insufficient"
-    elif not confirmed:
-        regime = "no_clear_mainline"
-    elif len(confirmed) == 1:
-        regime = "single_dominant"
-    elif len(confirmed) >= 3:
-        regime = "multi_mainline"
-    elif gap <= float(active["thresholds"]["dual_mainline_gap"]):
-        regime = "dual_mainline"
-    else:
-        regime = "single_dominant"
+    confirmed = [item for item in states if item["mainline_qualification"] == "confirmed_candidate" and item["current_state_confidence"] >= active["thresholds"]["minimum_state_confidence"]]
+    regime = determine_regime(states, active["thresholds"])
     for index, state in enumerate(confirmed):
-        state["era_mainline_status"] = "primary_era_mainline" if index == 0 else "secondary_era_mainline"
+        qualification = "primary_era_mainline" if index == 0 else "secondary_era_mainline"
+        state["mainline_qualification"] = qualification
+        state["era_mainline_status"] = qualification
+        state["mainline_qualification_label"] = QUALIFICATION_LABELS[qualification]
     primary = confirmed[0] if confirmed else None
     secondary = confirmed[1] if len(confirmed) > 1 else None
     if regime == "no_clear_mainline":
         summary = "当前没有明确时代主线，市场处于旧主线退潮和新主线孕育之间。"
+    elif regime == "transition" and not confirmed:
+        candidates = "、".join(item["theme_name"] for item in states if item["mainline_qualification"] == "emerging_candidate")
+        summary = f"当前处于主线切换观察期：旧主线正在降温，{candidates or '新候选方向'}尚未持续满足时代主线确认条件。"
+    elif regime == "rotation" and not confirmed:
+        summary = "当前处于主题轮动阶段，尚无方向持续满足时代主线确认条件。"
     else:
         names = "、".join(item["theme_name"] for item in confirmed[:3])
         regime_labels = {"single_dominant": "单一主线", "dual_mainline": "双主线", "multi_mainline": "多主线并存", "rotation": "轮动", "transition": "切换"}
         summary = f"当前主线格局为{regime_labels.get(regime, regime)}，获得多层证据确认的方向包括：{names}。"
     return {
         "scoring_version": VERSION,
-        "rules_version": active.get("version", "era_mainline_rules_v1"),
+        "rules_version": active.get("version", "era_mainline_rules_v2"),
+        "lifecycle_rules_version": lifecycle_rules.get("version", "era_lifecycle_rules_v2"),
+        "confidence_rules_version": confidence_rules.get("version", "era_confidence_rules_v1"),
         "report_id": report_id.replace("mainline_review_", "era_mainline_review_"),
         "source_report_id": report_id,
         "basis_date": report.get("basis_date", ""),
         "generated_at": datetime.now().astimezone().isoformat(timespec="seconds"),
+        "model_generated_at": datetime.now().astimezone().isoformat(timespec="seconds"),
         "mainline_regime": regime,
         "primary_mainline": primary,
         "secondary_mainline": secondary,
@@ -373,6 +495,20 @@ def build_era_mainline_report(
             "policy": "available", "industry": "partial_or_unknown", "market": "available", "narrative": "available_from_official_sources",
             "overall": round(sum(float(item.get("data_coverage") or 0) for item in states) / len(states), 4) if states else 0.0,
         },
+        "history_semantics": {
+            "type": "retrospective_replay",
+            "description": "使用当前版本模型对历史报告进行回放，不表示当时系统已经发布相同结论。"
+        },
+        "configured_dimension_weights": deepcopy(active.get("dimension_weights") or {}),
+        "rule_usage": {
+            "formation.minimum_duration_days": True,
+            "confirmation.minimum_consecutive_observations": True,
+            "confirmation.minimum_duration_days": True,
+            "cooling.minimum_market_score_drop": True,
+            "dominance_gap": True,
+            "dual_mainline_gap": True,
+            "all_lifecycle_rule_fields": True
+        },
         "summary": summary,
-        "score_semantics": "时代主线分用于结构化研究政策持续性、产业验证、市场确认和叙事扩散，不表示未来收益。",
+        "score_semantics": "配置权重为40/25/25/10；缺失维度按有效权重动态重算。当前叙事维度仅表示官方战略表述和子主题扩散，不代表社会舆论热度。时代主线分不表示未来收益。",
     }

@@ -96,11 +96,11 @@ API_RECOMMENDED_ENTRYPOINTS = [
 ]
 
 ERA_API_ENDPOINTS = [
-    {"method": "GET", "path": "/api/era-mainline", "purpose": "读取时代主线最新研究结果。", "parameters": [], "returns": "JSON，包含格局、主线和主题状态。", "read_only": True},
-    {"method": "GET", "path": "/api/era-mainline/latest", "purpose": "读取最新时代主线报告。", "parameters": [], "returns": "JSON，包含第一、第二、候选、退潮主线及覆盖率。", "read_only": True},
+    {"method": "GET", "path": "/api/era-mainline", "purpose": "读取时代主线最新研究结果。", "parameters": [], "returns": "JSON，包含证据阶段、主线资格、三类置信度、有效权重和历史覆盖；lifecycle_stage、era_mainline_status、era_mainline_confidence 为兼容字段。", "read_only": True},
+    {"method": "GET", "path": "/api/era-mainline/latest", "purpose": "读取最新时代主线报告。", "parameters": [], "returns": "JSON，包含持续证据窗口、主线格局、候选与退潮方向及历史回放语义。", "read_only": True},
     {"method": "GET", "path": "/api/era-mainline/ranking", "purpose": "读取时代主线研究排序。", "parameters": [], "returns": "JSON，包含全部一级主题状态。", "read_only": True},
     {"method": "GET", "path": "/api/era-mainline/regime", "purpose": "读取当前主线格局。", "parameters": [], "returns": "JSON，包含格局、摘要及主次主线。", "read_only": True},
-    {"method": "GET", "path": "/api/era-mainline/history", "purpose": "读取所有主题历史观测。", "parameters": [], "returns": "JSON，包含按日期排序的四维分数和阶段。", "read_only": True},
+    {"method": "GET", "path": "/api/era-mainline/history", "purpose": "读取所有主题历史观测。", "parameters": [], "returns": "JSON，包含按日期排序的四维分数、证据阶段和 retrospective_replay 语义。", "read_only": True},
     {"method": "GET", "path": "/api/era-mainline/transitions", "purpose": "读取全部生命周期转换。", "parameters": [], "returns": "JSON，包含状态转换原因和置信度。", "read_only": True},
     {"method": "GET", "path": "/api/era-mainline/theme/{theme_id}", "purpose": "读取单个时代主题详情。", "parameters": [{"name": "theme_id", "in": "path", "required": True, "description": "一级主题 ID。"}], "returns": "JSON，包含四维证据、生命周期和内部结构。", "read_only": True},
     {"method": "GET", "path": "/api/era-mainline/theme/{theme_id}/timeline", "purpose": "读取单主题历史时间轴。", "parameters": [{"name": "theme_id", "in": "path", "required": True, "description": "一级主题 ID。"}], "returns": "JSON，包含分数历史和阶段转换。", "read_only": True},
@@ -1706,7 +1706,7 @@ def api_era_mainline_regime() -> dict[str, Any]:
 @app.get("/api/era-mainline/history")
 def api_era_mainline_history() -> dict[str, Any]:
     report_id, payload = load_latest_era_report()
-    return {"report_id": report_id, "history": _era_history(payload), "milestones": payload.get("milestones") or {}, "read_only": True}
+    return {"report_id": report_id, "history": _era_history(payload), "milestones": payload.get("milestones") or {}, "history_semantics": payload.get("history_semantics") or {}, "read_only": True}
 
 
 @app.get("/api/era-mainline/transitions")
@@ -1725,7 +1725,7 @@ def api_era_theme(theme_id: str) -> dict[str, Any]:
 def api_era_theme_timeline(theme_id: str) -> dict[str, Any]:
     report_id, payload = load_latest_era_report()
     theme = _era_theme(payload, theme_id)
-    return {"report_id": report_id, "theme_id": theme_id, "score_history": theme.get("score_history") or [], "stage_history": theme.get("stage_history") or [], "milestones": (payload.get("milestones") or {}).get(theme_id, {}), "read_only": True}
+    return {"report_id": report_id, "theme_id": theme_id, "score_history": theme.get("score_history") or [], "stage_history": theme.get("stage_history") or [], "milestones": (payload.get("milestones") or {}).get(theme_id, {}), "history_coverage": theme.get("history_coverage") or {}, "history_semantics": payload.get("history_semantics") or {}, "read_only": True}
 
 
 @app.get("/api/era-mainline/theme/{theme_id}/evidence")

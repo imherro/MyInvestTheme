@@ -5,6 +5,7 @@
   <span class="era-eyebrow">{{ era.basis_date }} · {{ era.report_id }}</span>
   <h1>时代主线研究</h1>
   <p>{{ era.summary }}</p>
+  <p class="muted">这是当前模型对历史数据的回放，不等于当时发布的研究判断。</p>
   <div class="actions"><a class="button secondary" href="/api/era-mainline/latest">读取 API</a><a class="text-link" href="/era-timeline">历史时间轴</a></div>
 </section>
 <section class="era-summary-strip">
@@ -15,8 +16,8 @@
 </section>
 <section class="section-band">
   <div class="section-head"><div><h2>全部一级主题</h2><p>排序是研究入口，是否构成时代主线由门槛、生命周期和多维一致性共同决定。</p></div></div>
-  <div class="table-wrap"><table class="era-table"><thead><tr><th>排名</th><th>主题</th><th>研究状态</th><th>生命周期</th><th>政策</th><th>产业</th><th>市场</th><th>叙事</th><th>时代分</th><th>置信度</th></tr></thead><tbody>
-  {% for item in era.theme_states %}<tr><td>{{ item.era_rank }}</td><td><a class="strong text-link" href="/era-mainline/{{ item.theme_id }}">{{ item.theme_name }}</a></td><td>{{ item.era_mainline_status }}</td><td><span class="stage-pill stage-{{ item.lifecycle_stage }}">{{ item.lifecycle_stage_label }}</span></td><td>{{ '%.1f'|format(item.policy_score) }}</td><td>{{ '%.1f'|format(item.industry_score) if item.industry_score is not none else '未知' }}</td><td>{{ '%.1f'|format(item.market_score) }}</td><td>{{ '%.1f'|format(item.narrative_score) }}</td><td class="strong">{{ '%.1f'|format(item.era_mainline_score) }}</td><td>{{ '%.0f'|format(item.era_mainline_confidence) }}</td></tr>{% endfor %}
+  <div class="table-wrap"><table class="era-table"><thead><tr><th>排名</th><th>主题</th><th>主线资格</th><th>证据阶段</th><th>政策</th><th>产业</th><th>市场</th><th>官方叙事</th><th>时代分</th><th>状态置信度</th><th>阶段置信度</th></tr></thead><tbody>
+  {% for item in era.theme_states %}<tr><td>{{ item.era_rank }}</td><td><a class="strong text-link" href="/era-mainline/{{ item.theme_id }}">{{ item.theme_name }}</a></td><td>{{ item.get('mainline_qualification_label', item.get('mainline_qualification', item.era_mainline_status)) }}</td><td><span class="stage-pill stage-{{ item.get('evidence_stage', item.lifecycle_stage) }}">{{ item.lifecycle_stage_label }}</span></td><td>{{ '%.1f'|format(item.policy_score) }}</td><td>{{ '%.1f'|format(item.industry_score) if item.industry_score is not none else '未知' }}</td><td>{{ '%.1f'|format(item.market_score) }}</td><td>{{ '%.1f'|format(item.narrative_score) }}</td><td class="strong">{{ '%.1f'|format(item.era_mainline_score) }}</td><td>{{ '%.0f'|format(item.get('current_state_confidence', item.era_mainline_confidence)) }}</td><td>{{ '%.0f'|format(item.get('lifecycle_stage_confidence', item.lifecycle_confidence)) }}</td></tr>{% endfor %}
   </tbody></table></div>
 </section>
 {% endblock %}

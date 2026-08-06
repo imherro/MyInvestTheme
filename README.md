@@ -2,7 +2,7 @@
 
 A-share era-mainline and lifecycle research workspace with a read-only web system.
 
-The recommended research layer is `era_mainline_model_v1`. It combines policy persistence, industry validation, market confirmation, and official narrative momentum, then applies explicit confirmation gates and a lifecycle state machine. It is a research judgment system, not an expected-return model or investment-advice system.
+The recommended research layer is `era_mainline_model_v2`. It combines policy persistence, industry validation, market confirmation, and official strategic narrative diffusion, then applies evidence windows and explicit lifecycle gates. It is a research judgment system, not an expected-return model or investment-advice system.
 
 The existing canonical mainline layer remains available as the compatible policy-theme evidence view and as an input to the era-mainline model.
 
@@ -33,12 +33,15 @@ The daily updater is idempotent: if the latest complete Tushare trading date alr
 
 ## Era Mainline Model
 
-- `era_mainline_rules_v1` weights available dimensions at policy 35%, industry 25%, market 25%, and narrative 15%. Unknown industry observations remain `null`; available dimensions are reweighted and coverage lowers confidence.
+- `era_mainline_rules_v2` configures policy 40%, industry 25%, market 25%, and official narrative 10%. Unknown industry observations remain `null`; every report exposes configured and effective weights.
 - `policy_event_type_rules_v1` separates national plans, implementation plans, funding, projects, standards, pilots, restrictions, risk control, and exits. Policy conviction combines long-term level, execution, cross-department breadth, reinforcement, novelty, and restriction.
 - `industry_indicator_mapping_v1` defines expandable proxy indicators. Missing observations display `产业验证不足` and never become a false zero.
 - `market_confirmation_v1` turns existing SW, THS, ETF, limit-up, breadth and flow evidence into sustained market confirmation. It verifies a direction but cannot create an era mainline alone.
 - `narrative_momentum_v1` uses official policy events, cross-department breadth and secondary-theme expansion rather than raw news counts.
-- `era_lifecycle_rules_v1` enforces legal transitions across dormant, incubating, emerging, launching, confirmed, expanding, mature, cooling, declining, ended, restarting, and uncertain.
+- `era_lifecycle_rules_v2` derives the 12 stages from condition duration, consecutive observations, dimension evidence, score changes, and ranking stability. Report count no longer advances a theme one stage at a time.
+- `era_confidence_rules_v1` separates current-state, lifecycle-stage, and lifecycle-date confidence. Missing industry, degraded point-in-time provenance, short history, and sparse observations impose explicit caps.
+- Historical results are retrospective replays under the current model. A left-censored theme has no invented start date; `start_date_status=before_available_history` identifies that boundary.
+- `official_narrative_diffusion_v1` measures cross-department strategic wording, terminology, and subtheme coverage. It does not reuse the policy total or represent public-opinion heat.
 - Start dates require a forming-stage observation and cannot precede available evidence. Ending requires multiple weak observations; neither a short market correction nor a 90-day policy gap ends a mainline by itself.
 - Reports are saved under `research/era_mainline/`. Existing `research/mainline/` reports and APIs remain readable.
 

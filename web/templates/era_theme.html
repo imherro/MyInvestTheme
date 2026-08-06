@@ -3,16 +3,19 @@
 {% block content %}
 <section class="era-page-head">
   <a class="text-link" href="/era-mainline">返回时代主线</a>
-  <span class="era-eyebrow">排名 {{ theme.era_rank }} · {{ theme.era_mainline_status }}</span>
+  <span class="era-eyebrow">排名 {{ theme.era_rank }} · 主线资格 {{ theme.get('mainline_qualification_label', theme.get('mainline_qualification', theme.era_mainline_status)) }}</span>
   <h1>{{ theme.theme_name }}</h1>
-  <div class="era-leader-facts"><strong>{{ theme.lifecycle_stage_label }}</strong><span>开始 {{ theme.estimated_start_date or '待确认' }}</span><span>确认 {{ theme.confirmation_date or '尚未确认' }}</span><span>强化 {{ theme.latest_reinforcement_date or '未知' }}</span><span>置信度 {{ '%.0f'|format(theme.era_mainline_confidence) }}</span></div>
+  <p class="muted">这是当前模型对历史数据的回放，不等于当时发布的研究判断。</p>
+  <div class="era-leader-facts"><strong>证据阶段 {{ theme.lifecycle_stage_label }}</strong><span>开始 {{ theme.estimated_start_date or ('早于覆盖范围' if theme.get('start_date_status') == 'before_available_history' else '待确认') }}</span><span>确认 {{ theme.confirmation_date or '持续条件未满足' }}</span><span>政策事件 {{ theme.get('latest_policy_event_date', '') or '未知' }}</span><span>强化 {{ theme.latest_reinforcement_date or '未识别' }}</span><span>状态置信度 {{ '%.0f'|format(theme.get('current_state_confidence', theme.era_mainline_confidence)) }}</span><span>阶段置信度 {{ '%.0f'|format(theme.get('lifecycle_stage_confidence', theme.lifecycle_confidence)) }}</span><span>日期置信度 {{ '%.0f'|format(theme.get('lifecycle_date_confidence', 0)) }}</span></div>
+  {% if theme.get('history_coverage', {}).get('is_left_censored') %}<p class="muted">现有历史数据开始时该主题已经形成，无法根据当前数据准确确定真实起点。</p>{% endif %}
 </section>
 <section class="dimension-grid">
   <div><span>政策持续性</span><strong>{{ '%.1f'|format(theme.policy_score) }}</strong><small>{{ theme.policy_dimension.event_count }} 个事件，{{ theme.policy_dimension.source_org_count }} 个来源</small></div>
   <div><span>产业兑现度</span><strong>{{ '%.1f'|format(theme.industry_score) if theme.industry_score is not none else '未知' }}</strong><small>{{ theme.industry_dimension.industry_stage_label }}</small></div>
   <div><span>市场认同度</span><strong>{{ '%.1f'|format(theme.market_score) }}</strong><small>{{ theme.market_dimension.market_stage }}</small></div>
-  <div><span>叙事持续性</span><strong>{{ '%.1f'|format(theme.narrative_score) }}</strong><small>{{ theme.narrative_dimension.narrative_stage }}</small></div>
+  <div><span>官方战略叙事扩散</span><strong>{{ '%.1f'|format(theme.narrative_score) }}</strong><small>不代表社会舆论热度</small></div>
 </section>
+<section class="section-band"><h2>数据与权重</h2><p>配置权重为政策40%、产业25%、市场25%、官方战略叙事10%。产业未知时，综合分按页面 API 返回的实际权重动态重算，不属于完整四维确认。</p></section>
 <section class="evidence-columns">
   <div><h2>支撑证据</h2><ul>{% for item in theme.supporting_evidence %}<li>{{ item }}</li>{% endfor %}</ul></div>
   <div><h2>反面证据</h2><ul>{% for item in theme.contradicting_evidence %}<li>{{ item }}</li>{% endfor %}</ul></div>

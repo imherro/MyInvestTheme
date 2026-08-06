@@ -18,9 +18,9 @@
       <h2><a href="/era-mainline/{{ item.theme_id }}">{{ item.theme_name }}</a></h2>
       <div class="era-leader-facts">
         <strong>{{ item.lifecycle_stage_label }}</strong>
-        <span>开始 {{ item.estimated_start_date or '待确认' }}</span>
+        <span>开始 {{ item.estimated_start_date or ('早于覆盖范围' if item.get('start_date_status') == 'before_available_history' else '待确认') }}</span>
         <span>强化 {{ item.latest_reinforcement_date or '未知' }}</span>
-        <span>置信度 {{ '%.0f'|format(item.era_mainline_confidence) }}</span>
+        <span>状态置信度 {{ '%.0f'|format(item.get('current_state_confidence', item.era_mainline_confidence)) }}</span>
       </div>
       <p>主要驱动力：{{ item.core_drivers|join('；') }}</p>
       <p class="risk-line">转弱风险：{{ (item.contradicting_evidence or ['暂无明确反证'])[0] }}</p>
