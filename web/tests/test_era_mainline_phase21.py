@@ -51,6 +51,8 @@ def test_expansion_rules_are_active():
 def test_cooling_market_drop_rule_is_active():
     rules = load_rules()
     history = [row("2026-01-01", market=80), row("2026-01-08", market=65), row("2026-01-15", market=64)]
+    for item in history:
+        item.update({"cycle_id": "t_cycle_001", "cycle_peak_score": 75, "cycle_peak_market_score": 80})
     assert condition_windows(history, rules=rules)["cooling"]["currently_met"] is True
     stricter = json.loads(json.dumps(rules))
     stricter["cooling"]["minimum_market_score_drop"] = 25
@@ -65,7 +67,7 @@ def test_declining_and_ending_duration_rules_are_active():
     assert windows["declining"]["currently_met"] is True
     assert windows["ending"]["currently_met"] is True
     stricter = json.loads(json.dumps(rules))
-    stricter["ending"]["minimum_declining_duration_days"] = 40
+    stricter["ending"]["minimum_consecutive_observations"] = 4
     assert condition_windows(history, rules=stricter)["ending"]["currently_met"] is False
 
 

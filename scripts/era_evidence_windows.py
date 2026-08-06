@@ -7,6 +7,26 @@ from typing import Any, Callable
 VERSION = "era_evidence_windows_v1"
 
 
+class RuleUsageTracker:
+    def __init__(self) -> None:
+        self._counts: dict[str, int] = {}
+
+    def record(self, path: str) -> None:
+        self._counts[path] = self._counts.get(path, 0) + 1
+
+    def report(self) -> dict[str, dict[str, Any]]:
+        return {path: {"used": count > 0, "access_count": count} for path, count in sorted(self._counts.items())}
+
+
+def get_rule(rules: dict[str, Any], path: str, tracker: RuleUsageTracker | None = None) -> Any:
+    value: Any = rules
+    for part in path.split("."):
+        value = value[part]
+    if tracker is not None:
+        tracker.record(path)
+    return value
+
+
 def parse_date(value: Any) -> date | None:
     try:
         return datetime.strptime(str(value or "")[:10], "%Y-%m-%d").date()
@@ -37,6 +57,8 @@ def evaluate_condition_window(
     confirmation_date = ""
     for index, row in enumerate(rows):
         prior = rows[: index + 1]
+        if run and row.get("cycle_id") and run[-1].get("cycle_id") != row.get("cycle_id"):
+            run = []
         if predicate(row, prior):
             run.append(row)
             start = parse_date(run[0]["observation_date"])

@@ -77,11 +77,12 @@ def render_markdown(payload: dict[str, Any]) -> str:
     lines.extend(["", "## 潜在新主线", "", "、".join(item["theme_name"] for item in emerging) or "暂无明确候选。"])
     lines.extend(["", "## 正在退潮的主线", "", "、".join(item["theme_name"] for item in declining) or "暂无明确退潮主线。"])
     lines.extend(["", "## 数据覆盖限制", "", "- 产业维度暂无可靠观测。本期综合分使用政策、市场和官方战略叙事三维动态重算，因此不属于完整四维确认。", f"- {payload.get('history_semantics', {}).get('description', '')}"])
-    lines.extend(["", "## 主线生命周期总览", "", "| 排名 | 主题 | 主线资格 | 证据阶段 | 开始 | 确认 | 分数 | 状态置信度 | 阶段置信度 |", "|---:|---|---|---|---|---|---:|---:|---:|"])
+    lines.extend(["", "## 主线生命周期总览", "", "| 排名 | 主题 | 主线资格 | 证据阶段 | 短期动量 | 阶段停留 | 周期 | 开始 | 确认 | 最近强化 | 分数 | 状态置信度 | 阶段置信度 |", "|---:|---|---|---|---|---:|---|---|---|---|---:|---:|---:|"])
     for state in payload.get("theme_states") or []:
         lines.append(
-            f"| {state['era_rank']} | {state['theme_name']} | {state['mainline_qualification_label']} | {state['lifecycle_stage_label']} | "
-            f"{state.get('estimated_start_date') or ('早于覆盖范围' if state.get('start_date_status') == 'before_available_history' else '未知')} | {state.get('confirmation_date') or '未确认'} | "
+            f"| {state['era_rank']} | {state['theme_name']} | {state['mainline_qualification_label']} | {state['lifecycle_stage_label']} | {state.get('momentum_state_label', '未知')} | "
+            f"{state.get('stage_dwell_days', 0)}天 | 第{state.get('cycle_sequence', 0)}轮 | {state.get('estimated_start_date') or ('早于覆盖范围' if state.get('start_date_status') == 'before_available_history' else '未知')} | {state.get('confirmation_date') or '未确认'} | "
+            f"{state.get('latest_reinforcement_date') or '无'}({state.get('latest_reinforcement_type', 'none')}) | "
             f"{state['era_mainline_score']:.1f} | {state['current_state_confidence']:.0f} | {state['lifecycle_stage_confidence']:.0f} |"
         )
     lines.extend(["", "## 四维证据拆解", ""])
@@ -107,7 +108,9 @@ def render_markdown(payload: dict[str, Any]) -> str:
         lines.append(f"- {state['theme_name']}：{detail}")
     lines.extend(["", "## 历史阶段变化", ""])
     for item in payload.get("transitions") or []:
-        lines.append(f"- {item['change_date']} {item['theme_id']}：{item['from_stage']} → {item['to_stage']}。")
+        dwell = "满足停留" if item.get("stage_dwell_satisfied") else ("严重证据豁免" if item.get("dwell_override") else "未满足停留")
+        skipped = f"；跳过 {','.join(item.get('skipped_stages') or [])}" if item.get("skipped_stages") else ""
+        lines.append(f"- {item['change_date']} {item['theme_id']}：{item['from_stage']} → {item['to_stage']}（{item.get('transition_type')}；{dwell}{skipped}）。{'；'.join(item.get('change_reasons') or [])}")
     lines.extend(["", "## 数据不足和不确定性", "", "- 产业层多数代理指标尚无可靠观测，统一显示未知并降低置信度。", "- 市场层当前使用现有申万、同花顺、ETF、涨停与资金流数据，长期相对强度和回撤指标仍待补充。", "- 历史阶段由既有报告确定性回放，不等同于当时已发布的时代主线结论。", "- 当前叙事维度仅表示官方战略表述和子主题扩散，不代表社会舆论热度。", "", payload.get("score_semantics", "")])
     return "\n".join(lines) + "\n"
 
@@ -115,21 +118,31 @@ def render_markdown(payload: dict[str, Any]) -> str:
 def _theme_markdown(state: dict[str, Any] | None) -> list[str]:
     if not state:
         return ["当前没有满足确认门槛的主题。"]
-    return [
+    lines = [
         f"- 主题：{state['theme_name']}",
         f"- 主线资格：{state['mainline_qualification_label']}",
         f"- 证据阶段：{state['lifecycle_stage_label']}",
+        f"- 短期动量：{state.get('momentum_state_label', '未知')}",
+        f"- 生命周期轮次：第{state.get('cycle_sequence', 0)}轮（{state.get('cycle_id', '')}）",
+        f"- 当前阶段停留：{state.get('stage_dwell_days', 0)}天；最低要求 {state.get('minimum_stage_dwell_days', 0)}天",
         f"- 当前状态置信度：{state['current_state_confidence']:.0f}",
         f"- 阶段置信度：{state['lifecycle_stage_confidence']:.0f}",
         f"- 估计开始时间：{state.get('estimated_start_date') or ('早于当前历史覆盖范围' if state.get('start_date_status') == 'before_available_history' else '证据不足')}（日期置信度 {state.get('estimated_start_date_confidence', 0):.0f}）",
         f"- 开始日期决定于：{state.get('start_date_decided_at') or '尚未决定'}",
         f"- 确认时间：{state.get('confirmation_date') or '持续条件尚未满足'}（日期置信度 {state.get('confirmation_date_confidence', 0):.0f}）",
         f"- 最新政策事件：{state.get('latest_policy_event_date') or '未知'}",
-        f"- 最近强化：{state.get('latest_reinforcement_date') or '无可确认强化事件'}",
+        f"- 最近政策强化事件：{state.get('latest_policy_reinforcement_event_date') or '无'}",
+        f"- 最近市场强化：{state.get('latest_market_reinforcement_date') or '无'}",
+        f"- 最近综合强化：{state.get('latest_composite_reinforcement_date') or '无'}",
+        f"- 最终采用强化：{state.get('latest_reinforcement_date') or '近期无达到定义门槛的强化事件'}（{state.get('latest_reinforcement_type', 'none')}）",
+        f"- 强化理由：{'；'.join(state.get('latest_reinforcement_reasons') or [])}",
         f"- 核心驱动力：{'；'.join(state.get('core_drivers') or [])}",
         f"- 最大反面证据：{(state.get('contradicting_evidence') or ['暂无明确反证'])[0]}",
         f"- 失效条件：{'；'.join(state.get('invalidating_conditions') or [])}",
     ]
+    if state.get("evidence_stage") == "cooling" and float(state.get("era_mainline_score") or 0) >= 50:
+        lines.insert(6, "- 阶段说明：当前仍是高分候选，但近期证据相对本轮峰值持续减弱，处于降温观察；不等同于结构性衰退。")
+    return lines
 
 
 def generate(*, write: bool = False, now: datetime | None = None) -> tuple[dict[str, Any], Path, Path]:

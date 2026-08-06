@@ -38,9 +38,13 @@ The daily updater is idempotent: if the latest complete Tushare trading date alr
 - `industry_indicator_mapping_v1` defines expandable proxy indicators. Missing observations display `产业验证不足` and never become a false zero.
 - `market_confirmation_v1` turns existing SW, THS, ETF, limit-up, breadth and flow evidence into sustained market confirmation. It verifies a direction but cannot create an era mainline alone.
 - `narrative_momentum_v1` uses official policy events, cross-department breadth and secondary-theme expansion rather than raw news counts.
-- `era_lifecycle_rules_v2` derives the 12 stages from condition duration, consecutive observations, dimension evidence, score changes, and ranking stability. Report count no longer advances a theme one stage at a time.
+- `era_lifecycle_rules_v3` derives the 12 stages from condition duration, consecutive observations, current-cycle peaks, stage dwell time, hysteresis, dimension evidence, and ranking stability. Report count never advances a theme one stage at a time.
+- Transition policy blocks structurally invalid jumps while allowing a fully qualified evidence jump such as incubating to confirmed. Blocked targets, dwell overrides, skipped stages, and recovery transitions remain auditable.
+- Each theme exposes a lifecycle `cycle_id`, current-cycle peak/trough, short-term momentum, stage dwell state, and typed reinforcement evidence. Cooling compares only with the active cycle and requires sustained entry/exit windows.
 - `era_confidence_rules_v1` separates current-state, lifecycle-stage, and lifecycle-date confidence. Missing industry, degraded point-in-time provenance, short history, and sparse observations impose explicit caps.
 - Historical results are retrospective replays under the current model. A left-censored theme has no invented start date; `start_date_status=before_available_history` identifies that boundary.
+- Left censoring additionally requires an advanced initial state and material pre-history evidence. Ending is timed from the formal declining-condition start, not from the ending window itself.
+- Lifecycle rule usage is a runtime access-count map. Conditional rules not exercised by a real report are reported as validator warnings and are covered by synthetic behavior tests.
 - `official_narrative_diffusion_v1` measures cross-department strategic wording, terminology, and subtheme coverage. It does not reuse the policy total or represent public-opinion heat.
 - Start dates require a forming-stage observation and cannot precede available evidence. Ending requires multiple weak observations; neither a short market correction nor a 90-day policy gap ends a mainline by itself.
 - Reports are saved under `research/era_mainline/`. Existing `research/mainline/` reports and APIs remain readable.

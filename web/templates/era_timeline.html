@@ -3,6 +3,6 @@
 {% block content %}
 <section class="era-page-head"><span class="era-eyebrow">历史回放</span><h1>时代主线时间轴</h1><p>按既有报告逐期重建证据演进过程。这是当前模型对历史数据的回放，不等于当时发布的研究判断。</p></section>
 {% for theme in era.theme_states %}
-<section class="timeline-theme"><div><h2><a href="/era-mainline/{{ theme.theme_id }}">{{ theme.theme_name }}</a></h2><span>{{ theme.lifecycle_stage_label }}</span></div><div class="timeline-track">{% for point in theme.score_history %}<span class="timeline-point stage-{{ point.lifecycle_stage }}" title="{{ point.date }} {{ point.lifecycle_stage }} {{ point.era_mainline_score }}"><i></i><small>{{ point.date[5:] }}</small></span>{% endfor %}</div></section>
+<section class="timeline-theme"><div><h2><a href="/era-mainline/{{ theme.theme_id }}">{{ theme.theme_name }}</a></h2><span>{{ theme.lifecycle_stage_label }} · {{ theme.get('momentum_state_label', '未知') }}</span></div><div class="timeline-track">{% for point in theme.score_history %}<span class="timeline-point stage-{{ point.lifecycle_stage }}" title="{{ point.date }} {{ point.lifecycle_stage }} {{ point.get('momentum_state', 'unknown') }} {{ point.era_mainline_score }} · {{ point.get('transition_type', 'stable') }}"><i></i><small>{{ point.date[5:] }}</small></span>{% endfor %}</div></section>
 {% endfor %}
 {% endblock %}

@@ -9,7 +9,29 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT_DIR = ROOT / "research" / "era_mainline"
-VERSION = "era_mainline_validator_v2"
+LIFECYCLE_RULES_PATH = ROOT / "config" / "era_lifecycle_rules.json"
+VERSION = "era_mainline_validator_v3"
+
+
+def _date(value: Any) -> datetime | None:
+    try:
+        return datetime.strptime(str(value or "")[:10], "%Y-%m-%d")
+    except ValueError:
+        return None
+
+
+def _required_rule_paths(rules: dict[str, Any]) -> set[str]:
+    result = {"stages", "labels", "transition_policy.allowed_direct_transitions", "minimum_stage_dwell_days"}
+    sections = ("formation", "confirmation", "expansion", "maturity", "cooling", "declining", "ending", "restarting", "hysteresis", "reinforcement", "left_censoring", "stage_confidence")
+    def walk(value: Any, prefix: str) -> None:
+        if isinstance(value, dict):
+            for key, child in value.items():
+                walk(child, f"{prefix}.{key}" if prefix else key)
+        else:
+            result.add(prefix)
+    for section in sections:
+        walk(rules.get(section, {}), section)
+    return result
 
 
 def validate(payload: dict[str, Any]) -> dict[str, Any]:
@@ -54,16 +76,63 @@ def validate(payload: dict[str, Any]) -> dict[str, Any]:
             error("ERA_HISTORY_OUT_OF_ORDER", f"{path}.score_history", "Score history must be chronological.")
         if theme.get("industry_score") is None:
             warnings.append({"code": "INDUSTRY_VALIDATION_UNKNOWN", "path": f"{path}.industry_score", "message": "Industry validation is unavailable and must not be interpreted as zero."})
+        sequences = [int(item.get("cycle_sequence") or 0) for item in history]
+        if any(right < left for left, right in zip(sequences, sequences[1:])):
+            error("ERA_CYCLE_ID_INVALID", f"{path}.score_history", "Cycle sequence cannot move backward.")
+        cycle_id = str(theme.get("cycle_id") or "")
+        current_cycle = [item for item in history if item.get("cycle_id") == cycle_id]
+        if current_cycle and float(theme.get("cycle_peak_score") or 0) < max(float(item.get("era_mainline_score") or 0) for item in current_cycle):
+            error("ERA_CYCLE_PEAK_INVALID", f"{path}.cycle_peak_score", "Cycle peak must cover every score in the current cycle.")
+        cycle_start = str(theme.get("cycle_start_observation_date") or "")
+        peak_date = str(theme.get("cycle_peak_date") or "")
+        if cycle_start and peak_date and peak_date < cycle_start:
+            error("ERA_CYCLE_PEAK_INVALID", f"{path}.cycle_peak_date", "Cycle peak date cannot precede cycle start.")
+        if theme.get("history_coverage", {}).get("is_left_censored") and (not theme.get("left_censoring_reasons") or not theme.get("left_censoring_evidence")):
+            error("ERA_LEFT_CENSORING_UNSUPPORTED", f"{path}.history_coverage", "Left censoring requires explicit reasons and evidence.")
+        reinforcement_type = str(theme.get("latest_reinforcement_type") or "none")
+        reinforcement_date = str(theme.get("latest_reinforcement_date") or "")
+        source_dates = {
+            "policy_event": theme.get("latest_policy_reinforcement_event_date"),
+            "market_confirmation": theme.get("latest_market_reinforcement_date"),
+            "composite_score": theme.get("latest_composite_reinforcement_date"),
+        }
+        if reinforcement_type in source_dates and reinforcement_date != str(source_dates[reinforcement_type] or ""):
+            error("ERA_REINFORCEMENT_DATE_INVALID", f"{path}.latest_reinforcement_date", "Selected reinforcement date must match its source type.")
+        if reinforcement_type == "none" and reinforcement_date:
+            error("ERA_REINFORCEMENT_TYPE_MISMATCH", f"{path}.latest_reinforcement_type", "None reinforcement type cannot have a date.")
+        if reinforcement_type == "policy_event":
+            event_dates = {str(item.get("event_date") or "") for item in theme.get("policy_dimension", {}).get("events") or []}
+            if reinforcement_date not in event_dates:
+                error("ERA_POLICY_REINFORCEMENT_EVENT_MISSING", f"{path}.latest_policy_reinforcement_event_date", "Policy reinforcement must match an actual event date.")
+        end_date, declining_date = _date(theme.get("estimated_end_date")), _date(theme.get("declining_start_date"))
+        if end_date:
+            minimum_days = json.loads(LIFECYCLE_RULES_PATH.read_text(encoding="utf-8"))["ending"]["minimum_days_after_declining_start"]
+            if not declining_date or (end_date - declining_date).days < minimum_days:
+                error("ERA_END_BEFORE_DECLINING_DURATION", f"{path}.estimated_end_date", "End date must be anchored to the minimum formal declining duration.")
     if ranks and ranks != list(range(1, len(ranks) + 1)):
         error("ERA_RANK_SEQUENCE_INVALID", "theme_states", "Era ranks must be contiguous and ordered.")
     transitions = payload.get("transitions") or []
     if transitions != sorted(transitions, key=lambda item: (item.get("change_date", ""), item.get("theme_id", ""))):
         error("ERA_TRANSITIONS_OUT_OF_ORDER", "transitions", "Lifecycle transitions must be chronological.")
-    required_usage = {"formation.minimum_duration_days", "confirmation.minimum_consecutive_observations", "confirmation.minimum_duration_days", "cooling.minimum_market_score_drop", "dominance_gap", "dual_mainline_gap", "all_lifecycle_rule_fields"}
-    usage = payload.get("rule_usage") or {}
-    for key in sorted(required_usage):
-        if usage.get(key) is not True:
-            error("ERA_RULE_UNUSED", f"rule_usage.{key}", "Core configuration must be used by the model.")
+    forbidden = {("dormant", "cooling"), ("dormant", "declining"), ("dormant", "ended"), ("ended", "confirmed"), ("ended", "expanding"), ("ended", "mature"), ("declining", "launching")}
+    for index, item in enumerate(transitions):
+        pair = (item.get("from_stage"), item.get("to_stage"))
+        if item.get("transition_allowed") and pair in forbidden:
+            error("ERA_ILLEGAL_STAGE_TRANSITION", f"transitions.{index}", "Forbidden stage transition was accepted.")
+        if item.get("transition_allowed") and not item.get("stage_dwell_satisfied") and not item.get("dwell_override"):
+            error("ERA_STAGE_DWELL_VIOLATION", f"transitions.{index}", "Early transition requires an explicit severe-evidence override.")
+        if pair == ("ended", "restarting") and (not item.get("cycle_id") or int(item.get("cycle_sequence") or 0) <= 0):
+            error("ERA_RESTART_WITHOUT_NEW_CYCLE", f"transitions.{index}.cycle_id", "Restart must open a new lifecycle cycle.")
+    rules = json.loads(LIFECYCLE_RULES_PATH.read_text(encoding="utf-8"))
+    usage_versions = payload.get("rule_usage") or {}
+    usage = usage_versions.get(rules["version"])
+    if not isinstance(usage, dict) or "all_lifecycle_rule_fields" in usage:
+        error("ERA_RULE_USAGE_UNVERIFIED", "rule_usage", "Rule usage must be runtime access records, not a static aggregate boolean.")
+    else:
+        for key in sorted(_required_rule_paths(rules)):
+            record = usage.get(key) or {}
+            if record.get("used") is not True or int(record.get("access_count") or 0) <= 0:
+                warnings.append({"code": "ERA_CONFIG_FIELD_UNUSED", "path": f"rule_usage.{rules['version']}.{key}", "message": "This conditional lifecycle rule was not exercised by the current report; synthetic tests must cover it."})
     return {
         "scoring_version": VERSION,
         "status": "fail" if errors else ("warning" if warnings else "pass"),

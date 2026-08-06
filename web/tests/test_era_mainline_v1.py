@@ -80,16 +80,16 @@ def test_first_policy_signal_does_not_jump_to_confirmation():
     assert transitions[0]["to_stage"] == "incubating"
 
 
-def test_evidence_stage_is_not_advanced_one_report_at_a_time():
+def test_illegal_direct_stage_target_is_blocked_without_stepwise_advance():
     stage, direct = apply_transition("dormant", "mature")
-    assert stage == "mature"
-    assert direct is True
+    assert stage == "dormant"
+    assert direct is False
 
 
 def test_ended_theme_with_new_driver_restarts():
     history = [
-        {**snapshot(policy=55, market=45, narrative=55, score=52, date="2026-01-01"), "new_policy_event_count": 2},
-        {**snapshot(policy=55, market=45, narrative=55, score=52, date="2026-01-15"), "new_policy_event_count": 2},
+        {**snapshot(policy=55, market=45, narrative=55, score=52, date="2026-01-01"), "new_policy_event_count": 2, "new_strong_policy_event_count": 2, "new_cycle_driver_ids": ["a", "b"]},
+        {**snapshot(policy=55, market=45, narrative=55, score=52, date="2026-01-15"), "new_policy_event_count": 2, "new_strong_policy_event_count": 2, "new_cycle_driver_ids": ["a", "b"]},
     ]
     windows = condition_windows(history)
     stage, _ = target_stage(history[-1], "ended", windows=windows, history=history)
@@ -103,7 +103,10 @@ def test_missing_industry_data_is_unknown_not_zero():
 
 
 def test_left_censored_history_does_not_invent_start_date():
+    event = {"event_id": "old", "event_date": "2025-12-01", "strength": 70, "direction": "supportive"}
     history = [snapshot(policy=70, market=70, narrative=55, score=68, date="2026-01-01"), snapshot(policy=70, market=70, narrative=55, score=68, date="2026-01-15")]
+    for item in history:
+        item["policy_dimension"]["events"] = [event]
     enriched, _ = enrich_lifecycle(history)
     dates = lifecycle_dates(enriched, [{"event_date": "2025-12-01"}], "2026-01-15")
     assert dates["history_coverage"]["is_left_censored"] is True

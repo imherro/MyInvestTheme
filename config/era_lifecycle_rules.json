@@ -1,5 +1,5 @@
 {
-  "version": "era_lifecycle_rules_v2",
+  "version": "era_lifecycle_rules_v3",
   "stages": [
     "dormant", "incubating", "emerging", "launching", "confirmed", "expanding",
     "mature", "cooling", "declining", "ended", "restarting", "uncertain"
@@ -36,7 +36,10 @@
   "cooling": {
     "minimum_peak_score_drop": 10,
     "minimum_market_score_drop": 12,
-    "minimum_consecutive_observations": 2
+    "maximum_current_era_score_for_cooling": 72,
+    "maximum_current_market_score_for_cooling": 72,
+    "minimum_consecutive_observations": 2,
+    "minimum_duration_days": 5
   },
   "declining": {
     "maximum_era_score": 38,
@@ -49,12 +52,75 @@
     "maximum_era_score": 30,
     "minimum_weak_dimensions": 2,
     "minimum_consecutive_observations": 3,
-    "minimum_declining_duration_days": 30
+    "minimum_days_after_declining_start": 30,
+    "minimum_days_since_last_reinforcement": 30
   },
   "restarting": {
     "minimum_new_policy_events": 2,
     "minimum_policy_score": 35,
     "minimum_market_or_industry_score": 40,
-    "minimum_duration_days": 14
+    "minimum_duration_days": 14,
+    "minimum_event_strength": 55,
+    "require_new_cycle_driver": true
+  },
+  "transition_policy": {
+    "allowed_direct_transitions": {
+      "dormant": ["dormant", "incubating", "emerging", "launching"],
+      "incubating": ["dormant", "incubating", "emerging", "launching", "confirmed"],
+      "emerging": ["incubating", "emerging", "launching", "confirmed", "cooling"],
+      "launching": ["incubating", "emerging", "launching", "confirmed", "expanding", "cooling"],
+      "confirmed": ["launching", "confirmed", "expanding", "mature", "cooling"],
+      "expanding": ["confirmed", "expanding", "mature", "cooling"],
+      "mature": ["confirmed", "expanding", "mature", "cooling"],
+      "cooling": ["emerging", "launching", "cooling", "declining", "confirmed", "expanding", "restarting"],
+      "declining": ["cooling", "declining", "ended", "restarting"],
+      "ended": ["ended", "restarting"],
+      "restarting": ["restarting", "launching", "confirmed", "cooling"],
+      "uncertain": ["dormant", "incubating", "emerging", "launching", "confirmed", "cooling", "declining", "uncertain"]
+    }
+  },
+  "minimum_stage_dwell_days": {
+    "dormant": 0, "incubating": 3, "emerging": 7, "launching": 7,
+    "confirmed": 14, "expanding": 14, "mature": 30, "cooling": 10,
+    "declining": 14, "ended": 0, "restarting": 14, "uncertain": 3
+  },
+  "hysteresis": {
+    "confirmation_exit": {
+      "maximum_era_score": 52,
+      "maximum_market_score": 45,
+      "minimum_consecutive_observations": 2,
+      "minimum_duration_days": 7
+    },
+    "cooling_exit": {
+      "minimum_score_recovery_from_trough": 8,
+      "minimum_market_recovery_from_trough": 8,
+      "minimum_consecutive_observations": 2,
+      "minimum_duration_days": 7
+    },
+    "declining_exit": {
+      "minimum_era_score": 42,
+      "minimum_strengthened_dimensions": 2,
+      "minimum_duration_days": 14
+    }
+  },
+  "reinforcement": {
+    "minimum_policy_score_increase": 3,
+    "minimum_market_score_increase": 4,
+    "minimum_industry_score_increase": 4,
+    "minimum_narrative_score_increase": 4,
+    "minimum_composite_score_increase": 5,
+    "minimum_strengthened_dimensions": 2,
+    "minimum_policy_event_strength": 55
+  },
+  "left_censoring": {
+    "minimum_pre_history_evidence_days": 14,
+    "minimum_initial_stage": "launching",
+    "minimum_initial_era_score": 50
+  },
+  "stage_confidence": {
+    "maximum_changes_14d": 2,
+    "change_penalty_per_event": 8,
+    "new_stage_confidence_cap": 60,
+    "blocked_transition_penalty": 15
   }
 }

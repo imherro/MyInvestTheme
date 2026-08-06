@@ -1732,7 +1732,7 @@ def api_era_theme_timeline(theme_id: str) -> dict[str, Any]:
 def api_era_theme_evidence(theme_id: str) -> dict[str, Any]:
     report_id, payload = load_latest_era_report()
     theme = _era_theme(payload, theme_id)
-    return {"report_id": report_id, "theme_id": theme_id, "policy_dimension": theme.get("policy_dimension"), "industry_dimension": theme.get("industry_dimension"), "market_dimension": theme.get("market_dimension"), "narrative_dimension": theme.get("narrative_dimension"), "supporting_evidence": theme.get("supporting_evidence") or [], "contradicting_evidence": theme.get("contradicting_evidence") or [], "conflicts": theme.get("conflicts") or [], "read_only": True}
+    return {"report_id": report_id, "theme_id": theme_id, "policy_dimension": theme.get("policy_dimension"), "industry_dimension": theme.get("industry_dimension"), "market_dimension": theme.get("market_dimension"), "narrative_dimension": theme.get("narrative_dimension"), "supporting_evidence": theme.get("supporting_evidence") or [], "contradicting_evidence": theme.get("contradicting_evidence") or [], "conflicts": theme.get("conflicts") or [], "momentum_state": theme.get("momentum_state"), "cooling_evidence": theme.get("cooling_evidence") or {}, "latest_reinforcement_type": theme.get("latest_reinforcement_type", "none"), "latest_reinforcement_date": theme.get("latest_reinforcement_date", ""), "latest_reinforcement_reasons": theme.get("latest_reinforcement_reasons") or [], "latest_reinforcement_changes": theme.get("latest_reinforcement_changes") or {}, "read_only": True}
 
 
 @app.get("/api/era-mainline/theme/{theme_id}/invalidation")

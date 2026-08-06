@@ -7,14 +7,14 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from era_lifecycle_engine import enrich_lifecycle, lifecycle_dates, load_rules as load_lifecycle_rules
-    from era_evidence_windows import deduplicate_observations
+    from era_lifecycle_engine import analyze_reinforcements, enrich_lifecycle, lifecycle_dates, load_rules as load_lifecycle_rules
+    from era_evidence_windows import RuleUsageTracker, deduplicate_observations, get_rule, parse_date
     from industry_validation import build_industry_dimension
     from market_confirmation import build_market_dimensions
     from narrative_momentum import build_narrative_dimension
 except ModuleNotFoundError:
-    from scripts.era_lifecycle_engine import enrich_lifecycle, lifecycle_dates, load_rules as load_lifecycle_rules
-    from scripts.era_evidence_windows import deduplicate_observations
+    from scripts.era_lifecycle_engine import analyze_reinforcements, enrich_lifecycle, lifecycle_dates, load_rules as load_lifecycle_rules
+    from scripts.era_evidence_windows import RuleUsageTracker, deduplicate_observations, get_rule, parse_date
     from scripts.industry_validation import build_industry_dimension
     from scripts.market_confirmation import build_market_dimensions
     from scripts.narrative_momentum import build_narrative_dimension
@@ -32,6 +32,10 @@ QUALIFICATION_LABELS = {
     "market_theme_only": "仅市场主题", "legacy_mainline": "旧时代主线",
     "declining_mainline": "衰退主线", "not_a_mainline": "不构成主线", "uncertain": "不确定",
     "confirmed_candidate": "已满足确认条件",
+}
+MOMENTUM_LABELS = {
+    "strengthening": "增强", "stable": "稳定", "marginally_weakening": "边际转弱",
+    "recovering": "恢复", "unknown": "未知",
 }
 
 
@@ -258,7 +262,7 @@ def _rank_stability(history: list[dict[str, Any]]) -> float:
     return round(max(0.0, min(1.0, 0.7 * top_three_share + 0.3 * (1 - change_penalty))), 4)
 
 
-def _confidence_values(state: dict[str, Any], confidence_rules: dict[str, Any]) -> dict[str, float]:
+def _confidence_values(state: dict[str, Any], confidence_rules: dict[str, Any], usage_tracker: RuleUsageTracker | None = None) -> dict[str, float]:
     history = state.get("score_history") or []
     coverage = state.get("history_coverage") or {}
     weights = confidence_rules["state_confidence"]
@@ -284,9 +288,21 @@ def _confidence_values(state: dict[str, Any], confidence_rules: dict[str, Any]) 
     current_state = max(0.0, min(raw_state, *caps))
     window = (state.get("condition_windows") or {}).get("confirmation") or {}
     stability_ratio = min(1.0, float(window.get("consecutive_observations") or 0) / 3.0)
-    stage = min(current_state, 0.55 * current_state + 45 * stability_ratio)
+    lifecycle_rules = load_lifecycle_rules()
+    maximum_changes = get_rule(lifecycle_rules, "stage_confidence.maximum_changes_14d", usage_tracker)
+    change_penalty_per_event = get_rule(lifecycle_rules, "stage_confidence.change_penalty_per_event", usage_tracker)
+    new_stage_cap = get_rule(lifecycle_rules, "stage_confidence.new_stage_confidence_cap", usage_tracker)
+    blocked_penalty = get_rule(lifecycle_rules, "stage_confidence.blocked_transition_penalty", usage_tracker)
+    stage_stability = float(state.get("stage_stability_score") or 0) / 100.0
+    stage = min(current_state, 0.45 * current_state + 30 * stability_ratio + 25 * stage_stability)
     if len(history) <= 1:
         stage = min(stage, confidence_rules["caps"]["single_observation_stage"])
+    if not state.get("stage_dwell_satisfied", True):
+        stage = min(stage, new_stage_cap)
+    excessive_changes = max(0, int(state.get("stage_changes_14d") or 0) - maximum_changes)
+    stage -= excessive_changes * change_penalty_per_event
+    if any(not item.get("transition_allowed", True) for item in state.get("stage_history") or []):
+        stage -= blocked_penalty
     max_gap = int(coverage.get("maximum_observation_gap_days") or 0)
     frequency_quality = max(0.0, 100.0 - max(0, max_gap - 7) * 3.0)
     date_confidence = 0.45 * current_state + 0.30 * duration + 0.25 * frequency_quality
@@ -350,6 +366,7 @@ def build_era_mainline_report(
     active = rules or load_rules()
     lifecycle_rules = load_lifecycle_rules()
     confidence_rules = _load(CONFIDENCE_RULES_PATH)
+    usage_tracker = RuleUsageTracker()
     snapshots_by_theme: dict[str, list[dict[str, Any]]] = {}
     for source_id, source_report in historical_reports:
         try:
@@ -376,18 +393,36 @@ def build_era_mainline_report(
             else:
                 item["dimension_changes"] = {}
             previous_scores = item
-        lifecycle_history, theme_transitions = enrich_lifecycle(history, rules=lifecycle_rules)
+        lifecycle_history, theme_transitions = enrich_lifecycle(history, rules=lifecycle_rules, tracker=usage_tracker)
         latest = deepcopy(lifecycle_history[-1])
         events = latest["policy_dimension"].get("events") or []
-        dates = lifecycle_dates(lifecycle_history, events, report.get("basis_date", ""), rules=lifecycle_rules)
+        dates = lifecycle_dates(lifecycle_history, events, report.get("basis_date", ""), rules=lifecycle_rules, tracker=usage_tracker)
         latest.update(dates)
+        latest.update(analyze_reinforcements(lifecycle_history, events, rules=lifecycle_rules, tracker=usage_tracker))
+        latest["momentum_state_label"] = MOMENTUM_LABELS.get(latest.get("momentum_state", "unknown"), "未知")
+        latest["cooling_evidence"] = {
+            "cycle_peak_date": latest.get("cycle_peak_date", ""),
+            "cycle_peak_score": latest.get("cycle_peak_score"),
+            "current_score": latest.get("era_mainline_score"),
+            "score_drop": round(float(latest.get("cycle_peak_score") or 0) - float(latest.get("era_mainline_score") or 0), 2),
+            "cycle_peak_market_score": latest.get("cycle_peak_market_score"),
+            "current_market_score": latest.get("market_score"),
+            "market_drop": round(float(latest.get("cycle_peak_market_score") or 0) - float(latest.get("market_score") or 0), 2),
+            "condition_start_date": latest.get("condition_windows", {}).get("cooling", {}).get("first_met_date", ""),
+            "condition_duration_days": latest.get("condition_windows", {}).get("cooling", {}).get("duration_days", 0),
+        }
         latest["score_history"] = [
             {
                 "date": item["date"], "observation_date": item["date"], "report_id": item["observation_id"], "era_mainline_score": item["era_mainline_score"],
                 "policy_score": item["policy_score"], "industry_score": item["industry_score"], "market_score": item["market_score"],
                 "narrative_score": item["narrative_score"], "data_coverage": item["data_coverage"], "available_dimensions": item["available_dimensions"],
                 "evidence_flags": item["evidence_flags"], "lifecycle_stage": item["lifecycle_stage"], "evidence_stage": item["evidence_stage"],
-                "condition_windows": item["condition_windows"],
+                "condition_windows": item["condition_windows"], "cycle_id": item.get("cycle_id", ""),
+                "cycle_sequence": item.get("cycle_sequence", 0), "cycle_peak_score": item.get("cycle_peak_score"),
+                "cycle_peak_market_score": item.get("cycle_peak_market_score"), "momentum_state": item.get("momentum_state", "unknown"),
+                "stage_entered_at": item.get("stage_entered_at", ""), "stage_dwell_days": item.get("stage_dwell_days", 0),
+                "stage_dwell_satisfied": item.get("stage_dwell_satisfied", False), "transition_type": item.get("transition_type", "stable"),
+                "transition_reason_codes": item.get("transition_reason_codes", []), "skipped_stages": item.get("skipped_stages", []),
             }
             for item in lifecycle_history
         ]
@@ -405,7 +440,7 @@ def build_era_mainline_report(
         latest["invalidating_conditions"] = _invalidating_conditions(theme_id)
         latest["core_drivers"] = latest["supporting_evidence"][:3]
         latest["start_reasons"] = ["政策信号持续并出现市场或产业响应"] if latest.get("estimated_start_date") else []
-        latest["reinforcement_reasons"] = ["出现新的可识别政策事件"] if latest.get("latest_reinforcement_date") else []
+        latest["reinforcement_reasons"] = latest.get("latest_reinforcement_reasons") or []
         latest["weakening_reasons"] = latest.get("stage_reasons") if latest.get("lifecycle_stage") in {"cooling", "declining"} else []
         latest["end_reasons"] = latest.get("stage_reasons") if latest.get("lifecycle_stage") == "ended" else []
         transitions.extend(theme_transitions)
@@ -420,7 +455,14 @@ def build_era_mainline_report(
         for historical_rank, (_, point) in enumerate(points, start=1):
             point["era_rank"] = historical_rank
     for state in states:
-        state.update(_confidence_values(state, confidence_rules))
+        history_dates = [(parse_date(item.get("date")), item) for item in state.get("stage_history") or []]
+        basis = parse_date(state.get("date"))
+        state["stage_changes_14d"] = sum(1 for value, item in history_dates if basis and value and (basis - value).days <= 14 and item.get("transition_allowed"))
+        state["stage_changes_30d"] = sum(1 for value, item in history_dates if basis and value and (basis - value).days <= 30 and item.get("transition_allowed"))
+        dwell_ratio = min(1.0, float(state.get("stage_dwell_days") or 0) / max(1, float(state.get("minimum_stage_dwell_days") or 1)))
+        change_penalty = min(0.6, state["stage_changes_30d"] * 0.08)
+        state["stage_stability_score"] = round(max(0.0, min(100.0, (dwell_ratio * 0.6 + (1 - change_penalty) * 0.4) * 100)), 2)
+        state.update(_confidence_values(state, confidence_rules, usage_tracker))
         state["era_mainline_confidence"] = state["current_state_confidence"]
         state["confidence"] = state["current_state_confidence"]
         state["lifecycle_confidence"] = state["lifecycle_stage_confidence"]
@@ -500,15 +542,7 @@ def build_era_mainline_report(
             "description": "使用当前版本模型对历史报告进行回放，不表示当时系统已经发布相同结论。"
         },
         "configured_dimension_weights": deepcopy(active.get("dimension_weights") or {}),
-        "rule_usage": {
-            "formation.minimum_duration_days": True,
-            "confirmation.minimum_consecutive_observations": True,
-            "confirmation.minimum_duration_days": True,
-            "cooling.minimum_market_score_drop": True,
-            "dominance_gap": True,
-            "dual_mainline_gap": True,
-            "all_lifecycle_rule_fields": True
-        },
+        "rule_usage": {lifecycle_rules["version"]: usage_tracker.report()},
         "summary": summary,
         "score_semantics": "配置权重为40/25/25/10；缺失维度按有效权重动态重算。当前叙事维度仅表示官方战略表述和子主题扩散，不代表社会舆论热度。时代主线分不表示未来收益。",
     }

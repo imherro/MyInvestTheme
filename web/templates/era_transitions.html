@@ -2,5 +2,5 @@
 {% block title %}生命周期转换{% endblock %}
 {% block content %}
 <section class="era-page-head"><span class="era-eyebrow">状态机记录</span><h1>生命周期转换</h1><p>每次阶段变化都保留原因、维度变化和转换置信度。这是当前模型对历史数据的回放，不等于当时发布的研究判断。</p></section>
-<section class="section-band"><div class="timeline-list">{% for item in era.transitions|reverse %}<div><time>{{ item.change_date }}</time><strong>{{ item.theme_id }} · {{ item.from_stage }} → {{ item.to_stage }}</strong><span>{{ item.change_reasons|join('；') }}</span></div>{% endfor %}</div></section>
+<section class="section-band"><div class="timeline-list">{% for item in era.transitions|reverse %}<div><time>{{ item.change_date }}</time><strong>{{ item.theme_id }} · {{ item.from_stage }} → {{ item.to_stage }} · {{ item.get('transition_type', 'stable') }}</strong><span>{{ item.change_reasons|join('；') }}；停留{{ '满足' if item.get('stage_dwell_satisfied') else ('严重证据豁免' if item.get('dwell_override') else '未满足') }}{% if item.get('skipped_stages') %}；跳过 {{ item.skipped_stages|join('、') }}{% endif %}</span></div>{% endfor %}</div></section>
 {% endblock %}
