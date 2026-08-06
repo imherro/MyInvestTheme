@@ -1,6 +1,10 @@
 # MyInvestTheme
 
-A-share canonical mainline research workspace and read-only web system.
+A-share era-mainline and lifecycle research workspace with a read-only web system.
+
+The recommended research layer is `era_mainline_model_v1`. It combines policy persistence, industry validation, market confirmation, and official narrative momentum, then applies explicit confirmation gates and a lifecycle state machine. It is a research judgment system, not an expected-return model or investment-advice system.
+
+The existing canonical mainline layer remains available as the compatible policy-theme evidence view and as an input to the era-mainline model.
 
 ## Current Web App
 
@@ -16,6 +20,7 @@ Generate latest research:
 
 ```powershell
 python scripts/generate_mainline_report.py --write
+python scripts/generate_era_mainline_report.py --write
 ```
 
 Daily after-close update:
@@ -25,6 +30,17 @@ python scripts/daily_mainline_update.py
 ```
 
 The daily updater is idempotent: if the latest complete Tushare trading date already has a report, it exits without creating a duplicate. The Codex recurring automation runs this command after market close.
+
+## Era Mainline Model
+
+- `era_mainline_rules_v1` weights available dimensions at policy 35%, industry 25%, market 25%, and narrative 15%. Unknown industry observations remain `null`; available dimensions are reweighted and coverage lowers confidence.
+- `policy_event_type_rules_v1` separates national plans, implementation plans, funding, projects, standards, pilots, restrictions, risk control, and exits. Policy conviction combines long-term level, execution, cross-department breadth, reinforcement, novelty, and restriction.
+- `industry_indicator_mapping_v1` defines expandable proxy indicators. Missing observations display `产业验证不足` and never become a false zero.
+- `market_confirmation_v1` turns existing SW, THS, ETF, limit-up, breadth and flow evidence into sustained market confirmation. It verifies a direction but cannot create an era mainline alone.
+- `narrative_momentum_v1` uses official policy events, cross-department breadth and secondary-theme expansion rather than raw news counts.
+- `era_lifecycle_rules_v1` enforces legal transitions across dormant, incubating, emerging, launching, confirmed, expanding, mature, cooling, declining, ended, restarting, and uncertain.
+- Start dates require a forming-stage observation and cannot precede available evidence. Ending requires multiple weak observations; neither a short market correction nor a 90-day policy gap ends a mainline by itself.
+- Reports are saved under `research/era_mainline/`. Existing `research/mainline/` reports and APIs remain readable.
 
 Build derived two-level mainline backfill:
 
@@ -40,7 +56,7 @@ Policy scoring:
 - `policy_time_provenance_v1` from `config/policy_time_provenance_rules.json` distinguishes document date, official publication, first system sighting, crawl, effective and revision times. Verified `official_publish_at` is the preferred point-in-time availability; otherwise the system uses `first_seen_at`.
 - `policy_field_provenance_v1` and `theme_relevance_input_v1` isolate official/factual fields from LLM inference. Production mode is `strict_point_in_time`; `beneficiary_chain`, `related_industries`, `research_notes`, and `analyst_tags` cannot enter default theme relevance.
 - `policy_candidate_audit_v1` requires every selected policy to have an included candidate record with a matching content hash in `data/policy_candidates.jsonl`.
-- `data_freshness_guard_v1` evaluates staleness with the trading calendar and separately reports policy-ingestion and market-data lag.
+- `data_freshness_guard_v1` evaluates staleness with the trading calendar and uses `data/policy_scan_status.json:last_scan_completed_at` for policy-scan freshness. A candidate's `first_seen_at` is point-in-time evidence, not a crawler heartbeat.
 
 - Codex reviews official policy sources and maintains `data/policy_signals.json`.
 - Before scoring, `policy_source_provenance_v2` from `config/policy_source_rules.json` validates policy source URL, official domain, source organization/domain match, required fields, publish date parseability, and stable content hash. Rejected policies are excluded before theme scoring.
@@ -88,6 +104,9 @@ The candidate migration defaults to dry-run. Use `--write` only when intentional
 Open:
 
 - Latest research: http://127.0.0.1:8012/
+- Era mainline: http://127.0.0.1:8012/era-mainline
+- Era timeline: http://127.0.0.1:8012/era-timeline
+- Era transitions: http://127.0.0.1:8012/era-transitions
 - Historical research: http://127.0.0.1:8012/reports
 - API directory: http://127.0.0.1:8012/api
 - Swagger UI: http://127.0.0.1:8012/docs
@@ -95,6 +114,9 @@ Open:
 - OpenAPI schema: http://127.0.0.1:8012/openapi.json
 - Homepage content API: http://127.0.0.1:8012/api/index
 - Latest report API: http://127.0.0.1:8012/api/latest
+- Era latest API: http://127.0.0.1:8012/api/era-mainline/latest
+- Era history API: http://127.0.0.1:8012/api/era-mainline/history
+- Era transitions API: http://127.0.0.1:8012/api/era-mainline/transitions
 - Taxonomy v2 latest API: http://127.0.0.1:8012/api/taxonomy-v2
 - Taxonomy v2 score series API: http://127.0.0.1:8012/api/taxonomy-v2/score-series
 - Drift status API: http://127.0.0.1:8012/api/drift

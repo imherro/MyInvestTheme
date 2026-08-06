@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}A股主线研究台{% endblock %}</title>
-    <link rel="stylesheet" href="/static/styles.css?v=taxonomy-v2-20260707">
+    <link rel="stylesheet" href="/static/styles.css?v=era-mainline-v1">
   </head>
   <body>
     <div data-myinvest-header></div>
@@ -15,6 +15,9 @@
       </div>
       <nav class="nav">
         <a class="{{ 'active' if page == 'latest' else '' }}" href="/">最新研究</a>
+        <a class="{{ 'active' if page == 'era' else '' }}" href="/era-mainline">时代主线</a>
+        <a class="{{ 'active' if page == 'timeline' else '' }}" href="/era-timeline">历史时间轴</a>
+        <a class="{{ 'active' if page == 'transitions' else '' }}" href="/era-transitions">阶段转换</a>
         <a class="{{ 'active' if page == 'reports' else '' }}" href="/reports">历史研究</a>
         <a class="{{ 'active' if page == 'policies' else '' }}" href="/policies">政策库</a>
         <a href="/api/latest">最新API</a>
@@ -25,7 +28,7 @@
     </main>
     <div data-myinvest-footer></div>
     <script src="https://invest.okbbc.com/header.js" defer></script>
-    <script src="/static/app.js?v=taxonomy-v2-20260707"></script>
+    <script src="/static/app.js?v=era-mainline-v1"></script>
     {% block scripts %}{% endblock %}
     <script src="https://invest.okbbc.com/footer.js" defer></script>
   </body>

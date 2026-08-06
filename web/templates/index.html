@@ -1,6 +1,34 @@
 {% extends "base.html" %}
 {% block title %}最新研究 - A股主线研究台{% endblock %}
 {% block content %}
+<section class="era-hero">
+  <div class="era-hero-head">
+    <div>
+      <span class="era-eyebrow">截至 {{ era.basis_date }} 的结构化研究判断</span>
+      <h1>当前主线格局：{{ {'single_dominant':'单一主线','dual_mainline':'双主线','multi_mainline':'多主线并存','rotation':'主线轮动','transition':'主线切换','no_clear_mainline':'无明确主线','data_insufficient':'数据不足'}.get(era.mainline_regime, era.mainline_regime) }}</h1>
+      <p>{{ era.summary }}</p>
+    </div>
+    <a class="button" href="/era-mainline">查看完整时代主线</a>
+  </div>
+  <div class="era-leaders">
+    {% for label, item in [('第一时代主线', era.primary_mainline), ('第二时代主线', era.secondary_mainline)] %}
+    <article class="era-leader">
+      <span>{{ label }}</span>
+      {% if item %}
+      <h2><a href="/era-mainline/{{ item.theme_id }}">{{ item.theme_name }}</a></h2>
+      <div class="era-leader-facts">
+        <strong>{{ item.lifecycle_stage_label }}</strong>
+        <span>开始 {{ item.estimated_start_date or '待确认' }}</span>
+        <span>强化 {{ item.latest_reinforcement_date or '未知' }}</span>
+        <span>置信度 {{ '%.0f'|format(item.era_mainline_confidence) }}</span>
+      </div>
+      <p>主要驱动力：{{ item.core_drivers|join('；') }}</p>
+      <p class="risk-line">转弱风险：{{ (item.contradicting_evidence or ['暂无明确反证'])[0] }}</p>
+      {% else %}<h2>当前无满足门槛的主题</h2>{% endif %}
+    </article>
+    {% endfor %}
+  </div>
+</section>
 {% if report.data_freshness_summary.data_freshness_status in ['stale', 'degraded', 'unknown'] %}
 <section class="freshness-banner freshness-{{ report.data_freshness_summary.data_freshness_status }}" role="status">
   <strong>数据新鲜度：{{ report.data_freshness_summary.data_freshness_status }}</strong>

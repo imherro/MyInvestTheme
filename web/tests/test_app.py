@@ -57,7 +57,7 @@ def test_api_directory_contract():
     assert response.status_code == 200
     body = response.json()
     assert body["system_name"] == "A股主线研究台"
-    assert body["version"] == "1.1.0"
+    assert body["version"] == "2.0.0"
     assert body["base_url"] == "http://testserver"
     assert body["docs"] == {
         "swagger_ui": "/docs",
@@ -78,7 +78,7 @@ def test_api_directory_contract():
 
     groups = body["groups"]
     assert body["total_endpoints"] == sum(len(group["endpoints"]) for group in groups)
-    assert {group["name"] for group in groups} == {"文档入口", "当前数据", "历史数据", "分析结果", "系统状态"}
+    assert {group["name"] for group in groups} == {"文档入口", "时代主线", "当前数据", "历史数据", "分析结果", "系统状态"}
     endpoints = [endpoint for group in groups for endpoint in group["endpoints"]]
     paths = {endpoint["path"] for endpoint in endpoints}
     assert {
@@ -109,7 +109,7 @@ def test_policy_library_api_contract():
     body = response.json()
     assert body["page"] == "policies"
     assert body["signal_count"] >= 1
-    assert body["watchlist_version"] == "policy_stock_watchlist.v1"
+    assert body["watchlist_version"] == "policy_stock_watchlist.v2"
     assert body["deep_research_base_url"] == "https://stock.okbbc.com/research?stock="
     policies = body["policies"]
     assert policies
@@ -126,6 +126,7 @@ def test_policy_library_api_contract():
     assert stock["name"]
     assert stock["xueqiu_url"].startswith("https://xueqiu.com/S/")
     assert stock["research_url"].startswith("https://stock.okbbc.com/research?stock=")
+    assert "strategic_score" not in stock
 
 
 def test_index_api_returns_homepage_content():
@@ -340,7 +341,7 @@ def test_pages_render():
     assert "安全边界" in latest.text
     assert "打开 /api" in latest.text
     assert "/policies" in latest.text
-    assert "taxonomy-v2-20260707" in latest.text
+    assert "era-mainline-v1" in latest.text
     policies_page = get("/policies")
     assert policies_page.status_code == 200
     assert "政策库" in policies_page.text

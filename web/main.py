@@ -56,6 +56,7 @@ from scripts.theme_taxonomy_v2 import (
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 REPORT_DIR = ROOT_DIR / "research" / "mainline"
+ERA_REPORT_DIR = ROOT_DIR / "research" / "era_mainline"
 POLICY_PATH = ROOT_DIR / "data" / "policy_signals.json"
 POLICY_STOCK_WATCHLIST_PATH = ROOT_DIR / "config" / "policy_stock_watchlist.json"
 REPORT_ID_RE = re.compile(r"^mainline_review_\d{4}-\d{2}-\d{2}_\d{6}$")
@@ -76,8 +77,8 @@ POLICY_THEME_KEYWORDS = {
 
 app = FastAPI(
     title="A股主线研究台",
-    version="1.1.0",
-    description="Read-only browser and API for A-share mainline research results.",
+    version="2.0.0",
+    description="Read-only research system for A-share era mainlines and lifecycle history.",
 )
 
 templates = Jinja2Templates(directory=str(Path(__file__).resolve().parent / "templates"))
@@ -85,12 +86,26 @@ app.mount("/static", StaticFiles(directory=str(Path(__file__).resolve().parent /
 
 API_RECOMMENDED_ENTRYPOINTS = [
     {"name": "接口说明", "path": "/api", "reason": "查看当前系统全部公开接口、参数和只读边界。"},
+    {"name": "时代主线", "path": "/api/era-mainline/latest", "reason": "读取当前时代主线格局、生命周期和四维证据。"},
     {"name": "首页主要内容", "path": "/api/index", "reason": "读取 Web 首页使用的主线、市场热度、曲线和报告列表。"},
     {"name": "最新报告", "path": "/api/latest", "reason": "读取最新主线研究 JSON，适合作为系统集成入口。"},
     {"name": "政策库", "path": "/api/policies", "reason": "读取倒叙政策库、板块评价和个股观察链接。"},
     {"name": "二级主线观察", "path": "/api/taxonomy-v2", "reason": "读取最新报告派生出的二级主线重映射结果。"},
     {"name": "主线分数历史", "path": "/api/score-series", "reason": "读取政策主线分和市场热度观察分的时间序列。"},
     {"name": "健康状态", "path": "/api/health", "reason": "检查报告数量、最新报告 ID 和质量校验状态。"},
+]
+
+ERA_API_ENDPOINTS = [
+    {"method": "GET", "path": "/api/era-mainline", "purpose": "读取时代主线最新研究结果。", "parameters": [], "returns": "JSON，包含格局、主线和主题状态。", "read_only": True},
+    {"method": "GET", "path": "/api/era-mainline/latest", "purpose": "读取最新时代主线报告。", "parameters": [], "returns": "JSON，包含第一、第二、候选、退潮主线及覆盖率。", "read_only": True},
+    {"method": "GET", "path": "/api/era-mainline/ranking", "purpose": "读取时代主线研究排序。", "parameters": [], "returns": "JSON，包含全部一级主题状态。", "read_only": True},
+    {"method": "GET", "path": "/api/era-mainline/regime", "purpose": "读取当前主线格局。", "parameters": [], "returns": "JSON，包含格局、摘要及主次主线。", "read_only": True},
+    {"method": "GET", "path": "/api/era-mainline/history", "purpose": "读取所有主题历史观测。", "parameters": [], "returns": "JSON，包含按日期排序的四维分数和阶段。", "read_only": True},
+    {"method": "GET", "path": "/api/era-mainline/transitions", "purpose": "读取全部生命周期转换。", "parameters": [], "returns": "JSON，包含状态转换原因和置信度。", "read_only": True},
+    {"method": "GET", "path": "/api/era-mainline/theme/{theme_id}", "purpose": "读取单个时代主题详情。", "parameters": [{"name": "theme_id", "in": "path", "required": True, "description": "一级主题 ID。"}], "returns": "JSON，包含四维证据、生命周期和内部结构。", "read_only": True},
+    {"method": "GET", "path": "/api/era-mainline/theme/{theme_id}/timeline", "purpose": "读取单主题历史时间轴。", "parameters": [{"name": "theme_id", "in": "path", "required": True, "description": "一级主题 ID。"}], "returns": "JSON，包含分数历史和阶段转换。", "read_only": True},
+    {"method": "GET", "path": "/api/era-mainline/theme/{theme_id}/evidence", "purpose": "读取单主题支撑与反面证据。", "parameters": [{"name": "theme_id", "in": "path", "required": True, "description": "一级主题 ID。"}], "returns": "JSON，包含四维证据和冲突。", "read_only": True},
+    {"method": "GET", "path": "/api/era-mainline/theme/{theme_id}/invalidation", "purpose": "读取单主题失效条件。", "parameters": [{"name": "theme_id", "in": "path", "required": True, "description": "一级主题 ID。"}], "returns": "JSON，包含失效条件与反证。", "read_only": True}
 ]
 
 API_SAFETY_BOUNDARIES = [
@@ -402,6 +417,7 @@ API_GROUPS = [
         ],
     },
 ]
+API_GROUPS.insert(1, {"name": "时代主线", "description": "读取四维时代主线、生命周期和历史回放。", "endpoints": ERA_API_ENDPOINTS})
 
 
 def build_api_directory(base_url: str) -> dict[str, Any]:
@@ -434,6 +450,34 @@ def _json_files() -> list[Path]:
     if not REPORT_DIR.exists():
         return []
     return sorted(REPORT_DIR.glob("mainline_review_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+
+
+def _era_json_files() -> list[Path]:
+    if not ERA_REPORT_DIR.exists():
+        return []
+    return sorted(ERA_REPORT_DIR.glob("era_mainline_review_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+
+
+def load_latest_era_report() -> tuple[str, dict[str, Any]]:
+    files = _era_json_files()
+    if not files:
+        raise HTTPException(status_code=503, detail="时代主线报告尚未生成")
+    return files[0].stem, _load_json(files[0])
+
+
+def _era_theme(payload: dict[str, Any], theme_id: str) -> dict[str, Any]:
+    item = next((row for row in payload.get("theme_states") or [] if row.get("theme_id") == theme_id), None)
+    if not item:
+        raise HTTPException(status_code=404, detail="时代主题不存在")
+    return item
+
+
+def _era_history(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = []
+    for theme in payload.get("theme_states") or []:
+        for point in theme.get("score_history") or []:
+            rows.append({"theme_id": theme.get("theme_id"), "theme_name": theme.get("theme_name"), **point})
+    return sorted(rows, key=lambda item: (item.get("date", ""), item.get("theme_id", ""), item.get("report_id", "")))
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -1473,6 +1517,7 @@ def latest_page(request: Request) -> HTMLResponse:
     page_report["taxonomy_v2_ranking"] = taxonomy_v2.get("themes") or []
     page_report["taxonomy_v2_parent_groups"] = taxonomy_v2.get("parent_groups") or []
     reports = list_reports()
+    _, era_report = load_latest_era_report()
     return templates.TemplateResponse(
         request,
         "index.html",
@@ -1482,6 +1527,7 @@ def latest_page(request: Request) -> HTMLResponse:
             "markdown": markdown,
             "reports": reports,
             "api_catalog": build_api_directory(str(request.base_url)),
+            "era": era_report,
             "page": "latest",
         },
     )
@@ -1499,6 +1545,30 @@ def policies_page(request: Request) -> HTMLResponse:
         "policies.html",
         {"policy_library": build_policy_library_payload(), "page": "policies"},
     )
+
+
+@app.get("/era-mainline", response_class=HTMLResponse)
+def era_mainline_page(request: Request) -> HTMLResponse:
+    _, payload = load_latest_era_report()
+    return templates.TemplateResponse(request, "era_mainline.html", {"era": payload, "page": "era"})
+
+
+@app.get("/era-mainline/{theme_id}", response_class=HTMLResponse)
+def era_theme_page(request: Request, theme_id: str) -> HTMLResponse:
+    _, payload = load_latest_era_report()
+    return templates.TemplateResponse(request, "era_theme.html", {"era": payload, "theme": _era_theme(payload, theme_id), "page": "era"})
+
+
+@app.get("/era-timeline", response_class=HTMLResponse)
+def era_timeline_page(request: Request) -> HTMLResponse:
+    _, payload = load_latest_era_report()
+    return templates.TemplateResponse(request, "era_timeline.html", {"era": payload, "history": _era_history(payload), "page": "timeline"})
+
+
+@app.get("/era-transitions", response_class=HTMLResponse)
+def era_transitions_page(request: Request) -> HTMLResponse:
+    _, payload = load_latest_era_report()
+    return templates.TemplateResponse(request, "era_transitions.html", {"era": payload, "page": "transitions"})
 
 
 @app.get("/reports/{report_id}", response_class=HTMLResponse)
@@ -1520,6 +1590,8 @@ def health() -> dict[str, Any]:
     candidate_summary = latest.get("policy_candidate_summary") or {}
     relevance_summary = latest.get("theme_relevance_input_summary") or {}
     freshness_summary = latest.get("data_freshness_summary") or {}
+    era_files = _era_json_files()
+    era_payload = _load_json(era_files[0]) if era_files else {}
     return {
         "ok": True,
         "read_only": True,
@@ -1552,6 +1624,8 @@ def health() -> dict[str, Any]:
         "high_inference_dependency_count": relevance_summary.get("high_inference_dependency_count", 0),
         "data_freshness_status": freshness_summary.get("data_freshness_status", "unknown"),
         "stale_trading_days": freshness_summary.get("stale_trading_days", 0),
+        "latest_era_report_id": era_payload.get("report_id"),
+        "mainline_regime": era_payload.get("mainline_regime", "data_insufficient"),
         "checked_at": datetime.now().isoformat(timespec="seconds"),
     }
 
@@ -1595,7 +1669,77 @@ def api_taxonomy_v2_score_series() -> dict[str, Any]:
 @app.get("/api/index")
 def api_index() -> dict[str, Any]:
     report_id, payload, markdown = load_latest_report()
-    return build_index_payload(report_id, payload, markdown)
+    result = build_index_payload(report_id, payload, markdown)
+    era_report_id, era = load_latest_era_report()
+    result["era_mainline"] = {
+        "report_id": era_report_id,
+        "basis_date": era.get("basis_date"),
+        "mainline_regime": era.get("mainline_regime"),
+        "primary_mainline": era.get("primary_mainline"),
+        "secondary_mainline": era.get("secondary_mainline"),
+        "emerging_candidates": era.get("emerging_candidates") or [],
+        "declining_mainlines": era.get("declining_mainlines") or [],
+        "summary": era.get("summary", ""),
+    }
+    return result
+
+
+@app.get("/api/era-mainline")
+@app.get("/api/era-mainline/latest")
+def api_era_mainline_latest() -> dict[str, Any]:
+    _, payload = load_latest_era_report()
+    return payload
+
+
+@app.get("/api/era-mainline/ranking")
+def api_era_mainline_ranking() -> dict[str, Any]:
+    report_id, payload = load_latest_era_report()
+    return {"report_id": report_id, "basis_date": payload.get("basis_date"), "theme_states": payload.get("theme_states") or [], "read_only": True}
+
+
+@app.get("/api/era-mainline/regime")
+def api_era_mainline_regime() -> dict[str, Any]:
+    report_id, payload = load_latest_era_report()
+    return {"report_id": report_id, "basis_date": payload.get("basis_date"), "mainline_regime": payload.get("mainline_regime"), "primary_mainline": payload.get("primary_mainline"), "secondary_mainline": payload.get("secondary_mainline"), "summary": payload.get("summary"), "read_only": True}
+
+
+@app.get("/api/era-mainline/history")
+def api_era_mainline_history() -> dict[str, Any]:
+    report_id, payload = load_latest_era_report()
+    return {"report_id": report_id, "history": _era_history(payload), "milestones": payload.get("milestones") or {}, "read_only": True}
+
+
+@app.get("/api/era-mainline/transitions")
+def api_era_mainline_transitions() -> dict[str, Any]:
+    report_id, payload = load_latest_era_report()
+    return {"report_id": report_id, "transitions": payload.get("transitions") or [], "read_only": True}
+
+
+@app.get("/api/era-mainline/theme/{theme_id}")
+def api_era_theme(theme_id: str) -> dict[str, Any]:
+    report_id, payload = load_latest_era_report()
+    return {"report_id": report_id, "result": _era_theme(payload, theme_id), "read_only": True}
+
+
+@app.get("/api/era-mainline/theme/{theme_id}/timeline")
+def api_era_theme_timeline(theme_id: str) -> dict[str, Any]:
+    report_id, payload = load_latest_era_report()
+    theme = _era_theme(payload, theme_id)
+    return {"report_id": report_id, "theme_id": theme_id, "score_history": theme.get("score_history") or [], "stage_history": theme.get("stage_history") or [], "milestones": (payload.get("milestones") or {}).get(theme_id, {}), "read_only": True}
+
+
+@app.get("/api/era-mainline/theme/{theme_id}/evidence")
+def api_era_theme_evidence(theme_id: str) -> dict[str, Any]:
+    report_id, payload = load_latest_era_report()
+    theme = _era_theme(payload, theme_id)
+    return {"report_id": report_id, "theme_id": theme_id, "policy_dimension": theme.get("policy_dimension"), "industry_dimension": theme.get("industry_dimension"), "market_dimension": theme.get("market_dimension"), "narrative_dimension": theme.get("narrative_dimension"), "supporting_evidence": theme.get("supporting_evidence") or [], "contradicting_evidence": theme.get("contradicting_evidence") or [], "conflicts": theme.get("conflicts") or [], "read_only": True}
+
+
+@app.get("/api/era-mainline/theme/{theme_id}/invalidation")
+def api_era_theme_invalidation(theme_id: str) -> dict[str, Any]:
+    report_id, payload = load_latest_era_report()
+    theme = _era_theme(payload, theme_id)
+    return {"report_id": report_id, "theme_id": theme_id, "invalidating_conditions": theme.get("invalidating_conditions") or [], "contradicting_evidence": theme.get("contradicting_evidence") or [], "read_only": True}
 
 
 @app.get("/api/policies")

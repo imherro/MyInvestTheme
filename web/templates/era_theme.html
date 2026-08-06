@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ theme.theme_name }} - 时代主线{% endblock %}
+{% block content %}
+<section class="era-page-head">
+  <a class="text-link" href="/era-mainline">返回时代主线</a>
+  <span class="era-eyebrow">排名 {{ theme.era_rank }} · {{ theme.era_mainline_status }}</span>
+  <h1>{{ theme.theme_name }}</h1>
+  <div class="era-leader-facts"><strong>{{ theme.lifecycle_stage_label }}</strong><span>开始 {{ theme.estimated_start_date or '待确认' }}</span><span>确认 {{ theme.confirmation_date or '尚未确认' }}</span><span>强化 {{ theme.latest_reinforcement_date or '未知' }}</span><span>置信度 {{ '%.0f'|format(theme.era_mainline_confidence) }}</span></div>
+</section>
+<section class="dimension-grid">
+  <div><span>政策持续性</span><strong>{{ '%.1f'|format(theme.policy_score) }}</strong><small>{{ theme.policy_dimension.event_count }} 个事件，{{ theme.policy_dimension.source_org_count }} 个来源</small></div>
+  <div><span>产业兑现度</span><strong>{{ '%.1f'|format(theme.industry_score) if theme.industry_score is not none else '未知' }}</strong><small>{{ theme.industry_dimension.industry_stage_label }}</small></div>
+  <div><span>市场认同度</span><strong>{{ '%.1f'|format(theme.market_score) }}</strong><small>{{ theme.market_dimension.market_stage }}</small></div>
+  <div><span>叙事持续性</span><strong>{{ '%.1f'|format(theme.narrative_score) }}</strong><small>{{ theme.narrative_dimension.narrative_stage }}</small></div>
+</section>
+<section class="evidence-columns">
+  <div><h2>支撑证据</h2><ul>{% for item in theme.supporting_evidence %}<li>{{ item }}</li>{% endfor %}</ul></div>
+  <div><h2>反面证据</h2><ul>{% for item in theme.contradicting_evidence %}<li>{{ item }}</li>{% endfor %}</ul></div>
+</section>
+<section class="section-band"><h2>二级主题内部结构</h2><div class="subtheme-bars">{% for item in theme.market_dimension.secondary_themes %}<div><span>{{ item.theme_name }}</span><div class="bar-track"><i style="width: {{ item.market_confirmation_score }}%"></i></div><strong>{{ '%.1f'|format(item.market_confirmation_score) }}</strong></div>{% endfor %}</div></section>
+<section class="section-band"><h2>失效条件</h2><ol>{% for item in theme.invalidating_conditions %}<li>{{ item }}</li>{% endfor %}</ol></section>
+<section class="section-band"><h2>阶段转换历史</h2><div class="timeline-list">{% for item in theme.stage_history %}<div><time>{{ item.change_date }}</time><strong>{{ item.from_stage }} → {{ item.to_stage }}</strong><span>{{ item.change_reasons|join('；') }}</span></div>{% endfor %}</div></section>
+{% endblock %}

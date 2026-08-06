@@ -19,6 +19,7 @@ from generate_mainline_report import (
     write_report_artifacts,
 )
 from policy_signals import POLICY_PATH, validate_policy_store
+from generate_era_mainline_report import generate as generate_era_report
 
 
 POLICY_DIRTY_PREFIXES = {
@@ -30,9 +31,11 @@ def run_command(args: list[str], *, check: bool = True) -> subprocess.CompletedP
     print(f"$ {' '.join(args)}", flush=True)
     result = subprocess.run(args, cwd=ROOT, text=True, encoding="utf-8", errors="replace", capture_output=True)
     if result.stdout:
-        print(result.stdout.rstrip(), flush=True)
+        sys.stdout.buffer.write((result.stdout.rstrip() + "\n").encode(sys.stdout.encoding or "utf-8", errors="replace"))
+        sys.stdout.flush()
     if result.stderr:
-        print(result.stderr.rstrip(), file=sys.stderr, flush=True)
+        sys.stderr.buffer.write((result.stderr.rstrip() + "\n").encode(sys.stderr.encoding or "utf-8", errors="replace"))
+        sys.stderr.flush()
     if check and result.returncode != 0:
         raise RuntimeError(f"Command failed with exit code {result.returncode}: {' '.join(args)}")
     return result
@@ -172,6 +175,10 @@ def main() -> int:
     print(f"Generated: {json_path}", flush=True)
     print(f"Generated: {md_path}", flush=True)
     print(f"Top theme: {top['theme']} {top['stage']} {top['evidence_score']:.2f}", flush=True)
+    era_payload, era_json_path, era_md_path = generate_era_report(write=True)
+    print(f"Generated: {era_json_path}", flush=True)
+    print(f"Generated: {era_md_path}", flush=True)
+    print(f"Era regime: {era_payload['mainline_regime']}", flush=True)
 
     if not args.skip_tests:
         run_command([sys.executable, "-m", "pytest", "web/tests", "-q"])
@@ -179,7 +186,7 @@ def main() -> int:
     if args.no_git:
         print("Skip git commit/push because --no-git was set.", flush=True)
     else:
-        commit_and_push([*current_policy_dirty, json_path, md_path], no_push=args.no_push)
+        commit_and_push([*current_policy_dirty, json_path, md_path, era_json_path, era_md_path], no_push=args.no_push)
 
     print(f"Daily mainline update finished at {datetime.now(TZ).isoformat(timespec='seconds')}", flush=True)
     return 0

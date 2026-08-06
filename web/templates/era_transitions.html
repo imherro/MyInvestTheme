@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}生命周期转换{% endblock %}
+{% block content %}
+<section class="era-page-head"><span class="era-eyebrow">状态机记录</span><h1>生命周期转换</h1><p>每次阶段变化都保留原因、维度变化和转换置信度。</p></section>
+<section class="section-band"><div class="timeline-list">{% for item in era.transitions|reverse %}<div><time>{{ item.change_date }}</time><strong>{{ item.theme_id }} · {{ item.from_stage }} → {{ item.to_stage }}</strong><span>{{ item.change_reasons|join('；') }}{% if not item.legal_direct_transition %}；目标阶段已按合法状态机降为相邻阶段{% endif %}</span></div>{% endfor %}</div></section>
+{% endblock %}
