@@ -1,0 +1,33 @@
+{
+  "version": "policy_field_provenance_v1",
+  "source_types": [
+    "official_text",
+    "official_metadata",
+    "deterministic_extraction",
+    "llm_extraction",
+    "llm_inference",
+    "manual_annotation",
+    "legacy_unknown"
+  ],
+  "field_layers": {
+    "official": ["title", "source", "source_org", "url", "document_date", "official_publish_at", "policy_text", "official_summary", "official_key_points"],
+    "factual_extraction": ["summary", "evidence", "key_points", "extracted_entities", "extracted_measures", "extracted_targets", "extracted_budget_amounts", "extracted_project_counts", "extracted_deadlines", "extracted_implementation_bodies"],
+    "inference": ["beneficiary_chain", "related_industries", "research_notes", "analyst_tags"]
+  },
+  "legacy_defaults": {
+    "title": "official_metadata",
+    "source": "official_metadata",
+    "source_org": "official_metadata",
+    "url": "official_metadata",
+    "policy_text": "official_text",
+    "official_summary": "official_text",
+    "official_key_points": "official_text",
+    "summary": "llm_extraction",
+    "evidence": "llm_extraction",
+    "key_points": "llm_extraction",
+    "beneficiary_chain": "llm_inference",
+    "related_industries": "llm_inference",
+    "research_notes": "llm_inference",
+    "analyst_tags": "manual_annotation"
+  }
+}

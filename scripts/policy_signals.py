@@ -15,6 +15,7 @@ from theme_relevance import (
     load_theme_config,
     theme_keywords,
 )
+from policy_time_provenance import audit_policy_time
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -82,6 +83,24 @@ def scored_policy_signals(signals: list[dict[str, Any]], basis: date) -> list[di
     scored = []
     for signal in signals:
         item = dict(signal)
+        time_audit = audit_policy_time(item, report_basis=basis)
+        item.update(
+            {
+                "document_date": time_audit["document_date"],
+                "official_publish_at": time_audit["official_publish_at"],
+                "first_seen_at": time_audit["first_seen_at"],
+                "crawl_at": time_audit["crawl_at"],
+                "effective_at": time_audit["effective_at"],
+                "revision_at": time_audit["revision_at"],
+                "point_in_time_available_at": time_audit["point_in_time_available_at"],
+                "point_in_time_basis": time_audit["point_in_time_basis"],
+                "time_provenance_status": time_audit["time_provenance_status"],
+                "point_in_time_backtest_eligible": time_audit["point_in_time_basis"] != "unavailable",
+            }
+        )
+        if time_audit["point_in_time_available_at"]:
+            item["published_date_original"] = item.get("published_date") or item.get("publish_date") or ""
+            item["published_date"] = time_audit["point_in_time_available_at"][:10]
         item.update(policy_score_components(item, basis))
         scored.append(item)
     return scored

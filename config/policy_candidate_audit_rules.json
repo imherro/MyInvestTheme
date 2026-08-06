@@ -1,0 +1,13 @@
+{
+  "version": "policy_candidate_audit_v1",
+  "candidate_path": "data/policy_candidates.jsonl",
+  "allowed_decisions": ["included", "excluded", "pending", "duplicate", "unreachable", "invalid_source", "not_policy", "out_of_scope", "insufficient_content"],
+  "included_decision": "included",
+  "legacy_review_status": "legacy_imported",
+  "blocking_codes": [
+    "INCLUDED_POLICY_MISSING_CANDIDATE_RECORD",
+    "CANDIDATE_DECISION_MISSING",
+    "CANDIDATE_HASH_MISMATCH",
+    "DUPLICATE_CANDIDATE_CONFLICT"
+  ]
+}

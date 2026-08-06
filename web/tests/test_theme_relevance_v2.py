@@ -56,16 +56,19 @@ def test_weak_generic_keyword_is_filtered_from_theme_summary():
     assert summary["themes"][0]["matched_policy_count"] == 0
 
 
-def test_beneficiary_chain_boosts_ai_theme():
+def test_inference_fields_do_not_boost_strict_score():
     policy = {
-        "title": "算力基础设施支持政策",
+        "title": "通用工作安排",
         "beneficiary_chain": ["智能计算中心", "服务器", "光模块"],
         "related_industries": ["数据中心"],
     }
 
     result = compute_theme_relevance_v2(policy, theme_by_name("AI算力/通信"))
 
-    assert result["beneficiary_score"] > 0.5
+    assert result["theme_relevance_strict"] == 0.0
+    assert result["theme_relevance_with_inference"] > result["theme_relevance_strict"]
+    assert result["inference_lift"] > 0
+    assert result["relevance_score_v2"] == result["theme_relevance_strict"]
 
 
 def test_negative_policy_discounts_relevance():

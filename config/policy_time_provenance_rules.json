@@ -1,0 +1,30 @@
+{
+  "version": "policy_time_provenance_v1",
+  "timezone": "Asia/Shanghai",
+  "supported_formats": [
+    "%Y-%m-%d",
+    "%Y-%m-%dT%H:%M:%S%z",
+    "%Y-%m-%dT%H:%M:%S.%f%z",
+    "%Y-%m-%d %H:%M:%S%z"
+  ],
+  "required_fields_for_new_records": ["document_date", "first_seen_at", "crawl_at"],
+  "legacy_missing_status": "legacy_unknown",
+  "constraints": {
+    "official_publish_at_not_after_first_seen_at": true,
+    "first_seen_at_not_after_crawl_at": true,
+    "point_in_time_not_after_report_basis": true
+  },
+  "severity": {
+    "DOCUMENT_DATE_BEFORE_OFFICIAL_PUBLISH": "warning",
+    "DOCUMENT_DATE_BEFORE_FIRST_SEEN": "warning",
+    "OFFICIAL_PUBLISH_AFTER_FIRST_SEEN": "error",
+    "POINT_IN_TIME_UNAVAILABLE": "warning",
+    "FUTURE_POLICY_TIMESTAMP": "error",
+    "POLICY_TIME_CONFLICT": "error"
+  },
+  "write_policy": {
+    "block_statuses": ["conflict", "future_timestamp", "invalid"],
+    "allow_legacy_unknown": true,
+    "allow_degraded": true
+  }
+}
