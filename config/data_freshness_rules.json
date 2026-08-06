@@ -5,6 +5,7 @@
   "complete_data_cutoff_time": "17:00:00",
   "max_stale_trading_days": 1,
   "max_policy_ingestion_lag_hours": 72,
+  "max_policy_scan_lag_hours": 72,
   "max_market_data_lag_hours": 72,
   "block_report_write_when_stale": false,
   "stale_forbidden_phrases": ["当前主线", "最新主线"],

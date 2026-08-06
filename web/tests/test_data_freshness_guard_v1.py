@@ -29,6 +29,25 @@ def test_market_delay_over_threshold_is_stale():
 
 
 def test_policy_and_market_lags_are_separate():
-    summary = build_data_freshness_summary(actual_basis_date="2026-06-22", generated_at="2026-06-22T18:00:00+08:00", trading_dates=["20260619", "20260622"], policies=[{"first_seen_at": "2026-06-22T17:00:00+08:00"}])
+    summary = build_data_freshness_summary(
+        actual_basis_date="2026-06-22",
+        generated_at="2026-06-22T18:00:00+08:00",
+        trading_dates=["20260619", "20260622"],
+        policies=[],
+        scan_status={"last_scan_completed_at": "2026-06-22T17:00:00+08:00", "last_scan_status": "success", "sources_checked": 8},
+    )
     assert summary["policy_ingestion_lag_hours"] == 1.0
     assert summary["market_data_lag_hours"] == 3.0
+    assert summary["last_scan_status"] == "success"
+
+
+def test_policy_freshness_does_not_use_latest_candidate_first_seen():
+    summary = build_data_freshness_summary(
+        actual_basis_date="2026-06-22",
+        generated_at="2026-06-22T18:00:00+08:00",
+        trading_dates=["20260622"],
+        policies=[{"first_seen_at": "2026-06-22T17:59:00+08:00"}],
+        scan_status={},
+    )
+    assert summary["policy_ingestion_lag_hours"] is None
+    assert "POLICY_SCAN_STATUS_UNAVAILABLE" in summary["freshness_warnings"]

@@ -1,0 +1,19 @@
+{
+  "version": "policy_event_type_rules_v1",
+  "default_type": "regulatory_support",
+  "types": {
+    "strategic_declaration": {"strength": 90, "execution_level": 35, "keywords": ["中央经济工作会议", "政府工作报告", "战略", "纲要"]},
+    "national_plan": {"strength": 95, "execution_level": 55, "keywords": ["五年规划", "十五五", "十四五", "国家规划"]},
+    "implementation_plan": {"strength": 82, "execution_level": 78, "keywords": ["实施方案", "行动方案", "行动计划"]},
+    "funding_support": {"strength": 86, "execution_level": 88, "keywords": ["资金", "财政", "补贴", "专项债", "基金"]},
+    "major_project": {"strength": 88, "execution_level": 92, "keywords": ["重大工程", "重大项目", "开工", "建设项目"]},
+    "regulatory_support": {"strength": 68, "execution_level": 58, "keywords": ["意见", "通知", "支持", "促进"]},
+    "standard_setting": {"strength": 62, "execution_level": 72, "keywords": ["标准", "规范", "指引"]},
+    "pilot_program": {"strength": 58, "execution_level": 65, "keywords": ["试点", "示范"]},
+    "local_follow_up": {"strength": 45, "execution_level": 62, "keywords": ["省", "市人民政府", "地方"]},
+    "enterprise_execution": {"strength": 55, "execution_level": 82, "keywords": ["央企", "企业", "资本开支", "采购"]},
+    "restrictive_policy": {"strength": 70, "execution_level": 75, "keywords": ["限制", "禁止", "专项整治", "严控"]},
+    "risk_control": {"strength": 55, "execution_level": 65, "keywords": ["风险防范", "风险提示", "监管"]},
+    "policy_exit": {"strength": 85, "execution_level": 80, "keywords": ["退出", "停止支持", "废止", "取消"]}
+  }
+}

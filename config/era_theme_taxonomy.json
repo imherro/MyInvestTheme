@@ -1,0 +1,15 @@
+{
+  "version": "era_theme_taxonomy_v1",
+  "source_taxonomy": "theme_taxonomy_v2",
+  "levels": ["primary_theme", "secondary_theme", "industry_chain_segment"],
+  "primary_themes": [
+    {"theme_id": "hard_tech_semiconductor", "theme_name": "硬科技电子/半导体", "secondary_theme_ids": ["hard_tech_semiconductor", "quantum_tech"], "segments": ["设计", "制造", "设备", "材料", "封装测试"]},
+    {"theme_id": "high_end_manufacturing_robotics_defense", "theme_name": "高端制造/机器人/军工", "secondary_theme_ids": ["robotics", "industrial_equipment", "defense_aerospace", "smart_vehicle_autonomous", "low_altitude_space"], "segments": ["机器人本体", "核心零部件", "工业母机", "航空航天", "智能制造"]},
+    {"theme_id": "infrastructure_materials", "theme_name": "建材/稳增长修复", "secondary_theme_ids": ["infrastructure_materials", "real_estate_chain"], "segments": ["重大工程", "水泥", "玻璃", "工程建设"]},
+    {"theme_id": "ai_compute_communications", "theme_name": "人工智能与数字生产力", "secondary_theme_ids": ["ai_compute", "communication_satellite", "media_game_ai_application"], "segments": ["算力基础设施", "大模型与软件", "数据要素", "光通信", "AI终端", "工业智能化"]},
+    {"theme_id": "new_energy_power_equipment", "theme_name": "新能源体系与电力基础设施", "secondary_theme_ids": ["new_energy_vehicle_lithium", "photovoltaic_wind_storage", "grid_power_utility", "nuclear_fusion"], "segments": ["新型电力系统", "电网设备", "储能", "光伏", "风电", "电力数字化", "新能源消纳"]},
+    {"theme_id": "resources_cycle", "theme_name": "资源与能源安全", "secondary_theme_ids": ["resources_gold", "resources_industrial_metals", "resources_energy"], "segments": ["黄金", "工业金属", "煤炭", "油气", "战略资源"]},
+    {"theme_id": "consumption_media", "theme_name": "消费与文化服务", "secondary_theme_ids": ["core_consumption", "media_game_ai_application"], "segments": ["服务消费", "家电", "食品饮料", "文旅", "数字内容"]},
+    {"theme_id": "innovative_medicine", "theme_name": "创新医药与健康产业", "secondary_theme_ids": ["innovative_medicine"], "segments": ["创新药", "医疗器械", "生物科技", "医疗服务"]}
+  ]
+}

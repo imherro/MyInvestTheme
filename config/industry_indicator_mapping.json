@@ -1,0 +1,14 @@
+{
+  "version": "industry_indicator_mapping_v1",
+  "themes": {
+    "ai_compute_communications": ["telecom_capex", "data_center_investment", "server_output", "optical_module_exports", "cloud_capex"],
+    "new_energy_power_equipment": ["grid_investment", "energy_storage_installation", "renewable_capacity", "power_grid_projects"],
+    "hard_tech_semiconductor": ["semiconductor_output", "fab_capex", "equipment_orders"],
+    "high_end_manufacturing_robotics_defense": ["robot_output", "industrial_capex", "automation_orders"],
+    "infrastructure_materials": ["infrastructure_investment", "cement_output", "construction_orders"],
+    "resources_cycle": ["industrial_metal_output", "commodity_price", "mining_capex"],
+    "consumption_media": ["retail_sales", "service_consumption", "cultural_consumption"],
+    "innovative_medicine": ["pharma_revenue", "rd_spending", "innovative_drug_approvals"]
+  },
+  "observations": {}
+}

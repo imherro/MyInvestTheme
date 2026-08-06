@@ -58,6 +58,7 @@ from theme_relevance import build_theme_relevance_input_summary
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT_DIR = ROOT / "research" / "mainline"
+POLICY_SCAN_STATUS_PATH = ROOT / "data" / "policy_scan_status.json"
 TZ = ZoneInfo("Asia/Shanghai")
 POLICY_WEIGHT = 0.15
 SCORE_SEMANTICS = {
@@ -1472,6 +1473,7 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
         generated_at=generated_dt,
         trading_dates=open_days,
         policies=raw_policies,
+        scan_status=json.loads(POLICY_SCAN_STATUS_PATH.read_text(encoding="utf-8")) if POLICY_SCAN_STATUS_PATH.exists() else {},
     )
     stage_statuses.append(
         build_stage_status(

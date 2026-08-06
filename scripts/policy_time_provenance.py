@@ -98,11 +98,19 @@ def audit_policy_time(
         report_at = datetime.combine(report_basis, time.max, ZoneInfo(timezone))
     if isinstance(report_basis, str) and len(report_basis.strip()) == 10 and report_at:
         report_at = datetime.combine(report_at.date(), time.max, ZoneInfo(timezone))
-    future_fields = [field for field, value in parsed.items() if value and report_at and value > report_at and field != "revision_at"]
+    # Effective, crawl and revision timestamps may legitimately be later than a
+    # report basis. Only public/system availability determines look-ahead risk.
+    future_fields = [
+        field
+        for field in ("official_publish_at", "first_seen_at")
+        if parsed.get(field) and report_at and parsed[field] > report_at
+    ]
     if available and report_at and available > report_at:
         future_fields.append("point_in_time_available_at")
     if future_fields:
         add("FUTURE_POLICY_TIMESTAMP", future_fields[0], "Policy timestamp is later than the report basis time.")
+    if parsed.get("effective_at") and report_at and parsed["effective_at"] > report_at:
+        add("EFFECTIVE_AFTER_REPORT_BASIS", "effective_at", "Policy effective time is later than the report basis; this is informational only.")
 
     invalid = any(raw not in (None, "") and parsed[field] is None for field, raw in aliases.items())
     conflict = any(item["code"] in {"OFFICIAL_PUBLISH_AFTER_FIRST_SEEN", "POLICY_TIME_CONFLICT"} for item in issues)

@@ -47,6 +47,7 @@ def build_data_freshness_summary(
     generated_at: str | datetime,
     trading_dates: Iterable[Any],
     policies: list[dict[str, Any]],
+    scan_status: dict[str, Any] | None = None,
     rules: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     active = rules or load_rules()
@@ -69,16 +70,15 @@ def build_data_freshness_summary(
     else:
         status = "fresh"
 
-    first_seen_values = [parse_policy_time(policy.get("first_seen_at"), timezone) for policy in policies]
-    first_seen_values = [value for value in first_seen_values if value]
-    latest_first_seen = max(first_seen_values) if first_seen_values else None
-    policy_lag = round((generated - latest_first_seen).total_seconds() / 3600, 2) if latest_first_seen else None
+    scan = scan_status or {}
+    last_scan_completed = parse_policy_time(scan.get("last_scan_completed_at"), timezone)
+    policy_lag = round((generated - last_scan_completed).total_seconds() / 3600, 2) if last_scan_completed else None
     if policy_lag is None:
-        warnings.append("POLICY_FIRST_SEEN_UNAVAILABLE")
+        warnings.append("POLICY_SCAN_STATUS_UNAVAILABLE")
         if status == "fresh":
             status = "degraded"
-    elif policy_lag > float(active.get("max_policy_ingestion_lag_hours") or 72):
-        warnings.append("POLICY_INGESTION_LAG")
+    elif policy_lag > float(active.get("max_policy_scan_lag_hours") or 72):
+        warnings.append("POLICY_SCAN_STALE")
         if status == "fresh":
             status = "degraded"
 
@@ -96,7 +96,12 @@ def build_data_freshness_summary(
         "expected_latest_trade_date": expected.isoformat() if expected else "",
         "actual_basis_date": actual.isoformat() if actual else str(actual_basis_date or ""),
         "stale_trading_days": stale_days,
-        "latest_policy_first_seen_at": latest_first_seen.isoformat(timespec="seconds") if latest_first_seen else "",
+        "latest_policy_first_seen_at": "",
+        "last_scan_started_at": str(scan.get("last_scan_started_at") or ""),
+        "last_scan_completed_at": last_scan_completed.isoformat(timespec="seconds") if last_scan_completed else "",
+        "last_scan_status": str(scan.get("last_scan_status") or "unknown"),
+        "sources_checked": int(scan.get("sources_checked") or 0),
+        "candidates_discovered": int(scan.get("candidates_discovered") or 0),
         "policy_ingestion_lag_hours": policy_lag,
         "market_data_lag_hours": market_lag,
         "freshness_warnings": warnings,

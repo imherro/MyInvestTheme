@@ -52,6 +52,22 @@ def test_future_policy_time_blocks_report_write():
     assert summary["future_timestamp_count"] == 1
 
 
+def test_effective_time_after_report_basis_is_informational_only():
+    audit = audit_policy_time(
+        {
+            "id": "future-effective",
+            "official_publish_at": "2026-06-03T09:00:00+08:00",
+            "first_seen_at": "2026-06-03T10:00:00+08:00",
+            "crawl_at": "2026-06-03T10:05:00+08:00",
+            "effective_at": "2027-01-01T00:00:00+08:00",
+        },
+        report_basis="2026-06-04",
+    )
+    assert audit["write_allowed"] is True
+    assert audit["time_provenance_status"] == "verified"
+    assert "EFFECTIVE_AFTER_REPORT_BASIS" in {item["code"] for item in audit["issues"]}
+
+
 def test_timezone_normalization_and_determinism():
     policy = {"id": "tz", "official_publish_at": "2026-06-03T01:00:00Z", "first_seen_at": "2026-06-03T10:00:00+08:00", "crawl_at": "2026-06-03T10:05:00+08:00"}
     first = audit_policy_time(policy, report_basis="2026-06-04")

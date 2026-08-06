@@ -1,0 +1,41 @@
+{
+  "version": "era_mainline_rules_v1",
+  "dimension_weights": {
+    "policy": 0.35,
+    "industry": 0.25,
+    "market": 0.25,
+    "narrative": 0.15
+  },
+  "thresholds": {
+    "absolute_mainline_score": 58,
+    "policy_minimum": 50,
+    "industry_confirmation": 50,
+    "market_confirmation": 52,
+    "minimum_duration_days": 14,
+    "dominance_gap": 9,
+    "dual_mainline_gap": 8,
+    "emerging_score": 42,
+    "declining_score": 38,
+    "minimum_data_coverage": 0.45
+  },
+  "statuses": [
+    "primary_era_mainline",
+    "secondary_era_mainline",
+    "emerging_candidate",
+    "policy_theme_only",
+    "market_theme_only",
+    "legacy_mainline",
+    "declining_mainline",
+    "not_a_mainline",
+    "uncertain"
+  ],
+  "regimes": [
+    "single_dominant",
+    "dual_mainline",
+    "multi_mainline",
+    "rotation",
+    "transition",
+    "no_clear_mainline",
+    "data_insufficient"
+  ]
+}

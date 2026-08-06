@@ -1,0 +1,30 @@
+{
+  "version": "era_lifecycle_rules_v1",
+  "stages": [
+    "dormant", "incubating", "emerging", "launching", "confirmed", "expanding",
+    "mature", "cooling", "declining", "ended", "restarting", "uncertain"
+  ],
+  "labels": {
+    "dormant": "休眠", "incubating": "孕育期", "emerging": "萌芽期", "launching": "启动期",
+    "confirmed": "确认期", "expanding": "扩散期", "mature": "成熟期", "cooling": "降温期",
+    "declining": "衰退期", "ended": "结束", "restarting": "重新启动", "uncertain": "不确定"
+  },
+  "legal_transitions": {
+    "dormant": ["dormant", "incubating", "uncertain"],
+    "incubating": ["dormant", "incubating", "emerging", "uncertain"],
+    "emerging": ["incubating", "emerging", "launching", "uncertain"],
+    "launching": ["emerging", "launching", "confirmed", "cooling", "uncertain"],
+    "confirmed": ["launching", "confirmed", "expanding", "cooling", "uncertain"],
+    "expanding": ["confirmed", "expanding", "mature", "cooling", "uncertain"],
+    "mature": ["expanding", "mature", "cooling", "uncertain"],
+    "cooling": ["expanding", "cooling", "declining", "uncertain"],
+    "declining": ["cooling", "declining", "ended", "restarting", "uncertain"],
+    "ended": ["ended", "restarting", "uncertain"],
+    "restarting": ["restarting", "launching", "cooling", "uncertain"],
+    "uncertain": ["dormant", "incubating", "emerging", "launching", "confirmed", "cooling", "declining", "uncertain"]
+  },
+  "minimum_confirmed_observations": 2,
+  "minimum_end_observations": 3,
+  "cooling_market_drop": 12,
+  "ending_score_threshold": 30
+}
