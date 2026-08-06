@@ -11,12 +11,14 @@ try:
     from era_evidence_windows import RuleUsageTracker, deduplicate_observations, get_rule, parse_date
     from industry_validation import build_industry_dimension
     from market_confirmation import build_market_dimensions
+    from mainline_phase3 import enrich_phase3
     from narrative_momentum import build_narrative_dimension
 except ModuleNotFoundError:
     from scripts.era_lifecycle_engine import analyze_reinforcements, enrich_lifecycle, lifecycle_dates, load_rules as load_lifecycle_rules
     from scripts.era_evidence_windows import RuleUsageTracker, deduplicate_observations, get_rule, parse_date
     from scripts.industry_validation import build_industry_dimension
     from scripts.market_confirmation import build_market_dimensions
+    from scripts.mainline_phase3 import enrich_phase3
     from scripts.narrative_momentum import build_narrative_dimension
 
 
@@ -25,7 +27,7 @@ RULES_PATH = ROOT / "config" / "era_mainline_rules.json"
 EVENT_RULES_PATH = ROOT / "config" / "policy_event_type_rules.json"
 TAXONOMY_PATH = ROOT / "config" / "era_theme_taxonomy.json"
 CONFIDENCE_RULES_PATH = ROOT / "config" / "era_confidence_rules.json"
-VERSION = "era_mainline_model_v2"
+VERSION = "era_mainline_model_v3"
 QUALIFICATION_LABELS = {
     "primary_era_mainline": "第一时代主线", "secondary_era_mainline": "次级时代主线",
     "emerging_candidate": "潜在候选", "policy_theme_only": "仅政策主题",
@@ -515,7 +517,7 @@ def build_era_mainline_report(
         names = "、".join(item["theme_name"] for item in confirmed[:3])
         regime_labels = {"single_dominant": "单一主线", "dual_mainline": "双主线", "multi_mainline": "多主线并存", "rotation": "轮动", "transition": "切换"}
         summary = f"当前主线格局为{regime_labels.get(regime, regime)}，获得多层证据确认的方向包括：{names}。"
-    return {
+    payload = {
         "scoring_version": VERSION,
         "rules_version": active.get("version", "era_mainline_rules_v2"),
         "lifecycle_rules_version": lifecycle_rules.get("version", "era_lifecycle_rules_v2"),
@@ -546,3 +548,4 @@ def build_era_mainline_report(
         "summary": summary,
         "score_semantics": "配置权重为40/25/25/10；缺失维度按有效权重动态重算。当前叙事维度仅表示官方战略表述和子主题扩散，不代表社会舆论热度。时代主线分不表示未来收益。",
     }
+    return enrich_phase3(payload)

@@ -1,0 +1,5 @@
+{
+  "version": "allocation_style_model_v1",
+  "styles": {"high_dividend": {"label": "高股息与稳定现金流", "weights": {"rate_environment_score": 0.25, "dividend_stability_score": 0.25, "cash_flow_quality_score": 0.25, "relative_valuation_score": 0.15, "market_defensiveness_score": 0.10}}},
+  "states": [{"minimum": 75, "state": "dominant"}, {"minimum": 60, "state": "supportive"}, {"minimum": 40, "state": "neutral"}, {"minimum": 0, "state": "unfavorable"}]
+}

@@ -97,8 +97,8 @@ API_RECOMMENDED_ENTRYPOINTS = [
 
 ERA_API_ENDPOINTS = [
     {"method": "GET", "path": "/api/era-mainline", "purpose": "读取时代主线最新研究结果。", "parameters": [], "returns": "JSON，包含证据阶段、主线资格、三类置信度、有效权重和历史覆盖；lifecycle_stage、era_mainline_status、era_mainline_confidence 为兼容字段。", "read_only": True},
-    {"method": "GET", "path": "/api/era-mainline/latest", "purpose": "读取最新时代主线报告。", "parameters": [], "returns": "JSON，包含持续证据窗口、主线格局、候选与退潮方向及历史回放语义。", "read_only": True},
-    {"method": "GET", "path": "/api/era-mainline/ranking", "purpose": "读取时代主线研究排序。", "parameters": [], "returns": "JSON，包含全部一级主题状态。", "read_only": True},
+    {"method": "GET", "path": "/api/era-mainline/latest", "purpose": "读取最新时代主线报告。", "parameters": [], "returns": "JSON，包含主线类型、结构生命周期、市场表达生命周期、分类型排名及兼容字段。", "read_only": True},
+    {"method": "GET", "path": "/api/era-mainline/ranking", "purpose": "读取分类型时代主线研究排序。", "parameters": [], "returns": "JSON，包含六类排名、研究对象和兼容一级主题状态。", "read_only": True},
     {"method": "GET", "path": "/api/era-mainline/regime", "purpose": "读取当前主线格局。", "parameters": [], "returns": "JSON，包含格局、摘要及主次主线。", "read_only": True},
     {"method": "GET", "path": "/api/era-mainline/history", "purpose": "读取所有主题历史观测。", "parameters": [], "returns": "JSON，包含按日期排序的四维分数、证据阶段和 retrospective_replay 语义。", "read_only": True},
     {"method": "GET", "path": "/api/era-mainline/transitions", "purpose": "读取全部生命周期转换。", "parameters": [], "returns": "JSON，包含状态转换原因和置信度。", "read_only": True},
@@ -466,7 +466,8 @@ def load_latest_era_report() -> tuple[str, dict[str, Any]]:
 
 
 def _era_theme(payload: dict[str, Any], theme_id: str) -> dict[str, Any]:
-    item = next((row for row in payload.get("theme_states") or [] if row.get("theme_id") == theme_id), None)
+    rows = list(payload.get("research_objects") or []) + list(payload.get("theme_states") or [])
+    item = next((row for row in rows if row.get("theme_id") == theme_id), None)
     if not item:
         raise HTTPException(status_code=404, detail="时代主题不存在")
     return item
@@ -1694,7 +1695,7 @@ def api_era_mainline_latest() -> dict[str, Any]:
 @app.get("/api/era-mainline/ranking")
 def api_era_mainline_ranking() -> dict[str, Any]:
     report_id, payload = load_latest_era_report()
-    return {"report_id": report_id, "basis_date": payload.get("basis_date"), "theme_states": payload.get("theme_states") or [], "read_only": True}
+    return {"report_id": report_id, "basis_date": payload.get("basis_date"), "research_objects": payload.get("research_objects") or [], "class_rankings": payload.get("class_rankings") or {}, "era_industrial_ranking": payload.get("era_industrial_ranking") or [], "strategic_growth_ranking": payload.get("strategic_growth_ranking") or [], "policy_profit_repair_ranking": payload.get("policy_profit_repair_ranking") or [], "macro_cycle_ranking": payload.get("macro_cycle_ranking") or [], "trading_branch_ranking": payload.get("trading_branch_ranking") or [], "allocation_style_ranking": payload.get("allocation_style_ranking") or [], "theme_states": payload.get("theme_states") or [], "read_only": True}
 
 
 @app.get("/api/era-mainline/regime")

@@ -1,0 +1,10 @@
+{
+  "version": "mainline_class_lifecycle_rules_v1",
+  "era_industrial": {"expected_duration": {"minimum": 5, "typical": 8, "maximum": 15, "unit": "years"}, "minimum_structural_confirmation_days": 180, "minimum_industrial_validation_dimensions": 2, "structural_decline_minimum_days": 365},
+  "strategic_growth": {"expected_duration": {"minimum": 3, "typical": 5, "maximum": 10, "unit": "years"}, "minimum_structural_confirmation_days": 90, "minimum_industrial_validation_dimensions": 2, "structural_decline_minimum_days": 180},
+  "policy_profit_repair": {"expected_duration": {"minimum": 12, "typical": 24, "maximum": 36, "unit": "months"}, "minimum_structural_confirmation_days": 60, "minimum_industrial_validation_dimensions": 2, "structural_decline_minimum_days": 90},
+  "macro_cycle": {"expected_duration": {"minimum": 6, "typical": 18, "maximum": 36, "unit": "months"}, "minimum_structural_confirmation_days": 30, "minimum_industrial_validation_dimensions": 2, "structural_decline_minimum_days": 60},
+  "trading_branch": {"expected_duration": {"minimum": 10, "typical": 45, "maximum": 180, "unit": "days"}, "minimum_structural_confirmation_days": 0, "structural_decline_minimum_days": 14},
+  "allocation_style": {"expected_duration": {"minimum": null, "typical": null, "maximum": null, "unit": "regime_dependent"}, "minimum_structural_confirmation_days": 0, "structural_decline_minimum_days": 0},
+  "unclassified": {"expected_duration": {"minimum": null, "typical": null, "maximum": null, "unit": "unknown"}, "minimum_structural_confirmation_days": 0, "structural_decline_minimum_days": 0}
+}

@@ -162,6 +162,21 @@
   min-width: 1040px;
 }
 
+.class-table {
+  min-width: 900px;
+}
+
+.class-table th:nth-child(1) { width: 6%; }
+.class-table th:nth-child(2) { width: 28%; }
+.class-table th:nth-child(3),
+.class-table th:nth-child(4) { width: 14%; }
+.class-table th:nth-child(n+5) { width: 9.5%; }
+.class-table td {
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
 .evidence-columns {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

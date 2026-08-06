@@ -10,7 +10,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 REPORT_DIR = ROOT / "research" / "era_mainline"
 LIFECYCLE_RULES_PATH = ROOT / "config" / "era_lifecycle_rules.json"
-VERSION = "era_mainline_validator_v3"
+VERSION = "era_mainline_validator_v4"
 
 
 def _date(value: Any) -> datetime | None:
@@ -123,6 +123,47 @@ def validate(payload: dict[str, Any]) -> dict[str, Any]:
             error("ERA_STAGE_DWELL_VIOLATION", f"transitions.{index}", "Early transition requires an explicit severe-evidence override.")
         if pair == ("ended", "restarting") and (not item.get("cycle_id") or int(item.get("cycle_sequence") or 0) <= 0):
             error("ERA_RESTART_WITHOUT_NEW_CYCLE", f"transitions.{index}.cycle_id", "Restart must open a new lifecycle cycle.")
+    if str(payload.get("scoring_version") or "").endswith("_v3") or "research_objects" in payload:
+        phase3_required = {"research_objects", "class_rankings", "mainline_relationships", "research_hypothesis_comparison", "era_industrial_ranking", "strategic_growth_ranking", "policy_profit_repair_ranking", "macro_cycle_ranking", "trading_branch_ranking", "allocation_style_ranking"}
+        for field in sorted(phase3_required - set(payload)):
+            error("ERA_REQUIRED_FIELD_MISSING", field, "Required Phase 3 field is missing.")
+        valid_classes = {"era_industrial", "strategic_growth", "policy_profit_repair", "macro_cycle", "trading_branch", "allocation_style", "unclassified"}
+        objects = payload.get("research_objects") or []
+        object_ids = set()
+        for index, item in enumerate(objects):
+            path = f"research_objects.{index}"
+            object_id = str(item.get("theme_id") or "")
+            if not object_id or object_id in object_ids:
+                error("MAINLINE_CLASS_INVALID", f"{path}.theme_id", "Research object IDs must be present and unique.")
+            object_ids.add(object_id)
+            kind = item.get("primary_mainline_class")
+            if kind not in valid_classes:
+                error("MAINLINE_CLASS_INVALID", f"{path}.primary_mainline_class", "Every research object needs one valid primary class.")
+            structural = item.get("structural_lifecycle")
+            market = item.get("market_expression_lifecycle")
+            if not isinstance(structural, dict) or not isinstance(market, dict) or structural is market or structural == market:
+                error("STRUCTURAL_MARKET_STAGE_COUPLED", path, "Structural and market-expression lifecycles must be independent objects.")
+            if item.get("structural_conviction_score") == item.get("market_expression_score"):
+                error("STRUCTURAL_MARKET_STAGE_COUPLED", f"{path}.structural_conviction_score", "Structural conviction cannot directly copy market expression.")
+            if kind in {"era_industrial", "strategic_growth"} and item.get("industry_score") is None and float(item.get("structural_stage_confidence") or 0) > 55:
+                error("STRUCTURAL_END_EVIDENCE_INSUFFICIENT", f"{path}.structural_stage_confidence", "Missing industrial data must cap structural-stage confidence.")
+            if kind == "era_industrial" and item.get("structural_stage") == "structural_ended" and item.get("market_expression_stage") in {"cooling", "declining", "rejected"}:
+                error("STRUCTURAL_END_EVIDENCE_INSUFFICIENT", f"{path}.structural_stage", "Market weakness alone cannot end an era-industrial structure.")
+            horizon = item.get("time_horizon") or {}
+            if kind == "era_industrial" and horizon.get("unit") != "years":
+                error("CLASS_DURATION_MISMATCH", f"{path}.time_horizon", "Era-industrial horizons must use years.")
+            if kind == "trading_branch" and horizon.get("unit") not in {"days", "months"}:
+                error("CLASS_DURATION_MISMATCH", f"{path}.time_horizon", "Trading branches must use short horizons.")
+        industrial_ids = {item.get("theme_id") for key in ("era_industrial_ranking", "strategic_growth_ranking", "policy_profit_repair_ranking", "macro_cycle_ranking") for item in payload.get(key) or []}
+        style_ids = {item.get("theme_id") for item in payload.get("allocation_style_ranking") or []}
+        trading_ids = {item.get("theme_id") for item in payload.get("trading_branch_ranking") or []}
+        if industrial_ids & style_ids:
+            error("ALLOCATION_STYLE_IN_MAINLINE_RANKING", "class_rankings", "Allocation styles cannot appear in industrial rankings.")
+        if industrial_ids & trading_ids:
+            error("TRADING_BRANCH_PROMOTED_TO_ERA_MAINLINE", "class_rankings", "Trading branches cannot appear in industrial rankings.")
+        for key, expected_class in (("era_industrial_ranking", "era_industrial"), ("strategic_growth_ranking", "strategic_growth"), ("policy_profit_repair_ranking", "policy_profit_repair"), ("macro_cycle_ranking", "macro_cycle"), ("trading_branch_ranking", "trading_branch"), ("allocation_style_ranking", "allocation_style")):
+            if any(item.get("primary_mainline_class") != expected_class for item in payload.get(key) or []):
+                error("MAINLINE_CLASS_RANKING_CONFLICT", key, "Every class ranking must contain only its declared class.")
     rules = json.loads(LIFECYCLE_RULES_PATH.read_text(encoding="utf-8"))
     usage_versions = payload.get("rule_usage") or {}
     usage = usage_versions.get(rules["version"])

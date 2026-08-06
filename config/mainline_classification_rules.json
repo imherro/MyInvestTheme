@@ -1,0 +1,53 @@
+{
+  "version": "mainline_classification_v1",
+  "classes": {
+    "era_industrial": {
+      "label": "时代产业主线",
+      "weights": {"technology_paradigm": 0.22, "national_strategy": 0.18, "industrial_capex": 0.16, "industry_penetration": 0.16, "commercialization": 0.10, "cross_industry_diffusion": 0.12, "duration_support": 0.06},
+      "minimum_score": 55
+    },
+    "strategic_growth": {
+      "label": "战略成长主线",
+      "weights": {"technology_paradigm": 0.16, "national_strategy": 0.20, "industrial_capex": 0.17, "industry_penetration": 0.14, "commercialization": 0.20, "cross_industry_diffusion": 0.07, "duration_support": 0.06},
+      "minimum_score": 48
+    },
+    "policy_profit_repair": {
+      "label": "政策盈利修复主线",
+      "weights": {"national_strategy": 0.12, "profit_repair": 0.28, "supply_discipline": 0.28, "commercialization": 0.08, "duration_support": 0.12, "macro_sensitivity": 0.12},
+      "minimum_score": 46
+    },
+    "macro_cycle": {
+      "label": "宏观阶段主线",
+      "weights": {"macro_sensitivity": 0.30, "commodity_price_dependency": 0.25, "profit_repair": 0.16, "supply_discipline": 0.10, "duration_support": 0.10, "national_strategy": 0.09},
+      "minimum_score": 44
+    },
+    "trading_branch": {
+      "label": "交易支线",
+      "weights": {"event_dependency": 0.45, "commodity_price_dependency": 0.20, "market_intensity": 0.25, "duration_support": 0.10},
+      "minimum_score": 38
+    },
+    "allocation_style": {
+      "label": "配置风格",
+      "weights": {"allocation_style_dependency": 0.65, "cash_flow_quality": 0.20, "rate_sensitivity": 0.15},
+      "minimum_score": 45
+    }
+  },
+  "constraints": {
+    "era_minimum_technology_or_restructuring": 55,
+    "era_minimum_capex_or_penetration": 45,
+    "commodity_era_cap": 42,
+    "event_era_cap": 40,
+    "industry_unknown_confidence_cap": 68,
+    "low_margin_confidence_cap": 58
+  },
+  "research_object_profiles": {
+    "ai_technology_self_reliance": {"technology_paradigm": 92, "national_strategy": 90, "industrial_capex": 78, "industry_penetration": 68, "commercialization": 60, "cross_industry_diffusion": 86, "duration_support": 88, "profit_repair": 25, "macro_sensitivity": 25, "commodity_price_dependency": 5, "event_dependency": 18, "allocation_style_dependency": 5, "market_intensity": 60},
+    "energy_revolution_power_system": {"technology_paradigm": 72, "national_strategy": 88, "industrial_capex": 90, "industry_penetration": 65, "commercialization": 72, "cross_industry_diffusion": 74, "duration_support": 86, "profit_repair": 35, "macro_sensitivity": 42, "commodity_price_dependency": 22, "event_dependency": 14, "allocation_style_dependency": 8, "market_intensity": 48},
+    "advanced_manufacturing": {"technology_paradigm": 76, "national_strategy": 82, "industrial_capex": 70, "industry_penetration": 54, "commercialization": 52, "cross_industry_diffusion": 62, "duration_support": 75, "profit_repair": 28, "macro_sensitivity": 35, "commodity_price_dependency": 8, "event_dependency": 24, "allocation_style_dependency": 4, "market_intensity": 58},
+    "reflation_resources": {"technology_paradigm": 15, "national_strategy": 45, "industrial_capex": 42, "industry_penetration": 20, "commercialization": 55, "cross_industry_diffusion": 35, "duration_support": 58, "profit_repair": 72, "supply_discipline": 62, "macro_sensitivity": 92, "commodity_price_dependency": 94, "event_dependency": 36, "allocation_style_dependency": 15, "market_intensity": 74},
+    "anti_involution_profit_repair": {"technology_paradigm": 12, "national_strategy": 72, "industrial_capex": 32, "industry_penetration": 22, "commercialization": 45, "cross_industry_diffusion": 48, "duration_support": 66, "profit_repair": 84, "supply_discipline": 90, "macro_sensitivity": 54, "commodity_price_dependency": 38, "event_dependency": 28, "allocation_style_dependency": 8, "market_intensity": 44},
+    "high_dividend_style": {"technology_paradigm": 0, "national_strategy": 28, "industrial_capex": 12, "industry_penetration": 0, "commercialization": 10, "cross_industry_diffusion": 12, "duration_support": 75, "profit_repair": 18, "macro_sensitivity": 58, "commodity_price_dependency": 20, "event_dependency": 8, "allocation_style_dependency": 98, "cash_flow_quality": 82, "rate_sensitivity": 84, "market_intensity": 48},
+    "innovative_medicine_growth": {"technology_paradigm": 72, "national_strategy": 65, "industrial_capex": 48, "industry_penetration": 45, "commercialization": 58, "cross_industry_diffusion": 38, "duration_support": 72, "profit_repair": 35, "macro_sensitivity": 20, "commodity_price_dependency": 2, "event_dependency": 25, "allocation_style_dependency": 4, "market_intensity": 50},
+    "consumer_culture_branch": {"technology_paradigm": 18, "national_strategy": 35, "industrial_capex": 18, "industry_penetration": 22, "commercialization": 55, "cross_industry_diffusion": 30, "duration_support": 30, "profit_repair": 42, "macro_sensitivity": 58, "commodity_price_dependency": 8, "event_dependency": 72, "allocation_style_dependency": 12, "market_intensity": 55}
+  }
+}

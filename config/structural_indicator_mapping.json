@@ -1,0 +1,7 @@
+{
+  "version": "structural_indicator_mapping_v1",
+  "dimensions": ["technology", "infrastructure", "capital_expenditure", "commercialization", "industry_penetration", "revenue_profit", "capacity_utilization", "supply_discipline", "macro_cycle", "valuation_market"],
+  "feature_mapping": {
+    "technology": "technology_paradigm", "infrastructure": "national_strategy", "capital_expenditure": "industrial_capex", "commercialization": "commercialization", "industry_penetration": "industry_penetration", "revenue_profit": "profit_repair", "capacity_utilization": null, "supply_discipline": "supply_discipline", "macro_cycle": "macro_sensitivity", "valuation_market": "market_intensity"
+  }
+}

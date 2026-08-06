@@ -60,7 +60,43 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "",
         "> 这是当前模型对历史数据的回放，不等于当时发布的研究判断。",
         "",
-        "## 当前主线格局",
+        "## 分类型研究结论",
+        "",
+    ]
+    class_sections = [
+        ("era_industrial_ranking", "长期时代产业主线"), ("strategic_growth_ranking", "战略成长主线"),
+        ("policy_profit_repair_ranking", "政策盈利修复主线"), ("macro_cycle_ranking", "宏观阶段主线"),
+        ("trading_branch_ranking", "交易支线"), ("allocation_style_ranking", "配置风格"),
+    ]
+    for key, title in class_sections:
+        lines.extend([f"### {title}", ""])
+        rows = payload.get(key) or []
+        if not rows:
+            lines.append("当前无达到该类型识别门槛的研究对象。")
+        for item in rows:
+            lines.append(
+                f"- {item['theme_name']}：结构{item.get('structural_stage_label', '不适用')}（{item.get('structural_conviction_score', 0):.1f}），"
+                f"市场表达{item.get('market_expression_stage_label', '未知')}（{item.get('market_expression_score', 0):.1f}），"
+                f"周期强度 {item.get('cycle_strength_score', 0):.1f}；类型置信度 {item.get('class_confidence', 0):.0f}。"
+            )
+    comparison = payload.get("research_hypothesis_comparison", {}).get("system_assessment", {})
+    lines.extend(["", "## 人工研究框架对照", ""])
+    for key, title in (("agreements", "一致"), ("partial_agreements", "部分一致"), ("disagreements", "分歧"), ("recommended_reframing", "建议重构")):
+        lines.append(f"- {title}：{'；'.join(comparison.get(key) or []) or '无'}")
+    lines.extend([
+        "",
+        "## 双生命周期总览",
+        "",
+        "| 类型 | 主题 | 结构阶段 | 市场表达阶段 | 结构分 | 周期分 | 市场分 | 典型时间尺度 |",
+        "|---|---|---|---|---:|---:|---:|---|",
+    ])
+    for item in payload.get("research_objects") or []:
+        horizon = item.get("time_horizon") or {}
+        typical = "随市场环境" if horizon.get("unit") == "regime_dependent" else f"{horizon.get('typical', '未知')} {horizon.get('unit', '')}"
+        lines.append(f"| {item.get('mainline_class_label')} | {item['theme_name']} | {item.get('structural_stage_label')} | {item.get('market_expression_stage_label')} | {item.get('structural_conviction_score', 0):.1f} | {item.get('cycle_strength_score', 0):.1f} | {item.get('market_expression_score', 0):.1f} | {typical} |")
+    lines.extend([
+        "",
+        "## 当前主线格局（兼容市场证据）",
         "",
         f"- 格局：{payload.get('mainline_regime', '')}",
         f"- 第一时代主线：{_state_title(primary)}",
@@ -68,9 +104,9 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"- 潜在新主线：{'、'.join(item['theme_name'] for item in emerging[:3]) or '暂无明确候选'}",
         f"- 正在退潮的主线：{'、'.join(item['theme_name'] for item in declining) or '暂无'}",
         "",
-        "## 第一时代主线",
+        "## 原一级主题第一候选",
         "",
-    ]
+    ])
     lines.extend(_theme_markdown(primary))
     lines.extend(["", "## 第二时代主线", ""])
     lines.extend(_theme_markdown(secondary))

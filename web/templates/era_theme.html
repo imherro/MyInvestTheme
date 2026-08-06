@@ -9,6 +9,21 @@
   <div class="era-leader-facts"><strong>证据阶段 {{ theme.lifecycle_stage_label }}</strong><span>动量 {{ theme.get('momentum_state_label', '未知') }}</span><span>第{{ theme.get('cycle_sequence', 0) }}轮</span><span>阶段停留 {{ theme.get('stage_dwell_days', 0) }}天</span><span>开始 {{ theme.estimated_start_date or ('早于覆盖范围' if theme.get('start_date_status') == 'before_available_history' else '待确认') }}</span><span>确认 {{ theme.confirmation_date or '持续条件未满足' }}</span><span>强化 {{ theme.latest_reinforcement_date or '未识别' }} · {{ theme.get('latest_reinforcement_type', 'none') }}</span><span>状态置信度 {{ '%.0f'|format(theme.get('current_state_confidence', theme.era_mainline_confidence)) }}</span><span>阶段置信度 {{ '%.0f'|format(theme.get('lifecycle_stage_confidence', theme.lifecycle_confidence)) }}</span><span>日期置信度 {{ '%.0f'|format(theme.get('lifecycle_date_confidence', 0)) }}</span></div>
   {% if theme.get('history_coverage', {}).get('is_left_censored') %}<p class="muted">现有历史数据开始时该主题已经形成，无法根据当前数据准确确定真实起点。</p>{% endif %}
 </section>
+{% if theme.get('primary_mainline_class') %}
+<section class="era-summary-strip">
+  <div><span>主线类型</span><strong>{{ theme.mainline_class_label }}</strong></div>
+  <div><span>结构生命周期</span><strong>{{ theme.structural_stage_label }}</strong></div>
+  <div><span>市场表达周期</span><strong>{{ theme.market_expression_stage_label }}</strong></div>
+  <div><span>典型时间尺度</span><strong>{% if theme.time_horizon.unit == 'regime_dependent' %}随市场环境{% elif theme.time_horizon.unit == 'years' %}{{ theme.time_horizon.typical }}年{% elif theme.time_horizon.unit == 'months' %}{{ theme.time_horizon.typical }}个月{% elif theme.time_horizon.unit == 'days' %}{{ theme.time_horizon.typical }}天{% else %}未知{% endif %}</strong></div>
+</section>
+<section class="dimension-grid">
+  <div><span>结构确信度</span><strong>{{ '%.1f'|format(theme.structural_conviction_score) }}</strong><small>结构阶段置信度 {{ '%.0f'|format(theme.structural_stage_confidence) }}</small></div>
+  <div><span>周期强度</span><strong>{{ '%.1f'|format(theme.cycle_strength_score) }}</strong><small>宏观、盈利与供需周期</small></div>
+  <div><span>市场表达</span><strong>{{ '%.1f'|format(theme.market_expression_score) }}</strong><small>{{ theme.market_expression_stage_label }}</small></div>
+  <div><span>类型置信度</span><strong>{{ '%.0f'|format(theme.class_confidence) }}</strong><small>{{ theme.get('secondary_class_labels', [])|join('、') or '无次级属性' }}</small></div>
+</section>
+<section class="evidence-columns"><div><h2>类型判断理由</h2><ul>{% for item in theme.class_reasons %}<li>{{ item }}</li>{% endfor %}</ul></div><div><h2>类型反证</h2><ul>{% for item in theme.class_contradictions %}<li>{{ item }}</li>{% else %}<li>暂无显著类型反证</li>{% endfor %}</ul></div></section>
+{% endif %}
 <section class="dimension-grid">
   <div><span>政策持续性</span><strong>{{ '%.1f'|format(theme.policy_score) }}</strong><small>{{ theme.policy_dimension.event_count }} 个事件，{{ theme.policy_dimension.source_org_count }} 个来源</small></div>
   <div><span>产业兑现度</span><strong>{{ '%.1f'|format(theme.industry_score) if theme.industry_score is not none else '未知' }}</strong><small>{{ theme.industry_dimension.industry_stage_label }}</small></div>

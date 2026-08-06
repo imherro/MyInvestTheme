@@ -2,7 +2,7 @@
 
 A-share era-mainline and lifecycle research workspace with a read-only web system.
 
-The recommended research layer is `era_mainline_model_v2`. It combines policy persistence, industry validation, market confirmation, and official strategic narrative diffusion, then applies evidence windows and explicit lifecycle gates. It is a research judgment system, not an expected-return model or investment-advice system.
+The recommended research layer is `era_mainline_model_v3`. It first classifies each research object, then evaluates its structural lifecycle and A-share market-expression lifecycle independently. It is a research judgment system, not an expected-return model or investment-advice system.
 
 The existing canonical mainline layer remains available as the compatible policy-theme evidence view and as an input to the era-mainline model.
 
@@ -32,6 +32,13 @@ python scripts/daily_mainline_update.py
 The daily updater is idempotent: if the latest complete Tushare trading date already has a report, it exits without creating a duplicate. The Codex recurring automation runs this command after market close.
 
 ## Era Mainline Model
+
+- `mainline_classification_v1` classifies research objects as era industrial, strategic growth, policy profit repair, macro cycle, trading branch, allocation style, or unclassified from evidence features rather than names or market strength alone.
+- `mainline_class_lifecycle_rules_v1` assigns type-specific horizons and structural confirmation/end windows. Typical duration selects the research window; it is not an end-date countdown.
+- `structural_lifecycle_v1` uses technology, infrastructure, capex, commercialization, penetration, profit, supply, and macro indicators. Unknown industrial observations remain `null` and cap structural-stage confidence.
+- `market_expression_lifecycle_v1` preserves the Phase 2.2 evidence lifecycle as the independent A-share pricing cycle. Market cooling or decline does not automatically downgrade the structural lifecycle.
+- Reports expose `structural_conviction_score`, `cycle_strength_score`, and `market_expression_score`, plus separate rankings for six mainline classes. Allocation styles never enter industrial rankings.
+- Canonical research objects split resources from anti-involution profit repair and energy revolution from advanced manufacturing; relationships describe reinforcement or dependency without merging their evidence chains.
 
 - `era_mainline_rules_v2` configures policy 40%, industry 25%, market 25%, and official narrative 10%. Unknown industry observations remain `null`; every report exposes configured and effective weights.
 - `policy_event_type_rules_v1` separates national plans, implementation plans, funding, projects, standards, pilots, restrictions, risk control, and exits. Policy conviction combines long-term level, execution, cross-department breadth, reinforcement, novelty, and restriction.
