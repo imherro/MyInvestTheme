@@ -525,6 +525,8 @@ def build_era_mainline_report(
         "report_id": report_id.replace("mainline_review_", "era_mainline_review_"),
         "source_report_id": report_id,
         "basis_date": report.get("basis_date", ""),
+        "data_freshness_summary": deepcopy(report.get("data_freshness_summary") or {}),
+        "freshness_narrative": str(report.get("freshness_narrative") or ""),
         "generated_at": datetime.now().astimezone().isoformat(timespec="seconds"),
         "model_generated_at": datetime.now().astimezone().isoformat(timespec="seconds"),
         "mainline_regime": regime,

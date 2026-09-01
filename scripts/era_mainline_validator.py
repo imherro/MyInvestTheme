@@ -41,9 +41,12 @@ def validate(payload: dict[str, Any]) -> dict[str, Any]:
     def error(code: str, path: str, message: str) -> None:
         errors.append({"code": code, "path": path, "message": message})
 
-    required = {"report_id", "basis_date", "mainline_regime", "primary_mainline", "secondary_mainline", "emerging_candidates", "declining_mainlines", "theme_states", "data_coverage", "history_semantics", "rule_usage", "summary"}
+    required = {"report_id", "basis_date", "mainline_regime", "primary_mainline", "secondary_mainline", "emerging_candidates", "declining_mainlines", "theme_states", "data_coverage", "data_freshness_summary", "freshness_narrative", "history_semantics", "rule_usage", "summary"}
     for field in sorted(required - set(payload)):
         error("ERA_REQUIRED_FIELD_MISSING", field, "Required era-mainline field is missing.")
+    freshness = payload.get("data_freshness_summary") or {}
+    if freshness.get("data_freshness_status") not in {"fresh", "degraded", "stale", "unknown"}:
+        error("ERA_FRESHNESS_STATUS_INVALID", "data_freshness_summary.data_freshness_status", "Era report must carry a valid source-report freshness status.")
     ranks = []
     for index, theme in enumerate(payload.get("theme_states") or []):
         path = f"theme_states.{index}"

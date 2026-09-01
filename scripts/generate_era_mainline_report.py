@@ -4,7 +4,7 @@ import argparse
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 try:
     from era_mainline_model import build_era_mainline_report
@@ -59,6 +59,11 @@ def render_markdown(payload: dict[str, Any]) -> str:
         payload.get("summary", ""),
         "",
         "> 这是当前模型对历史数据的回放，不等于当时发布的研究判断。",
+        "",
+        "## 数据新鲜度",
+        "",
+        f"- 状态：{(payload.get('data_freshness_summary') or {}).get('data_freshness_status', 'unknown')}",
+        f"- {payload.get('freshness_narrative') or '未提供数据新鲜度说明。'}",
         "",
         "## 分类型研究结论",
         "",
@@ -181,7 +186,12 @@ def _theme_markdown(state: dict[str, Any] | None) -> list[str]:
     return lines
 
 
-def generate(*, write: bool = False, now: datetime | None = None) -> tuple[dict[str, Any], Path, Path]:
+def generate(
+    *,
+    write: bool = False,
+    now: datetime | None = None,
+    before_write: Callable[[Path, Path], None] | None = None,
+) -> tuple[dict[str, Any], Path, Path]:
     reports = source_reports()
     if not reports:
         raise FileNotFoundError("No source mainline reports found")
@@ -196,6 +206,8 @@ def generate(*, write: bool = False, now: datetime | None = None) -> tuple[dict[
     json_path = OUTPUT_DIR / f"{report_id}.json"
     md_path = OUTPUT_DIR / f"{report_id}.md"
     if write:
+        if before_write:
+            before_write(json_path, md_path)
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         json_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         md_path.write_text(render_markdown(payload), encoding="utf-8")

@@ -4,6 +4,7 @@ import argparse
 import json
 import subprocess
 import sys
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -26,6 +27,27 @@ POLICY_DIRTY_PREFIXES = {
     "data/policy_signals.json",
 }
 SNAPSHOT_REGISTRY_PATH = ROOT / "data" / "policy_snapshot_registry.json"
+
+
+@dataclass
+class GeneratedArtifactTransaction:
+    """Restores generated artifacts when pre-commit report generation fails."""
+
+    originals: dict[Path, bytes | None] = field(default_factory=dict)
+
+    def track(self, *paths: Path) -> None:
+        for path in paths:
+            if path not in self.originals:
+                self.originals[path] = path.read_bytes() if path.exists() else None
+
+    def rollback(self) -> None:
+        for path, original in self.originals.items():
+            if original is None:
+                if path.exists():
+                    path.unlink()
+            else:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(original)
 
 
 def run_command(args: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -180,19 +202,28 @@ def main() -> int:
         print("Dry run: a new report would be generated, but no files were written.", flush=True)
         return 0
 
-    report_id, payload, markdown = build_report(args.today)
-    json_path, md_path = write_report_artifacts(report_id, payload, markdown)
-    top = payload["theme_ranking"][0]
-    print(f"Generated: {json_path}", flush=True)
-    print(f"Generated: {md_path}", flush=True)
-    print(f"Top theme: {top['theme']} {top['stage']} {top['evidence_score']:.2f}", flush=True)
-    era_payload, era_json_path, era_md_path = generate_era_report(write=True)
-    print(f"Generated: {era_json_path}", flush=True)
-    print(f"Generated: {era_md_path}", flush=True)
-    print(f"Era regime: {era_payload['mainline_regime']}", flush=True)
+    transaction = GeneratedArtifactTransaction()
+    transaction.track(SNAPSHOT_REGISTRY_PATH)
+    try:
+        report_id, payload, markdown = build_report(args.today)
+        expected_json = REPORT_DIR / f"{report_id}.json"
+        expected_md = REPORT_DIR / f"{report_id}.md"
+        transaction.track(expected_json, expected_md)
+        json_path, md_path = write_report_artifacts(report_id, payload, markdown)
+        top = payload["theme_ranking"][0]
+        print(f"Generated: {json_path}", flush=True)
+        print(f"Generated: {md_path}", flush=True)
+        print(f"Top theme: {top['theme']} {top['stage']} {top['evidence_score']:.2f}", flush=True)
+        era_payload, era_json_path, era_md_path = generate_era_report(write=True, before_write=transaction.track)
+        print(f"Generated: {era_json_path}", flush=True)
+        print(f"Generated: {era_md_path}", flush=True)
+        print(f"Era regime: {era_payload['mainline_regime']}", flush=True)
 
-    if not args.skip_tests:
-        run_command([sys.executable, "-m", "pytest", "web/tests", "-q"])
+        if not args.skip_tests:
+            run_command([sys.executable, "-m", "pytest", "web/tests", "-q"])
+    except Exception:
+        transaction.rollback()
+        raise
 
     if args.no_git:
         print("Skip git commit/push because --no-git was set.", flush=True)

@@ -212,7 +212,7 @@ def test_era_apis_and_pages_are_read_only_and_complete():
     latest = get("/api/era-mainline/latest")
     assert latest.status_code == 200
     body = latest.json()
-    assert {"report_id", "basis_date", "mainline_regime", "primary_mainline", "secondary_mainline", "emerging_candidates", "declining_mainlines", "theme_states", "data_coverage", "summary"} <= set(body)
+    assert {"report_id", "basis_date", "mainline_regime", "primary_mainline", "secondary_mainline", "emerging_candidates", "declining_mainlines", "theme_states", "data_coverage", "data_freshness_summary", "freshness_narrative", "summary"} <= set(body)
     theme_id = body["theme_states"][0]["theme_id"]
     for path in (
         "/api/era-mainline/ranking", "/api/era-mainline/regime", "/api/era-mainline/history", "/api/era-mainline/transitions",

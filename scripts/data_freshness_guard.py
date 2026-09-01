@@ -111,6 +111,9 @@ def build_data_freshness_summary(
 
 def freshness_narrative(summary: dict[str, Any], theme_name: str = "") -> str:
     rules = load_rules()
-    if summary.get("data_freshness_status") == "stale":
+    status = summary.get("data_freshness_status")
+    if status == "stale":
         return str(rules["stale_message_template"]).format(actual_basis_date=summary.get("actual_basis_date", ""))
+    if status in {"degraded", "unknown"}:
+        return str(rules["degraded_message_template"]).format(actual_basis_date=summary.get("actual_basis_date", ""))
     return str(rules["fresh_message_template"]).format(theme_name=theme_name or "待确认主题")

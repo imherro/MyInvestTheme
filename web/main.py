@@ -462,7 +462,21 @@ def load_latest_era_report() -> tuple[str, dict[str, Any]]:
     files = _era_json_files()
     if not files:
         raise HTTPException(status_code=503, detail="时代主线报告尚未生成")
-    return files[0].stem, _load_json(files[0])
+    payload = _load_json(files[0])
+    payload.setdefault(
+        "data_freshness_summary",
+        {
+            "scoring_version": "data_freshness_guard_v1",
+            "data_freshness_status": "unknown",
+            "actual_basis_date": payload.get("basis_date", ""),
+            "freshness_warnings": ["SOURCE_REPORT_FRESHNESS_UNAVAILABLE"],
+        },
+    )
+    payload.setdefault(
+        "freshness_narrative",
+        f"市场数据截至 {payload.get('basis_date', '')}，但该历史时代主线报告没有保留政策扫描状态。",
+    )
+    return files[0].stem, payload
 
 
 def _era_theme(payload: dict[str, Any], theme_id: str) -> dict[str, Any]:
@@ -1681,6 +1695,8 @@ def api_index() -> dict[str, Any]:
         "emerging_candidates": era.get("emerging_candidates") or [],
         "declining_mainlines": era.get("declining_mainlines") or [],
         "summary": era.get("summary", ""),
+        "data_freshness_summary": era.get("data_freshness_summary") or {},
+        "freshness_narrative": era.get("freshness_narrative", ""),
     }
     return result
 
@@ -1695,13 +1711,13 @@ def api_era_mainline_latest() -> dict[str, Any]:
 @app.get("/api/era-mainline/ranking")
 def api_era_mainline_ranking() -> dict[str, Any]:
     report_id, payload = load_latest_era_report()
-    return {"report_id": report_id, "basis_date": payload.get("basis_date"), "research_objects": payload.get("research_objects") or [], "class_rankings": payload.get("class_rankings") or {}, "era_industrial_ranking": payload.get("era_industrial_ranking") or [], "strategic_growth_ranking": payload.get("strategic_growth_ranking") or [], "policy_profit_repair_ranking": payload.get("policy_profit_repair_ranking") or [], "macro_cycle_ranking": payload.get("macro_cycle_ranking") or [], "trading_branch_ranking": payload.get("trading_branch_ranking") or [], "allocation_style_ranking": payload.get("allocation_style_ranking") or [], "theme_states": payload.get("theme_states") or [], "read_only": True}
+    return {"report_id": report_id, "basis_date": payload.get("basis_date"), "research_objects": payload.get("research_objects") or [], "class_rankings": payload.get("class_rankings") or {}, "era_industrial_ranking": payload.get("era_industrial_ranking") or [], "strategic_growth_ranking": payload.get("strategic_growth_ranking") or [], "policy_profit_repair_ranking": payload.get("policy_profit_repair_ranking") or [], "macro_cycle_ranking": payload.get("macro_cycle_ranking") or [], "trading_branch_ranking": payload.get("trading_branch_ranking") or [], "allocation_style_ranking": payload.get("allocation_style_ranking") or [], "theme_states": payload.get("theme_states") or [], "data_freshness_summary": payload.get("data_freshness_summary") or {}, "freshness_narrative": payload.get("freshness_narrative", ""), "read_only": True}
 
 
 @app.get("/api/era-mainline/regime")
 def api_era_mainline_regime() -> dict[str, Any]:
     report_id, payload = load_latest_era_report()
-    return {"report_id": report_id, "basis_date": payload.get("basis_date"), "mainline_regime": payload.get("mainline_regime"), "primary_mainline": payload.get("primary_mainline"), "secondary_mainline": payload.get("secondary_mainline"), "summary": payload.get("summary"), "read_only": True}
+    return {"report_id": report_id, "basis_date": payload.get("basis_date"), "mainline_regime": payload.get("mainline_regime"), "primary_mainline": payload.get("primary_mainline"), "secondary_mainline": payload.get("secondary_mainline"), "summary": payload.get("summary"), "data_freshness_summary": payload.get("data_freshness_summary") or {}, "freshness_narrative": payload.get("freshness_narrative", ""), "read_only": True}
 
 
 @app.get("/api/era-mainline/history")

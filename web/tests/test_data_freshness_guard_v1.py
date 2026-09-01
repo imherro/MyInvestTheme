@@ -7,7 +7,7 @@ SCRIPTS = ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
-from data_freshness_guard import build_data_freshness_summary
+from data_freshness_guard import build_data_freshness_summary, freshness_narrative
 
 
 def test_weekend_does_not_create_two_stale_days():
@@ -51,3 +51,17 @@ def test_policy_freshness_does_not_use_latest_candidate_first_seen():
     )
     assert summary["policy_ingestion_lag_hours"] is None
     assert "POLICY_SCAN_STATUS_UNAVAILABLE" in summary["freshness_warnings"]
+
+
+def test_degraded_policy_freshness_never_uses_current_data_language():
+    summary = build_data_freshness_summary(
+        actual_basis_date="2026-06-22",
+        generated_at="2026-06-22T18:00:00+08:00",
+        trading_dates=["20260622"],
+        policies=[],
+        scan_status={},
+    )
+    assert summary["data_freshness_status"] == "degraded"
+    narrative = freshness_narrative(summary, "人工智能")
+    assert "政策扫描状态不可验证" in narrative
+    assert "截至当前数据" not in narrative

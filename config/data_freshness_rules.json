@@ -10,5 +10,6 @@
   "block_report_write_when_stale": false,
   "stale_forbidden_phrases": ["当前主线", "最新主线"],
   "stale_message_template": "最近一次有效数据截至 {actual_basis_date}。以下结果为历史观察，不代表当前状态。",
+  "degraded_message_template": "市场数据截至 {actual_basis_date}，但政策扫描状态不可验证或已滞后。以下政策判断仅反映已入库政策，不能表述为当前政策全貌。",
   "fresh_message_template": "截至当前数据，政策支持强度最高的主题为{theme_name}。"
 }
