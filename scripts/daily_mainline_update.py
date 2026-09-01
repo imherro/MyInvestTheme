@@ -25,6 +25,7 @@ from generate_era_mainline_report import generate as generate_era_report
 POLICY_DIRTY_PREFIXES = {
     "data/policy_signals.json",
 }
+SNAPSHOT_REGISTRY_PATH = ROOT / "data" / "policy_snapshot_registry.json"
 
 
 def run_command(args: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -65,6 +66,16 @@ def is_allowed_policy_dirty(path: str) -> bool:
 
 def policy_dirty_paths() -> list[Path]:
     return [ROOT / path for path in dirty_paths() if is_allowed_policy_dirty(path)]
+
+
+def generated_commit_paths(
+    policy_paths: list[Path],
+    json_path: Path,
+    md_path: Path,
+    era_json_path: Path,
+    era_md_path: Path,
+) -> list[Path]:
+    return [*policy_paths, SNAPSHOT_REGISTRY_PATH, json_path, md_path, era_json_path, era_md_path]
 
 
 def ensure_clean_worktree(*, allow_dirty: bool) -> None:
@@ -186,7 +197,10 @@ def main() -> int:
     if args.no_git:
         print("Skip git commit/push because --no-git was set.", flush=True)
     else:
-        commit_and_push([*current_policy_dirty, json_path, md_path, era_json_path, era_md_path], no_push=args.no_push)
+        commit_and_push(
+            generated_commit_paths(current_policy_dirty, json_path, md_path, era_json_path, era_md_path),
+            no_push=args.no_push,
+        )
 
     print(f"Daily mainline update finished at {datetime.now(TZ).isoformat(timespec='seconds')}", flush=True)
     return 0
