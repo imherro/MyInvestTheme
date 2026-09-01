@@ -153,7 +153,13 @@ def commit_and_push(paths: list[Path], *, no_push: bool) -> None:
         print("No staged changes after report generation; nothing to commit.", flush=True)
         return
 
-    payload = load_json(paths[0]) if paths[0].suffix == ".json" else load_json(paths[1])
+    mainline_json = next(
+        (path for path in unique_paths if path.parent == REPORT_DIR and path.suffix == ".json" and path.name.startswith("mainline_review_")),
+        None,
+    )
+    if mainline_json is None:
+        raise RuntimeError("Generated mainline JSON is required to build the daily commit message.")
+    payload = load_json(mainline_json)
     basis_date = payload.get("basis_date", "unknown-date")
     top = (payload.get("theme_ranking") or [{}])[0]
     top_theme = top.get("theme", "unknown-theme")
