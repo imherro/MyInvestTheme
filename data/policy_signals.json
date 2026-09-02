@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-08-04T15:34:00+08:00",
+  "updated_at": "2026-09-02T10:20:02+08:00",
   "method": "Codex/LLM extracts official-source facts; Python policy_score_v2 scoring is deterministic.",
   "signals": [
     {
@@ -1484,6 +1484,63 @@
       "key_points": ["汽车后市场", "服务消费", "汽车改装", "房车露营", "新能源汽车维修", "汽车租赁", "贷款贴息", "消费新场景"],
       "beneficiary_chain": ["汽车消费", "新能源汽车维修", "动力电池", "汽车零部件", "汽车租赁", "房车制造", "赛事服务"],
       "related_industries": ["消费", "汽车", "新能源", "动力电池", "服务消费"]
+    },
+    {
+      "id": "miit-2026-06-11-ai-information-communications-opinion",
+      "title": "工业和信息化部关于印发《“人工智能+信息通信”创新发展实施意见（2026—2028年）》的通知",
+      "source": "工业和信息化部",
+      "published_date": "2026-06-11",
+      "authority_level": "national_ministry",
+      "economic_scope": "cross_industry",
+      "url": "https://hubca.miit.gov.cn/zwgk/zcwj/wjfb/art/2026/art_1a6880738cfc4235afeda815d6ae8ab4.html",
+      "authority_score": 0.7,
+      "actionability_score": 0.2,
+      "economic_scope_score": 0.8,
+      "time_decay_score": 0.062871,
+      "policy_score_v2": 0.467574,
+      "summary": "工业和信息化部印发“人工智能+信息通信”创新发展实施意见，推动人工智能与信息通信融合创新，夯实网络、算力等发展底座并推进典型场景和产业应用。",
+      "evidence": "文件提出到2028年形成30个以上高价值典型场景，提升网络、算力等信息基础设施支撑人工智能能力；到2030年形成协同创新和产业生态体系。",
+      "key_points": ["人工智能+信息通信", "网络基础设施", "算力基础设施", "30个以上高价值典型场景", "5G-A/6G", "工业互联网", "2028年目标", "2030年目标"],
+      "beneficiary_chain": ["智能网络", "算力基础设施", "通信设备", "工业互联网", "云计算", "人工智能应用", "网络安全"],
+      "related_industries": ["AI算力/通信", "硬科技电子/半导体", "高端制造/机器人/军工"]
+    },
+    {
+      "id": "miit-2026-06-08-humanoid-robot-embodied-intelligence-training",
+      "title": "工业和信息化部办公厅 国务院国资委办公厅关于联合开展2026年度人形机器人与具身智能实景实训专项行动的通知",
+      "source": "工业和信息化部办公厅、国务院国资委办公厅",
+      "published_date": "2026-06-08",
+      "authority_level": "multi_ministry",
+      "economic_scope": "cross_industry",
+      "url": "https://www.miit.gov.cn/zwgk/zcwj/wjfb/tz/art/2026/art_f291ccd3da4c47ce95741de63cc088e6.html",
+      "authority_score": 1.0,
+      "actionability_score": 0.2,
+      "economic_scope_score": 0.8,
+      "time_decay_score": 0.056888,
+      "policy_score_v2": 0.571378,
+      "summary": "工业和信息化部、国务院国资委联合开展人形机器人与具身智能实景实训专项行动，推动产品在工业、服务和特种场景验证部署，形成可复制的应用方案和规模化落地能力。",
+      "evidence": "通知提出到2026年底在一批代表性场景中开启作业模式，凝练形成百个以上高价值应用场景，带动形成万台级规模落地能力。",
+      "key_points": ["人形机器人", "具身智能", "实景实训", "工业服务特种场景", "百个以上高价值应用场景", "万台级规模落地能力", "2026年底目标"],
+      "beneficiary_chain": ["人形机器人", "具身智能模型", "运动控制算法", "机器人零部件", "智能制造", "仓储物流", "服务机器人"],
+      "related_industries": ["高端制造/机器人/军工", "AI算力/通信", "硬科技电子/半导体"]
+    },
+    {
+      "id": "mofcom-2026-08-31-commodity-consumption-expansion-upgrade",
+      "title": "商务部等7部门关于推动商品消费扩容升级的实施意见",
+      "source": "商务部等7部门",
+      "published_date": "2026-08-31",
+      "authority_level": "multi_ministry",
+      "economic_scope": "cross_industry",
+      "url": "https://www.mofcom.gov.cn/zcfb/gnmygl/art/2026/art_a3b1ee4566c24667990ae6fbe35b579d.html",
+      "authority_score": 0.8,
+      "actionability_score": 0.2,
+      "economic_scope_score": 0.8,
+      "time_decay_score": 0.935507,
+      "policy_score_v2": 0.677101,
+      "summary": "商务部等7部门提出推动商品消费扩容升级，支持大宗耐用商品、生活日用品和升级类商品消费，促进人工智能手机、智能穿戴、智能机器人和智能家居等产品推广应用。",
+      "evidence": "实施意见提出到2030年社会消费品零售总额达60万亿元左右，培育绿色消费、智能消费、健康消费等十万亿级市场，并加快人工智能手机和电脑、智能穿戴设备、智能机器人、智能家居推广。",
+      "key_points": ["商品消费扩容升级", "扩大内需", "智能消费", "人工智能手机和电脑", "智能穿戴设备", "智能机器人", "智能家居", "2030年目标"],
+      "beneficiary_chain": ["消费品", "智能终端", "智能穿戴", "智能家居", "新能源汽车补能", "家电", "智能机器人"],
+      "related_industries": ["消费/传媒", "高端制造/机器人/军工", "硬科技电子/半导体", "新能源/电力设备"]
     }
   ]
 }

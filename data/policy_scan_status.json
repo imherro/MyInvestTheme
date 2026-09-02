@@ -1,8 +1,8 @@
 {
   "version": "policy_scan_status_v1",
-  "last_scan_started_at": "",
-  "last_scan_completed_at": "",
-  "last_scan_status": "unknown",
-  "sources_checked": 0,
-  "candidates_discovered": 0
+  "last_scan_started_at": "2026-09-02T10:19:40+08:00",
+  "last_scan_completed_at": "2026-09-02T10:21:11+08:00",
+  "last_scan_status": "success",
+  "sources_checked": 4,
+  "candidates_discovered": 3
 }
