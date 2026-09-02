@@ -25,6 +25,8 @@ from generate_era_mainline_report import generate as generate_era_report
 
 POLICY_DIRTY_PREFIXES = {
     "data/policy_signals.json",
+    "data/policy_candidates.jsonl",
+    "data/policy_scan_status.json",
 }
 SNAPSHOT_REGISTRY_PATH = ROOT / "data" / "policy_snapshot_registry.json"
 
