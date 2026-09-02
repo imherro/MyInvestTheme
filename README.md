@@ -29,7 +29,9 @@ Daily after-close update:
 python scripts/daily_mainline_update.py
 ```
 
-The daily updater is idempotent: if the latest complete Tushare trading date already has a report, it exits without creating a duplicate. The Codex recurring automation runs this command after market close.
+The daily updater is idempotent: if the latest complete Tushare trading date already has a report, it exits without creating a duplicate. Tushare remains the primary market source. Hithink Finance is used only as a read-only fallback for equivalent breadth and broad-index data when those Tushare stages fail; SW industry, moneyflow, and other non-equivalent fields are not silently substituted. The external `market` system is not called. The Codex recurring automation runs this command after market close.
+
+Market-source behavior is intentionally local to the existing report functions: a normal run keeps the original Tushare scores and calls no Hithink fallback. A fallback run records the actual source and reason in `market_data_source_summary` and the stage quality entries. The Hithink local database is configured by `HITHINK_FINANCE_DB` or defaults to the official CLI data location; broad-index fallback uses the installed `hithink-finance` CLI and can be overridden with `HITHINK_FINANCE_CLI`.
 
 ## Era Mainline Model
 

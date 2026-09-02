@@ -54,6 +54,7 @@ from snapshot_registry_finalizer import finalize_report_artifacts_with_registry
 from reproducibility_manifest import build_pending_reproducibility_manifest
 from policy_signals import load_policy_store, policy_event_summary, policy_theme_summary, score_policy_by_theme
 from theme_relevance import build_theme_relevance_input_summary
+from hithink_market_fallback import hithink_breadth, hithink_broad_indexes, with_hithink_fallback
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -76,6 +77,7 @@ DATA_QUALITY_DEFAULTS = DATA_QUALITY_RULES.get("defaults", {})
 SW_TOP_FIELDS = ["ts_code", "name", "r1", "r5", "r20", "amount_ratio", "pe", "pb", "r1_rank", "r5_rank", "r20_rank", "amount_ratio_rank", "score"]
 THS_TOP_FIELDS = ["ts_code", "name", "type", "r1", "r5", "r20", "turnover_rate", "r1_rank", "r5_rank", "r20_rank", "turnover_rate_rank", "score"]
 ETF_TOP_FIELDS = ["ts_code", "name", "r1", "r5", "r20", "amount", "r1_rank", "r5_rank", "r20_rank", "amount_rank", "score"]
+MARKET_SOURCE_STATE: dict[str, dict[str, Any]] = {}
 
 
 BROAD_INDEXES = [
@@ -203,6 +205,13 @@ def load_env() -> None:
             continue
         key, value = line.split("=", 1)
         os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+def _as_iso_date(value: str) -> str:
+    text = str(value)
+    if len(text) == 8 and text.isdigit():
+        return f"{text[:4]}-{text[4:6]}-{text[6:]}"
+    return text[:10]
 
 
 def make_client():
@@ -397,7 +406,7 @@ def score_etf(pro: Any, dates: list[str]) -> pd.DataFrame:
     return scored.sort_values("score", ascending=False)
 
 
-def stock_breadth(pro: Any, basis: str, d5: str, d20: str) -> dict[str, Any]:
+def _tushare_stock_breadth(pro: Any, basis: str, d5: str, d20: str) -> dict[str, Any]:
     cur = q(pro, "daily", trade_date=basis, fields="ts_code,trade_date,pct_chg,close,amount")
     prev5 = q(pro, "daily", trade_date=d5, fields="ts_code,close").rename(columns={"close": "close_5"})
     prev20 = q(pro, "daily", trade_date=d20, fields="ts_code,close").rename(columns={"close": "close_20"})
@@ -417,7 +426,7 @@ def stock_breadth(pro: Any, basis: str, d5: str, d20: str) -> dict[str, Any]:
     }
 
 
-def broad_index_data(pro: Any, basis: str, d5: str, d20: str) -> list[dict[str, Any]]:
+def _tushare_broad_index_data(pro: Any, basis: str, d5: str, d20: str) -> list[dict[str, Any]]:
     rows = []
     for code, name in BROAD_INDEXES:
         df = q(pro, "index_daily", ts_code=code, start_date=d20, end_date=basis)
@@ -442,6 +451,53 @@ def broad_index_data(pro: Any, basis: str, d5: str, d20: str) -> list[dict[str, 
             }
         )
     return sorted(rows, key=lambda item: item["r5"], reverse=True)
+
+
+def stock_breadth(pro: Any, basis: str, d5: str, d20: str) -> dict[str, Any]:
+    return with_hithink_fallback(
+        "breadth",
+        lambda: _tushare_stock_breadth(pro, basis, d5, d20),
+        lambda: hithink_breadth(_as_iso_date(basis), _as_iso_date(d5), _as_iso_date(d20)),
+        MARKET_SOURCE_STATE,
+    )
+
+
+def broad_index_data(pro: Any, basis: str, d5: str, d20: str) -> list[dict[str, Any]]:
+    return with_hithink_fallback(
+        "broad_indexes",
+        lambda: _tushare_broad_index_data(pro, basis, d5, d20),
+        lambda: hithink_broad_indexes(_as_iso_date(basis), _as_iso_date(d5), _as_iso_date(d20)),
+        MARKET_SOURCE_STATE,
+    )
+
+
+def _annotate_market_stage_status(stage: str, status: dict[str, Any]) -> dict[str, Any]:
+    source_info = MARKET_SOURCE_STATE.get(stage)
+    if source_info is None:
+        source_info = {
+            "source": "tushare" if status.get("status") == "pass" else "unavailable",
+            "fallback_used": False,
+            "fallback_reason": "",
+        }
+    status.update(source_info)
+    return status
+
+
+def _market_source_summary(stage_statuses: list[dict[str, Any]]) -> dict[str, Any]:
+    stages = ("breadth", "broad_indexes", "sw_score", "ths_score", "etf_score", "limit_up", "moneyflow")
+    by_stage = {status.get("stage"): status for status in stage_statuses}
+    return {
+        "policy": "Tushare first; Hithink is used only as an equivalent fallback for breadth and broad indexes.",
+        "external_market_system_used": False,
+        "stages": {
+            stage: {
+                "source": (by_stage.get(stage) or {}).get("source", "unknown"),
+                "fallback_used": bool((by_stage.get(stage) or {}).get("fallback_used", False)),
+                "fallback_reason": (by_stage.get(stage) or {}).get("fallback_reason", ""),
+            }
+            for stage in stages
+        },
+    }
 
 
 def limit_up_data(pro: Any, basis: str) -> tuple[pd.DataFrame, list[dict[str, Any]]]:
@@ -840,6 +896,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
     canonical_summary = payload.get("canonical_mainline_summary") or {}
     data_quality_summary = payload.get("data_quality_summary") or {}
     contract_summary = payload.get("contract_validation_summary") or {}
+    market_source_summary = payload.get("market_data_source_summary") or {}
     mainline_ranking = payload.get("mainline_ranking") or []
     legacy_theme_ranking = payload.get("legacy_theme_ranking") or payload.get("theme_ranking") or []
     mainline_by_theme: dict[str, dict[str, Any]] = {}
@@ -1281,10 +1338,16 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "- 政策库：`data/policy_signals.json`，由 Codex/LLM 从官方政策源抽取事实结构，Python 规则负责确定性打分；LLM 不参与政策质量评分。",
         "- Tushare：`trade_cal`、`daily`、`daily_basic`、`index_daily`、`index_classify`、`sw_daily`、`ths_index`、`ths_daily`、`fund_basic`、`fund_daily`、`limit_list_d`、`moneyflow`。",
         "- BaoStock：验证上证综指、创业板指、科创50在基准日的收盘和涨跌幅。",
+        f"- 市场数据策略：{market_source_summary.get('policy', 'Tushare优先，同花顺仅按项兜底')}；外部 market 系统调用：{'是' if market_source_summary.get('external_market_system_used') else '否'}。",
+        "- 本次市场阶段来源：",
         "",
         "## BaoStock交叉验证",
         "",
     ]
+    for stage, info in (market_source_summary.get("stages") or {}).items():
+        lines.append(
+            f"  - {stage}：{info.get('source', 'unknown')}；fallback_used={str(info.get('fallback_used', False)).lower()}；原因={info.get('fallback_reason') or '无'}"
+        )
     for item in payload["baostock_check"]:
         lines.append(f"- {item}")
     lines += [
@@ -1301,6 +1364,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
 
 def build_report(today: str) -> tuple[str, dict[str, Any], str]:
     pro = make_client()
+    MARKET_SOURCE_STATE.clear()
     nominal_today = today
     open_days = get_trade_dates(pro, nominal_today)
     basis_raw, completeness = choose_basis_date(pro, open_days)
@@ -1422,6 +1486,16 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
         defaults=DATA_QUALITY_DEFAULTS,
     )
     baostock_check_result, baostock_status = run_optional_stage("baostock_check", lambda: baostock_check(basis_raw), [])
+    for stage, status in (
+        ("breadth", breadth_status),
+        ("broad_indexes", broad_status),
+        ("sw_score", sw_status),
+        ("ths_score", ths_status),
+        ("etf_score", etf_status),
+        ("limit_up", limit_status),
+        ("moneyflow", moneyflow_status),
+    ):
+        _annotate_market_stage_status(stage, status)
     stage_statuses.extend(
         [
             breadth_status,
@@ -1487,6 +1561,7 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
     )
     data_quality_summary = build_data_quality_summary(stage_statuses)
     assert_required_data_quality(data_quality_summary)
+    market_source_summary = _market_source_summary(stage_statuses)
 
     data_sources = (ROOT / "数据源.md").read_text(encoding="utf-8") if (ROOT / "数据源.md").exists() else ""
 
@@ -1559,6 +1634,7 @@ def build_report(today: str) -> tuple[str, dict[str, Any], str]:
         "mainline_lifecycle_summary": mainline_lifecycle_summary,
         "mainline_cycle_stage_summary": mainline_cycle_stage_summary,
         "data_quality_summary": data_quality_summary,
+        "market_data_source_summary": market_source_summary,
         "canonical_mainline_summary": canonical_mainline_summary,
         "mainline_ranking": mainline_ranking,
         "theme_summary": theme_summary,
