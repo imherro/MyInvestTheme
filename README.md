@@ -8,7 +8,7 @@ The existing canonical mainline layer remains available as the compatible policy
 
 ## Current Web App
 
-The local web app reads generated research files from `research/mainline/` and does not mutate source data or trading state.
+The local web app reads generated research files from `research/mainline/`, `research/era_mainline/` and `research/chatgpt_qa/`; it does not mutate source data or trading state.
 
 Run:
 
@@ -30,6 +30,16 @@ python scripts/daily_mainline_update.py
 ```
 
 The daily updater is idempotent: if the latest complete Tushare trading date already has a report, it exits without creating a duplicate. Tushare remains the primary market source. Hithink Finance is used only as a read-only fallback for equivalent breadth and broad-index data when those Tushare stages fail; SW industry, moneyflow, and other non-equivalent fields are not silently substituted. The external `market` system is not called. The Codex recurring automation runs this command after market close.
+
+## ChatGPT问答频道
+
+The Codex daily automation asks the configured era-mainline question once after the close, using the latest available local research and market/policy data. The model answer is saved as one immutable daily artifact under `research/chatgpt_qa/` by:
+
+```powershell
+python scripts/chatgpt_qa_report.py --input temp/chatgpt_qa_answer.json
+```
+
+The input must contain `basis_date`, `question`, `answer_markdown`, `summary_fields`, and optionally `ranking`, `daily_changes`, `source_report_id`, and `data_basis`. The page shows the summary-field table, the separate 3-5 line ranking table, the daily comparison, and the complete original answer. This is a research commentary channel; it does not alter canonical policy scores or issue trading instructions.
 
 Market-source behavior is intentionally local to the existing report functions: a normal run keeps the original Tushare scores and calls no Hithink fallback. A fallback run records the actual source and reason in `market_data_source_summary` and the stage quality entries. The Hithink local database is configured by `HITHINK_FINANCE_DB` or defaults to the official CLI data location; broad-index fallback uses the installed `hithink-finance` CLI and can be overridden with `HITHINK_FINANCE_CLI`.
 
@@ -124,12 +134,15 @@ Open:
 - Era timeline: http://127.0.0.1:8012/era-timeline
 - Era transitions: http://127.0.0.1:8012/era-transitions
 - Historical research: http://127.0.0.1:8012/reports
+- ChatGPT问答: http://127.0.0.1:8012/chatgpt-qa
 - API directory: http://127.0.0.1:8012/api
 - Swagger UI: http://127.0.0.1:8012/docs
 - ReDoc: http://127.0.0.1:8012/redoc
 - OpenAPI schema: http://127.0.0.1:8012/openapi.json
 - Homepage content API: http://127.0.0.1:8012/api/index
 - Latest report API: http://127.0.0.1:8012/api/latest
+- ChatGPT问答历史 API: http://127.0.0.1:8012/api/chatgpt-qa
+- Latest ChatGPT问答 API: http://127.0.0.1:8012/api/chatgpt-qa/latest
 - Era latest API: http://127.0.0.1:8012/api/era-mainline/latest
 - Era history API: http://127.0.0.1:8012/api/era-mainline/history
 - Era transitions API: http://127.0.0.1:8012/api/era-mainline/transitions
@@ -178,6 +191,7 @@ The homepage endpoint returns the main content used by `/`:
 - `score_series`
 - `reports`
 - `markdown`
+- `chatgpt_qa`，包含最新问答摘要、问答数量和页面/API入口
 - `policy_time_provenance_summary`
 - `policy_candidate_summary`
 - `field_provenance_summary`

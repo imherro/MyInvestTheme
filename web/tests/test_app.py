@@ -66,7 +66,7 @@ def test_api_directory_contract():
     }
     assert body["recommended_entrypoints"][0]["path"] == "/api"
     assert {item["path"] for item in body["recommended_entrypoints"]}.issuperset(
-        {"/api/index", "/api/latest", "/api/policies", "/api/taxonomy-v2", "/api/health"}
+        {"/api/index", "/api/latest", "/api/policies", "/api/taxonomy-v2", "/api/health", "/api/chatgpt-qa/latest"}
     )
     assert body["safety"]["read_only"] is True
     assert body["safety"]["no_recompute"] is True
@@ -78,7 +78,7 @@ def test_api_directory_contract():
 
     groups = body["groups"]
     assert body["total_endpoints"] == sum(len(group["endpoints"]) for group in groups)
-    assert {group["name"] for group in groups} == {"文档入口", "时代主线", "当前数据", "历史数据", "分析结果", "系统状态"}
+    assert {group["name"] for group in groups} == {"文档入口", "时代主线", "ChatGPT问答", "当前数据", "历史数据", "分析结果", "系统状态"}
     endpoints = [endpoint for group in groups for endpoint in group["endpoints"]]
     paths = {endpoint["path"] for endpoint in endpoints}
     assert {
@@ -97,10 +97,51 @@ def test_api_directory_contract():
         "/api/simulate/remove-policy/{policy_id}",
         "/api/consistency/oracle",
         "/api/drift",
+        "/chatgpt-qa",
+        "/api/chatgpt-qa",
+        "/api/chatgpt-qa/latest",
+        "/api/chatgpt-qa/{report_id}",
+        "/api/chatgpt-qa/{report_id}/markdown",
     }.issubset(paths)
     assert all(endpoint["method"] == "GET" for endpoint in endpoints)
     assert all(endpoint["read_only"] is True for endpoint in endpoints)
     assert all({"method", "path", "purpose", "parameters", "returns", "read_only"}.issubset(endpoint) for endpoint in endpoints)
+
+
+def test_chatgpt_qa_api_and_page_contract():
+    history = get("/api/chatgpt-qa")
+    assert history.status_code == 200
+    history_body = history.json()
+    assert history_body["read_only"] is True
+    assert history_body["report_count"] >= 1
+    assert history_body["reports"][0]["report_id"].startswith("chatgpt_qa_")
+
+    latest = get("/api/chatgpt-qa/latest")
+    assert latest.status_code == 200
+    result = latest.json()["result"]
+    assert result["answer_markdown"]
+    assert result["summary_fields"]
+    assert result["ranking"]
+    assert result["read_only"] is True
+
+    report_id = latest.json()["report_id"]
+    detail = get(f"/api/chatgpt-qa/{report_id}")
+    assert detail.status_code == 200
+    assert detail.json()["result"]["report_id"] == report_id
+    markdown = get(f"/api/chatgpt-qa/{report_id}/markdown")
+    assert markdown.status_code == 200
+    assert "ChatGPT问答" in markdown.text
+
+    page = get("/chatgpt-qa")
+    assert page.status_code == 200
+    assert "摘要内容" in page.text
+    assert "完整回答" in page.text
+    assert report_id in page.text
+
+    index = get("/api/index")
+    assert index.status_code == 200
+    assert index.json()["chatgpt_qa"]["latest_api"] == "/api/chatgpt-qa/latest"
+    assert index.json()["chatgpt_qa"]["report_count"] >= 1
 
 
 def test_policy_library_api_contract():

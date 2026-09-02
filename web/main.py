@@ -57,10 +57,12 @@ from scripts.theme_taxonomy_v2 import (
 ROOT_DIR = Path(__file__).resolve().parents[1]
 REPORT_DIR = ROOT_DIR / "research" / "mainline"
 ERA_REPORT_DIR = ROOT_DIR / "research" / "era_mainline"
+CHATGPT_QA_DIR = ROOT_DIR / "research" / "chatgpt_qa"
 POLICY_PATH = ROOT_DIR / "data" / "policy_signals.json"
 POLICY_STOCK_WATCHLIST_PATH = ROOT_DIR / "config" / "policy_stock_watchlist.json"
 REPORT_ID_RE = re.compile(r"^mainline_review_\d{4}-\d{2}-\d{2}_\d{6}$")
 REPORT_ID_TIME_RE = re.compile(r"^mainline_review_(\d{4})-(\d{2})-(\d{2})_(\d{2})(\d{2})(\d{2})$")
+CHATGPT_QA_ID_RE = re.compile(r"^chatgpt_qa_\d{4}-\d{2}-\d{2}$")
 A_SHARE_CODE_RE = re.compile(r"^(?P<number>\d{6})\.(?P<market>SH|SZ|BJ)$", re.IGNORECASE)
 DEFAULT_STOCK_RESEARCH_BASE_URL = "https://stock.okbbc.com/research?stock="
 
@@ -87,6 +89,7 @@ app.mount("/static", StaticFiles(directory=str(Path(__file__).resolve().parent /
 API_RECOMMENDED_ENTRYPOINTS = [
     {"name": "接口说明", "path": "/api", "reason": "查看当前系统全部公开接口、参数和只读边界。"},
     {"name": "时代主线", "path": "/api/era-mainline/latest", "reason": "读取当前时代主线格局、生命周期和四维证据。"},
+    {"name": "ChatGPT问答", "path": "/api/chatgpt-qa/latest", "reason": "读取最新一次时代主线问答及结构化摘要。"},
     {"name": "首页主要内容", "path": "/api/index", "reason": "读取 Web 首页使用的主线、市场热度、曲线和报告列表。"},
     {"name": "最新报告", "path": "/api/latest", "reason": "读取最新主线研究 JSON，适合作为系统集成入口。"},
     {"name": "政策库", "path": "/api/policies", "reason": "读取倒叙政策库、板块评价和个股观察链接。"},
@@ -106,6 +109,13 @@ ERA_API_ENDPOINTS = [
     {"method": "GET", "path": "/api/era-mainline/theme/{theme_id}/timeline", "purpose": "读取单主题历史时间轴。", "parameters": [{"name": "theme_id", "in": "path", "required": True, "description": "一级主题 ID。"}], "returns": "JSON，包含分数历史和阶段转换。", "read_only": True},
     {"method": "GET", "path": "/api/era-mainline/theme/{theme_id}/evidence", "purpose": "读取单主题支撑与反面证据。", "parameters": [{"name": "theme_id", "in": "path", "required": True, "description": "一级主题 ID。"}], "returns": "JSON，包含四维证据和冲突。", "read_only": True},
     {"method": "GET", "path": "/api/era-mainline/theme/{theme_id}/invalidation", "purpose": "读取单主题失效条件。", "parameters": [{"name": "theme_id", "in": "path", "required": True, "description": "一级主题 ID。"}], "returns": "JSON，包含失效条件与反证。", "read_only": True}
+]
+
+CHATGPT_QA_API_ENDPOINTS = [
+    {"method": "GET", "path": "/api/chatgpt-qa", "purpose": "读取每日 ChatGPT 时代主线问答历史摘要列表。", "parameters": [], "returns": "JSON，包含每日报告 ID、基准日、摘要字段和排名摘要。", "read_only": True},
+    {"method": "GET", "path": "/api/chatgpt-qa/latest", "purpose": "读取最新一次 ChatGPT 时代主线问答的完整结果。", "parameters": [], "returns": "JSON，包含问题、完整回答、摘要字段表、候选主线排名和每日变化。", "read_only": True},
+    {"method": "GET", "path": "/api/chatgpt-qa/{report_id}", "purpose": "读取指定日期 ChatGPT 时代主线问答的完整结果。", "parameters": [{"name": "report_id", "in": "path", "required": True, "description": "chatgpt_qa_YYYY-MM-DD 报告 ID。"}], "returns": "JSON，包含该次问答完整原文和全部结构化字段。", "read_only": True},
+    {"method": "GET", "path": "/api/chatgpt-qa/{report_id}/markdown", "purpose": "读取指定日期 ChatGPT 问答 Markdown 原文。", "parameters": [{"name": "report_id", "in": "path", "required": True, "description": "chatgpt_qa_YYYY-MM-DD 报告 ID。"}], "returns": "text/markdown，包含摘要表、完整回答和主线排名。", "read_only": True},
 ]
 
 API_SAFETY_BOUNDARIES = [
@@ -143,6 +153,14 @@ API_GROUPS = [
                 "purpose": "打开政策库倒叙展示页。",
                 "parameters": [],
                 "returns": "HTML 页面，展示官方政策信号、板块评价和个股观察链接。",
+                "read_only": True,
+            },
+            {
+                "method": "GET",
+                "path": "/chatgpt-qa",
+                "purpose": "打开每日 ChatGPT 时代主线问答页。",
+                "parameters": [],
+                "returns": "HTML 页面，展示摘要字段表、时代主线排名、完整回答和历史问答入口。",
                 "read_only": True,
             },
             {
@@ -418,6 +436,7 @@ API_GROUPS = [
     },
 ]
 API_GROUPS.insert(1, {"name": "时代主线", "description": "读取四维时代主线、生命周期和历史回放。", "endpoints": ERA_API_ENDPOINTS})
+API_GROUPS.insert(2, {"name": "ChatGPT问答", "description": "读取每日一次的时代主线 ChatGPT 问答及结构化摘要。", "endpoints": CHATGPT_QA_API_ENDPOINTS})
 
 
 def build_api_directory(base_url: str) -> dict[str, Any]:
@@ -456,6 +475,55 @@ def _era_json_files() -> list[Path]:
     if not ERA_REPORT_DIR.exists():
         return []
     return sorted(ERA_REPORT_DIR.glob("era_mainline_review_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+
+
+def _chatgpt_qa_json_files() -> list[Path]:
+    if not CHATGPT_QA_DIR.exists():
+        return []
+    return sorted(CHATGPT_QA_DIR.glob("chatgpt_qa_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+
+
+def _safe_chatgpt_qa_path(report_id: str, suffix: str = ".json") -> Path:
+    if not CHATGPT_QA_ID_RE.fullmatch(report_id):
+        raise HTTPException(status_code=404, detail="ChatGPT问答报告不存在")
+    path = CHATGPT_QA_DIR / f"{report_id}{suffix}"
+    if not path.exists() or path.parent != CHATGPT_QA_DIR:
+        raise HTTPException(status_code=404, detail="ChatGPT问答报告不存在")
+    return path
+
+
+def _load_chatgpt_qa(report_id: str) -> dict[str, Any]:
+    return _load_json(_safe_chatgpt_qa_path(report_id))
+
+
+def list_chatgpt_qa() -> list[dict[str, Any]]:
+    result: list[dict[str, Any]] = []
+    for path in _chatgpt_qa_json_files():
+        payload = _load_json(path)
+        summary_fields = payload.get("summary_fields") if isinstance(payload.get("summary_fields"), list) else []
+        ranking = payload.get("ranking") if isinstance(payload.get("ranking"), list) else []
+        result.append(
+            {
+                "report_id": payload.get("report_id") or path.stem,
+                "basis_date": payload.get("basis_date", ""),
+                "generated_at": payload.get("generated_at", ""),
+                "source_report_id": payload.get("source_report_id", ""),
+                "summary_fields": summary_fields,
+                "ranking": ranking,
+                "daily_changes": payload.get("daily_changes") or {},
+                "report_type": payload.get("report_type", "chatgpt_era_mainline_qa"),
+                "read_only": True,
+            }
+        )
+    return result
+
+
+def load_latest_chatgpt_qa() -> tuple[str, dict[str, Any]]:
+    files = _chatgpt_qa_json_files()
+    if not files:
+        raise HTTPException(status_code=404, detail="还没有可读取的 ChatGPT 问答结果")
+    report_id = files[0].stem
+    return report_id, _load_chatgpt_qa(report_id)
 
 
 def load_latest_era_report() -> tuple[str, dict[str, Any]]:
@@ -1408,6 +1476,8 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
     score_semantics = payload.get("score_semantics") or {}
     top_mainline = mainline_ranking[0] if mainline_ranking else {}
     breadth = payload.get("breadth") or {}
+    chatgpt_qa_reports = list_chatgpt_qa()
+    latest_chatgpt_qa = chatgpt_qa_reports[0] if chatgpt_qa_reports else None
     top_mainline_theme = top_mainline.get("theme_name", "")
     top_mainline_score = top_mainline.get("mainline_score_v6")
     return {
@@ -1502,6 +1572,12 @@ def build_index_payload(report_id: str, payload: dict[str, Any], markdown: str) 
         "score_series": build_score_series(),
         "taxonomy_v2_score_series": build_taxonomy_v2_score_series(),
         "reports": list_reports(),
+        "chatgpt_qa": {
+            "latest": latest_chatgpt_qa,
+            "report_count": len(chatgpt_qa_reports),
+            "page": "/chatgpt-qa",
+            "latest_api": "/api/chatgpt-qa/latest",
+        },
         "markdown": markdown,
     }
 
@@ -1559,6 +1635,16 @@ def policies_page(request: Request) -> HTMLResponse:
         request,
         "policies.html",
         {"policy_library": build_policy_library_payload(), "page": "policies"},
+    )
+
+
+@app.get("/chatgpt-qa", response_class=HTMLResponse)
+def chatgpt_qa_page(request: Request) -> HTMLResponse:
+    report_id, payload = load_latest_chatgpt_qa()
+    return templates.TemplateResponse(
+        request,
+        "chatgpt_qa.html",
+        {"report_id": report_id, "qa": payload, "history": list_chatgpt_qa(), "page": "chatgpt-qa"},
     )
 
 
@@ -1757,6 +1843,29 @@ def api_era_theme_invalidation(theme_id: str) -> dict[str, Any]:
     report_id, payload = load_latest_era_report()
     theme = _era_theme(payload, theme_id)
     return {"report_id": report_id, "theme_id": theme_id, "invalidating_conditions": theme.get("invalidating_conditions") or [], "contradicting_evidence": theme.get("contradicting_evidence") or [], "read_only": True}
+
+
+@app.get("/api/chatgpt-qa")
+def api_chatgpt_qa() -> dict[str, Any]:
+    reports = list_chatgpt_qa()
+    return {"reports": reports, "report_count": len(reports), "read_only": True}
+
+
+@app.get("/api/chatgpt-qa/latest")
+def api_chatgpt_qa_latest() -> dict[str, Any]:
+    report_id, payload = load_latest_chatgpt_qa()
+    return {"report_id": report_id, "result": payload, "read_only": True}
+
+
+@app.get("/api/chatgpt-qa/{report_id}/markdown")
+def api_chatgpt_qa_markdown(report_id: str) -> PlainTextResponse:
+    path = _safe_chatgpt_qa_path(report_id, ".md")
+    return PlainTextResponse(path.read_text(encoding="utf-8"), media_type="text/markdown; charset=utf-8")
+
+
+@app.get("/api/chatgpt-qa/{report_id}")
+def api_chatgpt_qa_report(report_id: str) -> dict[str, Any]:
+    return {"report_id": report_id, "result": _load_chatgpt_qa(report_id), "read_only": True}
 
 
 @app.get("/api/policies")
