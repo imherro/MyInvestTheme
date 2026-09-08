@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-07T22:03:04+08:00",
+  "updated_at": "2026-09-08T22:03:04+08:00",
   "method": "Codex/LLM extracts official-source facts; Python policy_score_v2 scoring is deterministic.",
   "signals": [
     {
@@ -1598,6 +1598,63 @@
       "key_points": ["促进中小企业发展", "十五五规划", "专精特新", "人工智能赋能", "数智化绿色化发展", "产业链协同融通", "研发费用年均增长8%以上", "2030年目标", "七大专项工程"],
       "beneficiary_chain": ["专精特新企业", "工业软件", "人工智能应用", "智能制造", "绿色制造", "产业链协同", "科技服务和融资服务"],
       "related_industries": ["AI算力/通信", "高端制造/机器人/军工", "硬科技电子/半导体", "新能源/电力设备", "消费/传媒"]
+    },
+    {
+      "id": "miit-2026-09-07-information-communications-15th-plan",
+      "title": "工业和信息化部关于印发《信息通信行业发展“十五五”规划》的通知",
+      "source": "工业和信息化部",
+      "published_date": "2026-09-07",
+      "authority_level": "national_ministry",
+      "economic_scope": "cross_industry",
+      "url": "https://www.miit.gov.cn/zwgk/zcwj/wjfb/tz/art/2026/art_456511e63be14508aa5b0d113af559fe.html",
+      "authority_score": 0.7,
+      "actionability_score": 0.5,
+      "economic_scope_score": 0.8,
+      "time_decay_score": 0.967216,
+      "policy_score_v2": 0.723443,
+      "summary": "工业和信息化部印发信息通信行业发展“十五五”规划，围绕新一代通信网、智能算力、6G、网络与数据安全及融合应用部署未来五年行业发展任务。",
+      "evidence": "工业和信息化部2026年9月7日发布规划，部署新一代通信网、算力基础设施、智能体互联网络和6G技术研发等建设任务，提出到2030年全面建成覆盖完善、性能领先的新一代通信网并提升智能算力规模。",
+      "key_points": ["信息通信行业发展“十五五”规划", "新一代通信网", "智能算力规模", "6G技术研发", "智能体互联网络", "算力基础设施", "网络和数据安全", "2030年目标"],
+      "beneficiary_chain": ["新一代通信网", "智能算力", "通信设备", "数据中心", "6G技术", "网络安全", "工业互联网", "卫星通信"],
+      "related_industries": ["AI算力/通信", "硬科技电子/半导体", "高端制造/机器人/军工"]
+    },
+    {
+      "id": "cac-2026-09-04-digital-green-coordination-plan",
+      "title": "中央网信办等七部门联合印发《促进数字化绿色化协同转型发展实施方案（2026-2030年）》",
+      "source": "中央网信办等七部门",
+      "published_date": "2026-09-04",
+      "authority_level": "multi_ministry",
+      "economic_scope": "cross_industry",
+      "url": "https://www.cac.gov.cn/2026-09/04/c_1790271981702331.htm",
+      "authority_score": 0.8,
+      "actionability_score": 0.5,
+      "economic_scope_score": 0.8,
+      "time_decay_score": 0.875173,
+      "policy_score_v2": 0.740035,
+      "summary": "中央网信办等七部门印发数字化绿色化协同转型发展实施方案，推动人工智能与绿色技术融合、提升算力设施和通信基站用能效率，并在制造、消费、城市运行等领域深化双化协同应用。",
+      "evidence": "中央网信办等七部门2026年9月4日发布实施方案，明确到2030年人工智能深度赋能绿色低碳技术和产业发展，提升算力设施、5G基站等新兴领域用能效率，推动制造业等重点领域数字化绿色化建设和应用。",
+      "key_points": ["数字化绿色化协同转型", "人工智能赋能绿色低碳", "算力设施用能效率", "5G基站绿色低碳", "制造业数字化绿色化", "能源电力数据", "2030年目标"],
+      "beneficiary_chain": ["绿色数据中心", "液冷散热", "低功耗芯片", "能源数字化", "工业互联网", "绿色制造", "碳管理", "智能电网"],
+      "related_industries": ["AI算力/通信", "新能源/电力设备", "高端制造/机器人/军工", "硬科技电子/半导体"]
+    },
+    {
+      "id": "miit-2026-09-07-historical-classic-industries-quality-development",
+      "title": "工业和信息化部等六部门关于印发《关于推动历史经典产业高质量发展的意见》的通知",
+      "source": "工业和信息化部等六部门",
+      "published_date": "2026-09-07",
+      "authority_level": "multi_ministry",
+      "economic_scope": "cross_industry",
+      "url": "https://www.miit.gov.cn/zwgk/zcwj/wjfb/tz/art/2026/art_6d9ac16698c0431eb4e202a53143bc9f.html",
+      "authority_score": 0.8,
+      "actionability_score": 0.2,
+      "economic_scope_score": 0.8,
+      "time_decay_score": 0.967216,
+      "policy_score_v2": 0.683443,
+      "summary": "工业和信息化部等六部门经国务院同意印发推动历史经典产业高质量发展的意见，围绕传统特色产业的传承创新、智能绿色转型、消费场景和品牌出海部署产业升级任务。",
+      "evidence": "工业和信息化部等六部门2026年9月7日发布意见，经国务院同意，提出到2028年培育50家百亿规模龙头企业、打造若干千亿级特色产业集群，并推动历史经典产业向高端化智能化绿色化转型升级和国际化发展。",
+      "key_points": ["历史经典产业", "传统产业转型升级", "高端化智能化绿色化", "消费新场景", "中国消费名品", "品牌建设", "产业国际化", "2030年目标"],
+      "beneficiary_chain": ["传统消费品", "中药", "茶叶", "酿造", "陶瓷", "文化消费", "品牌出海", "智能制造"],
+      "related_industries": ["消费/传媒", "高端制造/机器人/军工", "医药"]
     }
   ]
 }
