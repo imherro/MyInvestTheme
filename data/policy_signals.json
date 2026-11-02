@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-22T22:05:00+08:00",
+  "updated_at": "2026-11-02T22:06:41+08:00",
   "method": "Codex/LLM extracts official-source facts; Python policy_score_v2 scoring is deterministic.",
   "signals": [
     {
@@ -2252,6 +2252,25 @@
       "key_points": ["南方区域电力市场正式运行", "扩大市场交易范围和规模", "完善新能源运行市场机制", "跨区域电力资源优化配置", "电力保供中长期合同履约", "跨电网经营区常态化交易", "新能源消纳空间"],
       "beneficiary_chain": ["电力市场交易与运营", "新能源消纳与绿电交易", "跨省跨区输电", "电力交易平台与数字化系统", "电网调度与安全校核", "新型电力系统建设"],
       "related_industries": ["新能源/电力设备", "资源周期", "AI算力/通信"]
+    },
+    {
+      "id": "ndrc-2026-10-30-consumption-infrastructure-guidance",
+      "title": "国家发展改革委等部门关于加强消费基础设施建设 促进消费投资良性互动的指导意见",
+      "source": "国家发展改革委等部门",
+      "published_date": "2026-10-30",
+      "authority_level": "multi_ministry",
+      "economic_scope": "national",
+      "url": "https://www.ndrc.gov.cn/xxgk/zcfb/tz/202610/t20261030_1408459.html",
+      "authority_score": 0.85,
+      "actionability_score": 0.8,
+      "economic_scope_score": 1.0,
+      "time_decay_score": 0.9048374180359595,
+      "policy_score_v2": 0.878467483607192,
+      "summary": "国家发展改革委等部门印发加强消费基础设施建设、促进消费投资良性互动的指导意见，围绕商业、文旅、养老托育、健康、出行、冷链物流和数字化消费设施完善扩大内需与有效投资。",
+      "evidence": "国家发展改革委官网2026年10月30日发布，文件提出完善城乡商业设施、服务消费设施、充电设施、冷链物流和数字化消费设施，并拓展中央和地方资金、政策性金融工具、REITs及社会资本等投资渠道。",
+      "key_points": ["加强消费基础设施建设", "促进消费投资良性互动", "城乡商业设施更新", "文旅和养老托育服务设施", "充电与出行消费设施", "冷链物流和县乡村物流体系", "数字化与绿色消费设施", "政策性金融工具和REITs"],
+      "beneficiary_chain": ["商业设施更新", "文旅消费设施", "养老托育与健康服务设施", "充电基础设施", "冷链物流与县乡村物流", "数字化消费平台", "消费基础设施REITs"],
+      "related_industries": ["消费/传媒", "新能源/电力设备", "高端制造/机器人/军工"]
     }
   ]
 }
