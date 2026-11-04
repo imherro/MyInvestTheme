@@ -1,0 +1,2670 @@
+{
+  "scoring_version": "theme_taxonomy_v2_backfill_v1",
+  "taxonomy_version": "theme_taxonomy_v2",
+  "source_report_id": "mainline_review_2026-11-04_131125",
+  "basis_date": "2026-11-03",
+  "generated_at": "2026-11-04 13:11:25 CST",
+  "built_at": "2026-11-04T13:12:28",
+  "is_backfilled": true,
+  "backfill_notice": "本结果由旧报告确定性重映射生成，不修改旧报告，不等同于当时原始研究结论。",
+  "score_method": "combined_score = policy_score_100 42% + market_heat_score 48% + confidence_score 10%; policy_score_100 is report-local normalized from policy_mainline_score.",
+  "market_method": "market_heat_score = SW 25% + THS 30% + ETF 25% + limit-up 10% + moneyflow 10%, using direct matches first and conservative legacy inheritance second.",
+  "themes": [
+    {
+      "theme_id": "communication_satellite",
+      "theme_name": "通信/卫星互联网",
+      "parent_id": "tmt_ai",
+      "parent_name": "TMT/AI",
+      "priority": 30,
+      "combined_score": 59.2672,
+      "policy_mainline_score": 2.1111,
+      "policy_score_100": 100.0,
+      "market_heat_score": 25.5568,
+      "legacy_policy_score": 100.0,
+      "theme_score_v5": 2.1934,
+      "confidence_label": "中低",
+      "confidence_score": 50,
+      "confidence_reason": "直接命中：policy",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "ai_compute_communications"
+      ],
+      "source_legacy_themes": [
+        "AI算力/通信"
+      ],
+      "component_scores": {
+        "sw": 18.5484,
+        "ths": 20.3366,
+        "etf": 49.2747,
+        "limit": 0.0,
+        "flow": 25.0
+      },
+      "matched_keywords": {
+        "sw": [],
+        "ths": [],
+        "etf": [],
+        "limit": [],
+        "flow": [],
+        "policy": [
+          "商用卫星"
+        ],
+        "legacy": [
+          "卫星",
+          "卫星通信",
+          "商用卫星",
+          "通信",
+          "通信设备"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "通信"
+          ],
+          "ths": [
+            "通信",
+            "通信设备"
+          ],
+          "etf": [
+            "卫星",
+            "通信"
+          ],
+          "limit": [
+            "通信"
+          ],
+          "flow": [
+            "通信",
+            "通信设备"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "policy_mapping",
+          "label": "旧报告政策证据文本",
+          "score": 100.0,
+          "matched_keywords": [
+            "商用卫星"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "AI算力/通信",
+          "score": 36.7232,
+          "matched_keywords": [
+            "卫星",
+            "卫星通信",
+            "商用卫星",
+            "通信",
+            "通信设备"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 2.1111,
+      "legacy_market_score": 25.5568,
+      "legacy_evidence_score": 25.5568,
+      "policy_score": 100.0,
+      "market_score": 25.5568,
+      "stage": "可观察",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 1
+    },
+    {
+      "theme_id": "core_consumption",
+      "theme_name": "消费/家电/服务",
+      "parent_id": "consumption",
+      "parent_name": "大消费",
+      "priority": 160,
+      "combined_score": 58.2321,
+      "policy_mainline_score": 0.2409,
+      "policy_score_100": 11.4111,
+      "market_heat_score": 92.5822,
+      "legacy_policy_score": 24.09,
+      "theme_score_v5": 0.6967,
+      "confidence_label": "高",
+      "confidence_score": 90,
+      "confidence_reason": "直接命中：etf、flow、limit、policy、sw、ths",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "consumption_media"
+      ],
+      "source_legacy_themes": [
+        "消费/传媒"
+      ],
+      "component_scores": {
+        "sw": 99.1935,
+        "ths": 91.1639,
+        "etf": 97.9388,
+        "limit": 72.0,
+        "flow": 87.5
+      },
+      "matched_keywords": {
+        "sw": [
+          "商贸零售",
+          "家用电器",
+          "社会服务",
+          "美容护理",
+          "食品饮料"
+        ],
+        "ths": [
+          "消费",
+          "零售"
+        ],
+        "etf": [
+          "旅游",
+          "消费",
+          "食品饮料"
+        ],
+        "limit": [
+          "旅游",
+          "零售"
+        ],
+        "flow": [
+          "旅游"
+        ],
+        "policy": [
+          "扩大内需"
+        ],
+        "legacy": [
+          "商贸零售",
+          "家用电器",
+          "消费",
+          "零售",
+          "食品饮料"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "商贸零售",
+            "家用电器",
+            "食品饮料"
+          ],
+          "ths": [
+            "消费"
+          ],
+          "etf": [
+            "消费"
+          ],
+          "limit": [
+            "消费",
+            "零售",
+            "食品"
+          ],
+          "flow": [
+            "零售",
+            "食品饮料"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "sw_top",
+          "label": "食品饮料",
+          "score": 99.1935,
+          "matched_keywords": [
+            "食品饮料"
+          ]
+        },
+        {
+          "source": "sw_top",
+          "label": "家用电器",
+          "score": 86.129,
+          "matched_keywords": [
+            "家用电器"
+          ]
+        },
+        {
+          "source": "sw_top",
+          "label": "商贸零售",
+          "score": 70.8065,
+          "matched_keywords": [
+            "商贸零售"
+          ]
+        },
+        {
+          "source": "ths_top",
+          "label": "日常消费品(A股)",
+          "score": 91.1639,
+          "matched_keywords": [
+            "消费"
+          ]
+        },
+        {
+          "source": "ths_top",
+          "label": "药品零售(A股)",
+          "score": 88.7466,
+          "matched_keywords": [
+            "零售"
+          ]
+        },
+        {
+          "source": "etf_top",
+          "label": "汇添富中证主要消费ETF",
+          "score": 97.9388,
+          "matched_keywords": [
+            "消费"
+          ]
+        },
+        {
+          "source": "etf_top",
+          "label": "易方达中证港股通消费主题ETF",
+          "score": 97.2311,
+          "matched_keywords": [
+            "消费"
+          ]
+        },
+        {
+          "source": "etf_top",
+          "label": "富国中证消费50ETF",
+          "score": 96.7738,
+          "matched_keywords": [
+            "消费"
+          ]
+        },
+        {
+          "source": "limit_up_top",
+          "label": "一般零售",
+          "score": 48.0,
+          "matched_keywords": [
+            "零售"
+          ]
+        },
+        {
+          "source": "limit_up_top",
+          "label": "旅游及景",
+          "score": 12.0,
+          "matched_keywords": [
+            "旅游"
+          ]
+        },
+        {
+          "source": "moneyflow_top",
+          "label": "旅游服务",
+          "score": 30.0,
+          "matched_keywords": [
+            "旅游"
+          ]
+        },
+        {
+          "source": "moneyflow_top",
+          "label": "旅游景点",
+          "score": 5.0,
+          "matched_keywords": [
+            "旅游"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.2409,
+      "legacy_market_score": 92.5822,
+      "legacy_evidence_score": 92.5822,
+      "policy_score": 24.09,
+      "market_score": 92.5822,
+      "stage": "可观察",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 2
+    },
+    {
+      "theme_id": "ai_compute",
+      "theme_name": "AI算力/数据中心",
+      "parent_id": "tmt_ai",
+      "parent_name": "TMT/AI",
+      "priority": 20,
+      "combined_score": 57.1587,
+      "policy_mainline_score": 2.1111,
+      "policy_score_100": 100.0,
+      "market_heat_score": 21.1641,
+      "legacy_policy_score": 100.0,
+      "theme_score_v5": 2.1934,
+      "confidence_label": "中低",
+      "confidence_score": 50,
+      "confidence_reason": "直接命中：policy",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "ai_compute_communications"
+      ],
+      "source_legacy_themes": [
+        "AI算力/通信"
+      ],
+      "component_scores": {
+        "sw": 18.5484,
+        "ths": 5.6942,
+        "etf": 49.2747,
+        "limit": 0.0,
+        "flow": 25.0
+      },
+      "matched_keywords": {
+        "sw": [],
+        "ths": [],
+        "etf": [],
+        "limit": [],
+        "flow": [],
+        "policy": [
+          "人工智能",
+          "AI",
+          "算力基础设施"
+        ],
+        "legacy": [
+          "AI",
+          "算力",
+          "计算机",
+          "软件",
+          "通信"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "计算机",
+            "通信"
+          ],
+          "etf": [
+            "软件"
+          ],
+          "limit": [
+            "算力",
+            "计算机"
+          ],
+          "flow": [
+            "计算机"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "policy_mapping",
+          "label": "旧报告政策证据文本",
+          "score": 100.0,
+          "matched_keywords": [
+            "人工智能",
+            "AI",
+            "算力基础设施"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "AI算力/通信",
+          "score": 36.7232,
+          "matched_keywords": [
+            "AI",
+            "算力",
+            "计算机",
+            "软件",
+            "通信"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 2.1111,
+      "legacy_market_score": 21.1641,
+      "legacy_evidence_score": 21.1641,
+      "policy_score": 100.0,
+      "market_score": 21.1641,
+      "stage": "可观察",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 3
+    },
+    {
+      "theme_id": "media_game_ai_application",
+      "theme_name": "传媒游戏/AI应用",
+      "parent_id": "tmt_ai",
+      "parent_name": "TMT/AI",
+      "priority": 40,
+      "combined_score": 56.9781,
+      "policy_mainline_score": 0.8022,
+      "policy_score_100": 38.0,
+      "market_heat_score": 71.9127,
+      "legacy_policy_score": 38.0,
+      "theme_score_v5": 0.8335,
+      "confidence_label": "中",
+      "confidence_score": 65,
+      "confidence_reason": "直接命中：limit、sw、ths",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "consumption_media",
+        "ai_compute_communications"
+      ],
+      "source_legacy_themes": [
+        "消费/传媒",
+        "AI算力/通信"
+      ],
+      "component_scores": {
+        "sw": 82.9032,
+        "ths": 94.8967,
+        "etf": 27.0716,
+        "limit": 72.0,
+        "flow": 87.5
+      },
+      "matched_keywords": {
+        "sw": [
+          "传媒"
+        ],
+        "ths": [
+          "影视",
+          "游戏"
+        ],
+        "etf": [],
+        "limit": [
+          "游戏"
+        ],
+        "flow": [],
+        "policy": [],
+        "legacy": [
+          "传媒",
+          "影视",
+          "游戏"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "传媒"
+          ],
+          "ths": [
+            "影视",
+            "游戏"
+          ],
+          "limit": [
+            "传媒",
+            "影视",
+            "游戏"
+          ],
+          "flow": [
+            "传媒",
+            "影视",
+            "游戏"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "sw_top",
+          "label": "传媒",
+          "score": 82.9032,
+          "matched_keywords": [
+            "传媒"
+          ]
+        },
+        {
+          "source": "ths_top",
+          "label": "影视院线",
+          "score": 94.8967,
+          "matched_keywords": [
+            "影视"
+          ]
+        },
+        {
+          "source": "ths_top",
+          "label": "影视院线Ⅲ",
+          "score": 94.8967,
+          "matched_keywords": [
+            "影视"
+          ]
+        },
+        {
+          "source": "ths_top",
+          "label": "游戏Ⅲ",
+          "score": 91.7631,
+          "matched_keywords": [
+            "游戏"
+          ]
+        },
+        {
+          "source": "limit_up_top",
+          "label": "游戏Ⅱ",
+          "score": 36.0,
+          "matched_keywords": [
+            "游戏"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "消费/传媒",
+          "score": 76.7972,
+          "matched_keywords": [
+            "传媒",
+            "影视",
+            "游戏"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "AI算力/通信",
+          "score": 36.7232,
+          "matched_keywords": [
+            "传媒",
+            "影视",
+            "游戏"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.8022,
+      "legacy_market_score": 71.9127,
+      "legacy_evidence_score": 71.9127,
+      "policy_score": 38.0,
+      "market_score": 71.9127,
+      "stage": "可观察",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 4
+    },
+    {
+      "theme_id": "photovoltaic_wind_storage",
+      "theme_name": "光伏/风电/储能",
+      "parent_id": "new_energy",
+      "parent_name": "新能源",
+      "priority": 110,
+      "combined_score": 54.3213,
+      "policy_mainline_score": 0.5712,
+      "policy_score_100": 27.057,
+      "market_heat_score": 70.7445,
+      "legacy_policy_score": 57.12,
+      "theme_score_v5": 0.939,
+      "confidence_label": "高",
+      "confidence_score": 90,
+      "confidence_reason": "直接命中：flow、limit、policy、sw",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "new_energy_power_equipment"
+      ],
+      "source_legacy_themes": [
+        "新能源/电力设备"
+      ],
+      "component_scores": {
+        "sw": 62.7419,
+        "ths": 63.0888,
+        "etf": 72.5294,
+        "limit": 80.0,
+        "flow": 100.0
+      },
+      "matched_keywords": {
+        "sw": [
+          "电力设备"
+        ],
+        "ths": [],
+        "etf": [],
+        "limit": [
+          "光伏"
+        ],
+        "flow": [
+          "电气设备"
+        ],
+        "policy": [
+          "清洁能源",
+          "绿色低碳",
+          "储能",
+          "新能源"
+        ],
+        "legacy": [
+          "新能源",
+          "电力设备",
+          "风电"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "电力设备"
+          ],
+          "ths": [
+            "新能源",
+            "风电"
+          ],
+          "etf": [
+            "新能源"
+          ],
+          "limit": [
+            "风电"
+          ],
+          "flow": [
+            "风电"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "sw_top",
+          "label": "电力设备",
+          "score": 62.7419,
+          "matched_keywords": [
+            "电力设备"
+          ]
+        },
+        {
+          "source": "limit_up_top",
+          "label": "光伏设备",
+          "score": 12.0,
+          "matched_keywords": [
+            "光伏"
+          ]
+        },
+        {
+          "source": "moneyflow_top",
+          "label": "电气设备",
+          "score": 100.0,
+          "matched_keywords": [
+            "电气设备"
+          ]
+        },
+        {
+          "source": "policy_mapping",
+          "label": "旧报告政策证据文本",
+          "score": 27.057,
+          "matched_keywords": [
+            "清洁能源",
+            "绿色低碳",
+            "储能",
+            "新能源"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "新能源/电力设备",
+          "score": 68.7008,
+          "matched_keywords": [
+            "新能源",
+            "电力设备",
+            "风电"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.5712,
+      "legacy_market_score": 70.7445,
+      "legacy_evidence_score": 70.7445,
+      "policy_score": 57.12,
+      "market_score": 70.7445,
+      "stage": "可观察",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 5
+    },
+    {
+      "theme_id": "real_estate_chain",
+      "theme_name": "地产链/家居建材",
+      "parent_id": "finance_property",
+      "parent_name": "金融地产",
+      "priority": 190,
+      "combined_score": 48.0212,
+      "policy_mainline_score": 0.2409,
+      "policy_score_100": 11.4111,
+      "market_heat_score": 71.3095,
+      "legacy_policy_score": 24.09,
+      "theme_score_v5": 0.6967,
+      "confidence_label": "高",
+      "confidence_score": 90,
+      "confidence_reason": "直接命中：flow、limit、policy、sw",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "infrastructure_materials",
+        "consumption_media"
+      ],
+      "source_legacy_themes": [
+        "建材/稳增长修复",
+        "消费/传媒"
+      ],
+      "component_scores": {
+        "sw": 86.129,
+        "ths": 90.198,
+        "etf": 27.0716,
+        "limit": 72.0,
+        "flow": 87.5
+      },
+      "matched_keywords": {
+        "sw": [
+          "家用电器"
+        ],
+        "ths": [],
+        "etf": [],
+        "limit": [
+          "房地产",
+          "装修建材"
+        ],
+        "flow": [
+          "水泥"
+        ],
+        "policy": [
+          "稳增长"
+        ],
+        "legacy": [
+          "家用电器",
+          "建材",
+          "建筑材料",
+          "水泥",
+          "稳增长"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "家用电器",
+            "建筑材料"
+          ],
+          "ths": [
+            "水泥"
+          ],
+          "limit": [
+            "水泥"
+          ],
+          "flow": [
+            "水泥"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "sw_top",
+          "label": "家用电器",
+          "score": 86.129,
+          "matched_keywords": [
+            "家用电器"
+          ]
+        },
+        {
+          "source": "limit_up_top",
+          "label": "装修建材",
+          "score": 24.0,
+          "matched_keywords": [
+            "装修建材"
+          ]
+        },
+        {
+          "source": "limit_up_top",
+          "label": "房地产开发",
+          "score": 12.0,
+          "matched_keywords": [
+            "房地产"
+          ]
+        },
+        {
+          "source": "moneyflow_top",
+          "label": "水泥",
+          "score": 65.0,
+          "matched_keywords": [
+            "水泥"
+          ]
+        },
+        {
+          "source": "policy_mapping",
+          "label": "旧报告政策证据文本",
+          "score": 11.4111,
+          "matched_keywords": [
+            "稳增长"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "建材/稳增长修复",
+          "score": 45.336,
+          "matched_keywords": [
+            "家用电器",
+            "建材",
+            "建筑材料",
+            "水泥",
+            "稳增长"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "消费/传媒",
+          "score": 76.7972,
+          "matched_keywords": [
+            "家用电器",
+            "建材",
+            "建筑材料",
+            "水泥",
+            "稳增长"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.2409,
+      "legacy_market_score": 71.3095,
+      "legacy_evidence_score": 71.3095,
+      "policy_score": 24.09,
+      "market_score": 71.3095,
+      "stage": "弱观察",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 6
+    },
+    {
+      "theme_id": "new_energy_vehicle_lithium",
+      "theme_name": "新能源汽车/锂电",
+      "parent_id": "new_energy",
+      "parent_name": "新能源",
+      "priority": 100,
+      "combined_score": 44.9676,
+      "policy_mainline_score": 0.2171,
+      "policy_score_100": 10.2817,
+      "market_heat_score": 71.1445,
+      "legacy_policy_score": 21.7056,
+      "theme_score_v5": 0.3568,
+      "confidence_label": "中",
+      "confidence_score": 65,
+      "confidence_reason": "直接命中：flow、limit、sw",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "new_energy_power_equipment"
+      ],
+      "source_legacy_themes": [
+        "新能源/电力设备"
+      ],
+      "component_scores": {
+        "sw": 62.7419,
+        "ths": 63.0888,
+        "etf": 72.5294,
+        "limit": 84.0,
+        "flow": 100.0
+      },
+      "matched_keywords": {
+        "sw": [
+          "电力设备"
+        ],
+        "ths": [],
+        "etf": [],
+        "limit": [
+          "电池"
+        ],
+        "flow": [
+          "电气设备"
+        ],
+        "policy": [],
+        "legacy": [
+          "新能源车",
+          "电力设备",
+          "电池"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "电力设备"
+          ],
+          "ths": [
+            "电池"
+          ],
+          "etf": [
+            "新能源车",
+            "电池"
+          ],
+          "limit": [
+            "电池"
+          ],
+          "flow": [
+            "电池"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "sw_top",
+          "label": "电力设备",
+          "score": 62.7419,
+          "matched_keywords": [
+            "电力设备"
+          ]
+        },
+        {
+          "source": "limit_up_top",
+          "label": "电池",
+          "score": 84.0,
+          "matched_keywords": [
+            "电池"
+          ]
+        },
+        {
+          "source": "moneyflow_top",
+          "label": "电气设备",
+          "score": 100.0,
+          "matched_keywords": [
+            "电气设备"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "新能源/电力设备",
+          "score": 68.7008,
+          "matched_keywords": [
+            "新能源车",
+            "电力设备",
+            "电池"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.2171,
+      "legacy_market_score": 71.1445,
+      "legacy_evidence_score": 71.1445,
+      "policy_score": 21.7056,
+      "market_score": 71.1445,
+      "stage": "弱观察",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 7
+    },
+    {
+      "theme_id": "low_altitude_space",
+      "theme_name": "低空经济/商业航天",
+      "parent_id": "advanced_manufacturing",
+      "parent_name": "高端制造",
+      "priority": 90,
+      "combined_score": 38.1907,
+      "policy_mainline_score": 0.8022,
+      "policy_score_100": 38.0,
+      "market_heat_score": 35.8973,
+      "legacy_policy_score": 38.0,
+      "theme_score_v5": 0.8335,
+      "confidence_label": "中低",
+      "confidence_score": 50,
+      "confidence_reason": "直接命中：sw",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "high_end_manufacturing_robotics_defense",
+        "ai_compute_communications"
+      ],
+      "source_legacy_themes": [
+        "高端制造/机器人/军工",
+        "AI算力/通信"
+      ],
+      "component_scores": {
+        "sw": 41.6129,
+        "ths": 12.0244,
+        "etf": 70.7549,
+        "limit": 4.48,
+        "flow": 37.5
+      },
+      "matched_keywords": {
+        "sw": [
+          "国防军工"
+        ],
+        "ths": [],
+        "etf": [],
+        "limit": [],
+        "flow": [],
+        "policy": [],
+        "legacy": [
+          "卫星",
+          "国防军工",
+          "通信"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "国防军工",
+            "通信"
+          ],
+          "etf": [
+            "卫星"
+          ],
+          "flow": [
+            "通信"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "sw_top",
+          "label": "国防军工",
+          "score": 41.6129,
+          "matched_keywords": [
+            "国防军工"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "高端制造/机器人/军工",
+          "score": 38.5732,
+          "matched_keywords": [
+            "卫星",
+            "国防军工",
+            "通信"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "AI算力/通信",
+          "score": 36.7232,
+          "matched_keywords": [
+            "卫星",
+            "国防军工",
+            "通信"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.8022,
+      "legacy_market_score": 35.8973,
+      "legacy_evidence_score": 35.8973,
+      "policy_score": 38.0,
+      "market_score": 35.8973,
+      "stage": "弱观察",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 8
+    },
+    {
+      "theme_id": "resources_energy",
+      "theme_name": "煤炭/油气",
+      "parent_id": "resources",
+      "parent_name": "资源周期",
+      "priority": 150,
+      "combined_score": 37.3736,
+      "policy_mainline_score": 0.0601,
+      "policy_score_100": 2.8469,
+      "market_heat_score": 61.8291,
+      "legacy_policy_score": 6.01,
+      "theme_score_v5": 0.2291,
+      "confidence_label": "中",
+      "confidence_score": 65,
+      "confidence_reason": "直接命中：policy、sw",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "resources_cycle"
+      ],
+      "source_legacy_themes": [
+        "资源周期"
+      ],
+      "component_scores": {
+        "sw": 72.5806,
+        "ths": 63.7293,
+        "etf": 73.2605,
+        "limit": 0.0,
+        "flow": 62.5
+      },
+      "matched_keywords": {
+        "sw": [
+          "煤炭",
+          "石油石化"
+        ],
+        "ths": [],
+        "etf": [],
+        "limit": [],
+        "flow": [],
+        "policy": [
+          "煤炭"
+        ],
+        "legacy": [
+          "煤炭",
+          "石油",
+          "石油石化",
+          "能源"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "煤炭",
+            "石油石化"
+          ],
+          "ths": [
+            "煤炭",
+            "石油"
+          ],
+          "etf": [
+            "能源"
+          ],
+          "limit": [
+            "煤炭",
+            "石油"
+          ],
+          "flow": [
+            "煤炭",
+            "石油"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "sw_top",
+          "label": "石油石化",
+          "score": 72.5806,
+          "matched_keywords": [
+            "石油石化"
+          ]
+        },
+        {
+          "source": "sw_top",
+          "label": "煤炭",
+          "score": 60.8065,
+          "matched_keywords": [
+            "煤炭"
+          ]
+        },
+        {
+          "source": "policy_mapping",
+          "label": "旧报告政策证据文本",
+          "score": 2.8469,
+          "matched_keywords": [
+            "煤炭"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "资源周期",
+          "score": 50.4315,
+          "matched_keywords": [
+            "煤炭",
+            "石油",
+            "石油石化",
+            "能源"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.0601,
+      "legacy_market_score": 61.8291,
+      "legacy_evidence_score": 61.8291,
+      "policy_score": 6.01,
+      "market_score": 61.8291,
+      "stage": "弱观察",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 9
+    },
+    {
+      "theme_id": "infrastructure_materials",
+      "theme_name": "基建/建材/稳增长",
+      "parent_id": "infrastructure",
+      "parent_name": "稳增长",
+      "priority": 210,
+      "combined_score": 36.7585,
+      "policy_mainline_score": 0.0448,
+      "policy_score_100": 2.1221,
+      "market_heat_score": 55.9734,
+      "legacy_policy_score": 4.48,
+      "theme_score_v5": 0.1708,
+      "confidence_label": "高",
+      "confidence_score": 90,
+      "confidence_reason": "直接命中：flow、limit、policy、sw",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "infrastructure_materials"
+      ],
+      "source_legacy_themes": [
+        "建材/稳增长修复"
+      ],
+      "component_scores": {
+        "sw": 51.2903,
+        "ths": 48.7948,
+        "etf": 71.2494,
+        "limit": 32.0,
+        "flow": 75.0
+      },
+      "matched_keywords": {
+        "sw": [
+          "建筑装饰"
+        ],
+        "ths": [],
+        "etf": [],
+        "limit": [
+          "装修建材"
+        ],
+        "flow": [
+          "水泥"
+        ],
+        "policy": [
+          "稳增长",
+          "基础设施",
+          "重大工程",
+          "现代化基础设施"
+        ],
+        "legacy": [
+          "基建",
+          "建材",
+          "建筑",
+          "建筑产品",
+          "建筑材料",
+          "建筑装饰",
+          "水泥",
+          "稳增长",
+          "重大工程"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "建筑材料",
+            "建筑装饰"
+          ],
+          "ths": [
+            "建筑产品",
+            "建筑材料",
+            "水泥"
+          ],
+          "etf": [
+            "基建",
+            "建筑",
+            "建筑材料"
+          ],
+          "limit": [
+            "建筑材料",
+            "水泥"
+          ],
+          "flow": [
+            "建筑",
+            "水泥"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "sw_top",
+          "label": "建筑装饰",
+          "score": 51.2903,
+          "matched_keywords": [
+            "建筑装饰"
+          ]
+        },
+        {
+          "source": "limit_up_top",
+          "label": "装修建材",
+          "score": 24.0,
+          "matched_keywords": [
+            "装修建材"
+          ]
+        },
+        {
+          "source": "moneyflow_top",
+          "label": "水泥",
+          "score": 65.0,
+          "matched_keywords": [
+            "水泥"
+          ]
+        },
+        {
+          "source": "policy_mapping",
+          "label": "旧报告政策证据文本",
+          "score": 2.1221,
+          "matched_keywords": [
+            "稳增长",
+            "基础设施",
+            "重大工程",
+            "现代化基础设施"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "建材/稳增长修复",
+          "score": 45.336,
+          "matched_keywords": [
+            "基建",
+            "建材",
+            "建筑",
+            "建筑产品",
+            "建筑材料",
+            "建筑装饰",
+            "水泥",
+            "稳增长"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.0448,
+      "legacy_market_score": 55.9734,
+      "legacy_evidence_score": 55.9734,
+      "policy_score": 4.48,
+      "market_score": 55.9734,
+      "stage": "弱观察",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 10
+    },
+    {
+      "theme_id": "innovative_medicine",
+      "theme_name": "创新药/医药",
+      "parent_id": "medicine",
+      "parent_name": "医药健康",
+      "priority": 200,
+      "combined_score": 35.4688,
+      "policy_mainline_score": 0.0839,
+      "policy_score_100": 3.9742,
+      "market_heat_score": 56.8743,
+      "legacy_policy_score": 8.39,
+      "theme_score_v5": 0.3197,
+      "confidence_label": "中",
+      "confidence_score": 65,
+      "confidence_reason": "直接命中：policy、sw",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "innovative_medicine"
+      ],
+      "source_legacy_themes": [
+        "创新药/医药"
+      ],
+      "component_scores": {
+        "sw": 50.9677,
+        "ths": 61.0968,
+        "etf": 83.2132,
+        "limit": 0.0,
+        "flow": 50.0
+      },
+      "matched_keywords": {
+        "sw": [
+          "医药生物"
+        ],
+        "ths": [],
+        "etf": [],
+        "limit": [],
+        "flow": [],
+        "policy": [
+          "创新药",
+          "医药",
+          "医疗器械",
+          "健康中国"
+        ],
+        "legacy": [
+          "创新药",
+          "制药",
+          "医疗",
+          "医疗器械",
+          "医药",
+          "医药生物",
+          "生物"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "医药生物"
+          ],
+          "ths": [
+            "制药"
+          ],
+          "etf": [
+            "医疗",
+            "医药"
+          ],
+          "limit": [
+            "医药"
+          ],
+          "flow": [
+            "医药"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "sw_top",
+          "label": "医药生物",
+          "score": 50.9677,
+          "matched_keywords": [
+            "医药生物"
+          ]
+        },
+        {
+          "source": "policy_mapping",
+          "label": "旧报告政策证据文本",
+          "score": 3.9742,
+          "matched_keywords": [
+            "创新药",
+            "医药",
+            "医疗器械",
+            "健康中国"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "创新药/医药",
+          "score": 49.6016,
+          "matched_keywords": [
+            "创新药",
+            "制药",
+            "医疗",
+            "医疗器械",
+            "医药",
+            "医药生物",
+            "生物"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.0839,
+      "legacy_market_score": 56.8743,
+      "legacy_evidence_score": 56.8743,
+      "policy_score": 8.39,
+      "market_score": 56.8743,
+      "stage": "弱观察",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 11
+    },
+    {
+      "theme_id": "smart_vehicle_autonomous",
+      "theme_name": "智能汽车/自动驾驶/车路云",
+      "parent_id": "advanced_manufacturing",
+      "parent_name": "高端制造",
+      "priority": 80,
+      "combined_score": 33.389,
+      "policy_mainline_score": 0.8022,
+      "policy_score_100": 38.0,
+      "market_heat_score": 31.102,
+      "legacy_policy_score": 38.0,
+      "theme_score_v5": 0.8335,
+      "confidence_label": "低",
+      "confidence_score": 25,
+      "confidence_reason": "仅从旧粗主题继承或暂无直接证据",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "new_energy_power_equipment",
+        "ai_compute_communications",
+        "high_end_manufacturing_robotics_defense"
+      ],
+      "source_legacy_themes": [
+        "新能源/电力设备",
+        "AI算力/通信",
+        "高端制造/机器人/军工"
+      ],
+      "component_scores": {
+        "sw": 62.7419,
+        "ths": 17.6649,
+        "etf": 20.3082,
+        "limit": 22.4,
+        "flow": 28.0
+      },
+      "matched_keywords": {
+        "sw": [],
+        "ths": [],
+        "etf": [],
+        "limit": [],
+        "flow": [],
+        "policy": [],
+        "legacy": [
+          "计算机",
+          "通信"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "计算机",
+            "通信"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "legacy_theme",
+          "label": "新能源/电力设备",
+          "score": 68.7008,
+          "matched_keywords": [
+            "计算机",
+            "通信"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "AI算力/通信",
+          "score": 36.7232,
+          "matched_keywords": [
+            "计算机",
+            "通信"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "高端制造/机器人/军工",
+          "score": 38.5732,
+          "matched_keywords": [
+            "计算机",
+            "通信"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.8022,
+      "legacy_market_score": 31.102,
+      "legacy_evidence_score": 31.102,
+      "policy_score": 38.0,
+      "market_score": 31.102,
+      "stage": "弱观察",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 12
+    },
+    {
+      "theme_id": "defense_aerospace",
+      "theme_name": "军工/航空航天",
+      "parent_id": "advanced_manufacturing",
+      "parent_name": "高端制造",
+      "priority": 70,
+      "combined_score": 33.3529,
+      "policy_mainline_score": 0.1064,
+      "policy_score_100": 5.04,
+      "market_heat_score": 46.3252,
+      "legacy_policy_score": 10.64,
+      "theme_score_v5": 0.2147,
+      "confidence_label": "高",
+      "confidence_score": 90,
+      "confidence_reason": "直接命中：flow、policy、sw",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "high_end_manufacturing_robotics_defense"
+      ],
+      "source_legacy_themes": [
+        "高端制造/机器人/军工"
+      ],
+      "component_scores": {
+        "sw": 41.6129,
+        "ths": 42.9442,
+        "etf": 70.7549,
+        "limit": 16.0,
+        "flow": 37.5
+      },
+      "matched_keywords": {
+        "sw": [
+          "国防军工"
+        ],
+        "ths": [],
+        "etf": [],
+        "limit": [],
+        "flow": [
+          "船舶"
+        ],
+        "policy": [
+          "国防军工"
+        ],
+        "legacy": [
+          "军工",
+          "国防",
+          "国防军工"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "国防军工"
+          ],
+          "ths": [
+            "军工"
+          ],
+          "etf": [
+            "军工"
+          ],
+          "limit": [
+            "军工"
+          ],
+          "flow": [
+            "军工"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "sw_top",
+          "label": "国防军工",
+          "score": 41.6129,
+          "matched_keywords": [
+            "国防军工"
+          ]
+        },
+        {
+          "source": "moneyflow_top",
+          "label": "船舶",
+          "score": 15.0,
+          "matched_keywords": [
+            "船舶"
+          ]
+        },
+        {
+          "source": "policy_mapping",
+          "label": "旧报告政策证据文本",
+          "score": 5.04,
+          "matched_keywords": [
+            "国防军工"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "高端制造/机器人/军工",
+          "score": 38.5732,
+          "matched_keywords": [
+            "军工",
+            "国防",
+            "国防军工"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.1064,
+      "legacy_market_score": 46.3252,
+      "legacy_evidence_score": 46.3252,
+      "policy_score": 10.64,
+      "market_score": 46.3252,
+      "stage": "弱观察",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 13
+    },
+    {
+      "theme_id": "resources_industrial_metals",
+      "theme_name": "铜铝/工业金属",
+      "parent_id": "resources",
+      "parent_name": "资源周期",
+      "priority": 140,
+      "combined_score": 32.6536,
+      "policy_mainline_score": 0.0601,
+      "policy_score_100": 2.8469,
+      "market_heat_score": 46.7874,
+      "legacy_policy_score": 6.01,
+      "theme_score_v5": 0.2291,
+      "confidence_label": "高",
+      "confidence_score": 90,
+      "confidence_reason": "直接命中：flow、policy、sw",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "resources_cycle"
+      ],
+      "source_legacy_themes": [
+        "资源周期"
+      ],
+      "component_scores": {
+        "sw": 65.1613,
+        "ths": 63.7293,
+        "etf": 20.5129,
+        "limit": 0.0,
+        "flow": 62.5
+      },
+      "matched_keywords": {
+        "sw": [
+          "钢铁"
+        ],
+        "ths": [],
+        "etf": [],
+        "limit": [],
+        "flow": [
+          "铜"
+        ],
+        "policy": [
+          "矿产资源"
+        ],
+        "legacy": [
+          "有色",
+          "有色金属",
+          "稀土",
+          "钢铁"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "有色金属",
+            "钢铁"
+          ],
+          "ths": [
+            "稀土",
+            "钢铁"
+          ],
+          "limit": [
+            "有色",
+            "稀土",
+            "钢铁"
+          ],
+          "flow": [
+            "有色",
+            "钢铁"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "sw_top",
+          "label": "钢铁",
+          "score": 65.1613,
+          "matched_keywords": [
+            "钢铁"
+          ]
+        },
+        {
+          "source": "moneyflow_top",
+          "label": "铜",
+          "score": 55.0,
+          "matched_keywords": [
+            "铜"
+          ]
+        },
+        {
+          "source": "policy_mapping",
+          "label": "旧报告政策证据文本",
+          "score": 2.8469,
+          "matched_keywords": [
+            "矿产资源"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "资源周期",
+          "score": 50.4315,
+          "matched_keywords": [
+            "有色",
+            "有色金属",
+            "稀土",
+            "钢铁"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.0601,
+      "legacy_market_score": 46.7874,
+      "legacy_evidence_score": 46.7874,
+      "policy_score": 6.01,
+      "market_score": 46.7874,
+      "stage": "弱观察",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 14
+    },
+    {
+      "theme_id": "big_finance",
+      "theme_name": "大金融/券商银行保险",
+      "parent_id": "finance_property",
+      "parent_name": "金融地产",
+      "priority": 180,
+      "combined_score": 32.5332,
+      "policy_mainline_score": 0.0,
+      "policy_score_100": 0.0,
+      "market_heat_score": 54.2358,
+      "legacy_policy_score": 0.0,
+      "theme_score_v5": 0.0,
+      "confidence_label": "中",
+      "confidence_score": 65,
+      "confidence_reason": "直接命中：etf、flow、sw",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [],
+      "source_legacy_themes": [],
+      "component_scores": {
+        "sw": 87.7419,
+        "ths": 0.0,
+        "etf": 93.2015,
+        "limit": 0.0,
+        "flow": 90.0
+      },
+      "matched_keywords": {
+        "sw": [
+          "银行",
+          "非银金融"
+        ],
+        "ths": [],
+        "etf": [
+          "金融",
+          "银行"
+        ],
+        "limit": [],
+        "flow": [
+          "保险"
+        ],
+        "policy": [],
+        "legacy": [],
+        "legacy_fields": {}
+      },
+      "evidence_sources": [
+        {
+          "source": "sw_top",
+          "label": "非银金融",
+          "score": 87.7419,
+          "matched_keywords": [
+            "非银金融"
+          ]
+        },
+        {
+          "source": "sw_top",
+          "label": "银行",
+          "score": 66.6129,
+          "matched_keywords": [
+            "银行"
+          ]
+        },
+        {
+          "source": "etf_top",
+          "label": "易方达沪深300非银行金融ETF",
+          "score": 93.2015,
+          "matched_keywords": [
+            "金融",
+            "银行"
+          ]
+        },
+        {
+          "source": "moneyflow_top",
+          "label": "保险",
+          "score": 90.0,
+          "matched_keywords": [
+            "保险"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.0,
+      "legacy_market_score": 54.2358,
+      "legacy_evidence_score": 54.2358,
+      "policy_score": 0.0,
+      "market_score": 54.2358,
+      "stage": "弱观察",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 15
+    },
+    {
+      "theme_id": "agriculture_hog_cycle",
+      "theme_name": "农业/养殖/猪周期",
+      "parent_id": "agriculture",
+      "parent_name": "农业周期",
+      "priority": 170,
+      "combined_score": 32.4012,
+      "policy_mainline_score": 0.0,
+      "policy_score_100": 0.0,
+      "market_heat_score": 53.9609,
+      "legacy_policy_score": 0.0,
+      "theme_score_v5": 0.0,
+      "confidence_label": "中",
+      "confidence_score": 65,
+      "confidence_reason": "直接命中：flow、sw、ths",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [],
+      "source_legacy_themes": [],
+      "component_scores": {
+        "sw": 75.9677,
+        "ths": 93.23,
+        "etf": 0.0,
+        "limit": 0.0,
+        "flow": 70.0
+      },
+      "matched_keywords": {
+        "sw": [
+          "农林牧渔"
+        ],
+        "ths": [
+          "饲料"
+        ],
+        "etf": [],
+        "limit": [],
+        "flow": [
+          "饲料"
+        ],
+        "policy": [],
+        "legacy": [],
+        "legacy_fields": {}
+      },
+      "evidence_sources": [
+        {
+          "source": "sw_top",
+          "label": "农林牧渔",
+          "score": 75.9677,
+          "matched_keywords": [
+            "农林牧渔"
+          ]
+        },
+        {
+          "source": "ths_top",
+          "label": "水产饲料",
+          "score": 93.23,
+          "matched_keywords": [
+            "饲料"
+          ]
+        },
+        {
+          "source": "moneyflow_top",
+          "label": "饲料",
+          "score": 70.0,
+          "matched_keywords": [
+            "饲料"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.0,
+      "legacy_market_score": 53.9609,
+      "legacy_evidence_score": 53.9609,
+      "policy_score": 0.0,
+      "market_score": 53.9609,
+      "stage": "弱观察",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 16
+    },
+    {
+      "theme_id": "grid_power_utility",
+      "theme_name": "电网/电力运营",
+      "parent_id": "new_energy",
+      "parent_name": "新能源",
+      "priority": 120,
+      "combined_score": 31.9681,
+      "policy_mainline_score": 0.2171,
+      "policy_score_100": 10.2817,
+      "market_heat_score": 44.062,
+      "legacy_policy_score": 21.7056,
+      "theme_score_v5": 0.3568,
+      "confidence_label": "中",
+      "confidence_score": 65,
+      "confidence_reason": "直接命中：flow、limit、sw",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "new_energy_power_equipment"
+      ],
+      "source_legacy_themes": [
+        "新能源/电力设备"
+      ],
+      "component_scores": {
+        "sw": 62.7419,
+        "ths": 17.6649,
+        "etf": 20.3082,
+        "limit": 80.0,
+        "flow": 100.0
+      },
+      "matched_keywords": {
+        "sw": [
+          "公用事业",
+          "电力设备"
+        ],
+        "ths": [],
+        "etf": [],
+        "limit": [
+          "电网"
+        ],
+        "flow": [
+          "电气设备"
+        ],
+        "policy": [],
+        "legacy": [
+          "电力",
+          "电力设备"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "电力设备"
+          ],
+          "limit": [
+            "电力"
+          ],
+          "flow": [
+            "电力"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "sw_top",
+          "label": "电力设备",
+          "score": 62.7419,
+          "matched_keywords": [
+            "电力设备"
+          ]
+        },
+        {
+          "source": "sw_top",
+          "label": "公用事业",
+          "score": 60.0,
+          "matched_keywords": [
+            "公用事业"
+          ]
+        },
+        {
+          "source": "limit_up_top",
+          "label": "电网设备",
+          "score": 24.0,
+          "matched_keywords": [
+            "电网"
+          ]
+        },
+        {
+          "source": "moneyflow_top",
+          "label": "电气设备",
+          "score": 100.0,
+          "matched_keywords": [
+            "电气设备"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "新能源/电力设备",
+          "score": 68.7008,
+          "matched_keywords": [
+            "电力",
+            "电力设备"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.2171,
+      "legacy_market_score": 44.062,
+      "legacy_evidence_score": 44.062,
+      "policy_score": 21.7056,
+      "market_score": 44.062,
+      "stage": "弱观察",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 17
+    },
+    {
+      "theme_id": "industrial_equipment",
+      "theme_name": "工业母机/高端装备",
+      "parent_id": "advanced_manufacturing",
+      "parent_name": "高端制造",
+      "priority": 60,
+      "combined_score": 29.4981,
+      "policy_mainline_score": 0.1064,
+      "policy_score_100": 5.04,
+      "market_heat_score": 43.5026,
+      "legacy_policy_score": 10.64,
+      "theme_score_v5": 0.2147,
+      "confidence_label": "中",
+      "confidence_score": 65,
+      "confidence_reason": "直接命中：limit、policy",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "high_end_manufacturing_robotics_defense"
+      ],
+      "source_legacy_themes": [
+        "高端制造/机器人/军工"
+      ],
+      "component_scores": {
+        "sw": 30.3226,
+        "ths": 42.9442,
+        "etf": 70.7549,
+        "limit": 16.0,
+        "flow": 37.5
+      },
+      "matched_keywords": {
+        "sw": [],
+        "ths": [],
+        "etf": [],
+        "limit": [
+          "专用设备"
+        ],
+        "flow": [],
+        "policy": [
+          "高端装备",
+          "现代化产业体系"
+        ],
+        "legacy": [
+          "专用设备",
+          "工程机械",
+          "机床",
+          "机械",
+          "机械设备"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "机械设备"
+          ],
+          "ths": [
+            "专用设备",
+            "工程机械",
+            "机床"
+          ],
+          "etf": [
+            "机械"
+          ],
+          "limit": [
+            "专用设备",
+            "工程机械",
+            "机床"
+          ],
+          "flow": [
+            "工程机械"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "limit_up_top",
+          "label": "专用设备",
+          "score": 12.0,
+          "matched_keywords": [
+            "专用设备"
+          ]
+        },
+        {
+          "source": "policy_mapping",
+          "label": "旧报告政策证据文本",
+          "score": 5.04,
+          "matched_keywords": [
+            "高端装备",
+            "现代化产业体系"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "高端制造/机器人/军工",
+          "score": 38.5732,
+          "matched_keywords": [
+            "专用设备",
+            "工程机械",
+            "机床",
+            "机械",
+            "机械设备"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.1064,
+      "legacy_market_score": 43.5026,
+      "legacy_evidence_score": 43.5026,
+      "policy_score": 10.64,
+      "market_score": 43.5026,
+      "stage": "证据不足",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 18
+    },
+    {
+      "theme_id": "resources_gold",
+      "theme_name": "黄金/贵金属",
+      "parent_id": "resources",
+      "parent_name": "资源周期",
+      "priority": 130,
+      "combined_score": 21.8884,
+      "policy_mainline_score": 0.0601,
+      "policy_score_100": 2.8469,
+      "market_heat_score": 29.5682,
+      "legacy_policy_score": 6.01,
+      "theme_score_v5": 0.2291,
+      "confidence_label": "中",
+      "confidence_score": 65,
+      "confidence_reason": "直接命中：flow、policy",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "resources_cycle"
+      ],
+      "source_legacy_themes": [
+        "资源周期"
+      ],
+      "component_scores": {
+        "sw": 58.3468,
+        "ths": 17.8442,
+        "etf": 20.5129,
+        "limit": 0.0,
+        "flow": 45.0
+      },
+      "matched_keywords": {
+        "sw": [],
+        "ths": [],
+        "etf": [],
+        "limit": [],
+        "flow": [
+          "黄金"
+        ],
+        "policy": [
+          "矿产资源"
+        ],
+        "legacy": [
+          "有色金属"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "有色金属"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "moneyflow_top",
+          "label": "黄金",
+          "score": 45.0,
+          "matched_keywords": [
+            "黄金"
+          ]
+        },
+        {
+          "source": "policy_mapping",
+          "label": "旧报告政策证据文本",
+          "score": 2.8469,
+          "matched_keywords": [
+            "矿产资源"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "资源周期",
+          "score": 50.4315,
+          "matched_keywords": [
+            "有色金属"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.0601,
+      "legacy_market_score": 29.5682,
+      "legacy_evidence_score": 29.5682,
+      "policy_score": 6.01,
+      "market_score": 29.5682,
+      "stage": "证据不足",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 19
+    },
+    {
+      "theme_id": "robotics",
+      "theme_name": "机器人",
+      "parent_id": "advanced_manufacturing",
+      "parent_name": "高端制造",
+      "priority": 50,
+      "combined_score": 17.4324,
+      "policy_mainline_score": 0.1064,
+      "policy_score_100": 5.04,
+      "market_heat_score": 21.4908,
+      "legacy_policy_score": 10.64,
+      "theme_score_v5": 0.2147,
+      "confidence_label": "中低",
+      "confidence_score": 50,
+      "confidence_reason": "直接命中：policy",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "high_end_manufacturing_robotics_defense"
+      ],
+      "source_legacy_themes": [
+        "高端制造/机器人/军工"
+      ],
+      "component_scores": {
+        "sw": 30.3226,
+        "ths": 12.0244,
+        "etf": 19.8114,
+        "limit": 16.0,
+        "flow": 37.5
+      },
+      "matched_keywords": {
+        "sw": [],
+        "ths": [],
+        "etf": [],
+        "limit": [],
+        "flow": [],
+        "policy": [
+          "机器人",
+          "智能制造"
+        ],
+        "legacy": [
+          "机器人",
+          "机械设备"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "机械设备"
+          ],
+          "limit": [
+            "机器人"
+          ],
+          "flow": [
+            "机器人"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "policy_mapping",
+          "label": "旧报告政策证据文本",
+          "score": 5.04,
+          "matched_keywords": [
+            "机器人",
+            "智能制造"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "高端制造/机器人/军工",
+          "score": 38.5732,
+          "matched_keywords": [
+            "机器人",
+            "机械设备"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.1064,
+      "legacy_market_score": 21.4908,
+      "legacy_evidence_score": 21.4908,
+      "policy_score": 10.64,
+      "market_score": 21.4908,
+      "stage": "证据不足",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 20
+    },
+    {
+      "theme_id": "quantum_tech",
+      "theme_name": "量子科技/量子计算",
+      "parent_id": "hard_tech",
+      "parent_name": "硬科技",
+      "priority": 220,
+      "combined_score": 16.5871,
+      "policy_mainline_score": 0.8022,
+      "policy_score_100": 38.0,
+      "market_heat_score": 7.4534,
+      "legacy_policy_score": 38.0,
+      "theme_score_v5": 0.8335,
+      "confidence_label": "低",
+      "confidence_score": 35,
+      "confidence_reason": "仅从旧粗主题继承或暂无直接证据",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "hard_tech_semiconductor",
+        "ai_compute_communications"
+      ],
+      "source_legacy_themes": [
+        "硬科技电子/半导体",
+        "AI算力/通信"
+      ],
+      "component_scores": {
+        "sw": 5.1935,
+        "ths": 5.9392,
+        "etf": 13.7969,
+        "limit": 2.24,
+        "flow": 7.0
+      },
+      "matched_keywords": {
+        "sw": [],
+        "ths": [],
+        "etf": [],
+        "limit": [],
+        "flow": [],
+        "policy": [],
+        "legacy": [],
+        "legacy_fields": {}
+      },
+      "evidence_sources": [
+        {
+          "source": "legacy_theme",
+          "label": "硬科技电子/半导体",
+          "score": 15.3029,
+          "matched_keywords": []
+        },
+        {
+          "source": "legacy_theme",
+          "label": "AI算力/通信",
+          "score": 36.7232,
+          "matched_keywords": []
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.8022,
+      "legacy_market_score": 7.4534,
+      "legacy_evidence_score": 7.4534,
+      "policy_score": 38.0,
+      "market_score": 7.4534,
+      "stage": "证据不足",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 21
+    },
+    {
+      "theme_id": "hard_tech_semiconductor",
+      "theme_name": "半导体/硬科技电子",
+      "parent_id": "hard_tech",
+      "parent_name": "硬科技",
+      "priority": 10,
+      "combined_score": 15.3336,
+      "policy_mainline_score": 0.0,
+      "policy_score_100": 0.0,
+      "market_heat_score": 18.4034,
+      "legacy_policy_score": 0.0,
+      "theme_score_v5": 0.0,
+      "confidence_label": "中",
+      "confidence_score": 65,
+      "confidence_reason": "直接命中：limit、policy",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "hard_tech_semiconductor"
+      ],
+      "source_legacy_themes": [
+        "硬科技电子/半导体"
+      ],
+      "component_scores": {
+        "sw": 11.2903,
+        "ths": 21.2113,
+        "etf": 27.0698,
+        "limit": 12.0,
+        "flow": 12.5
+      },
+      "matched_keywords": {
+        "sw": [],
+        "ths": [],
+        "etf": [],
+        "limit": [
+          "光学光电"
+        ],
+        "flow": [],
+        "policy": [
+          "半导体",
+          "芯片",
+          "集成电路",
+          "硬科技"
+        ],
+        "legacy": [
+          "元件",
+          "半导体",
+          "电子",
+          "硬科技",
+          "芯片",
+          "集成电路"
+        ],
+        "legacy_fields": {
+          "sw": [
+            "电子"
+          ],
+          "ths": [
+            "元件",
+            "芯片",
+            "集成电路"
+          ],
+          "etf": [
+            "半导体",
+            "电子"
+          ],
+          "limit": [
+            "元件",
+            "半导体",
+            "消费电子",
+            "电子"
+          ],
+          "flow": [
+            "半导体",
+            "电子"
+          ]
+        }
+      },
+      "evidence_sources": [
+        {
+          "source": "limit_up_top",
+          "label": "光学光电",
+          "score": 12.0,
+          "matched_keywords": [
+            "光学光电"
+          ]
+        },
+        {
+          "source": "policy_mapping",
+          "label": "旧报告政策证据文本",
+          "score": 0.0,
+          "matched_keywords": [
+            "半导体",
+            "芯片",
+            "集成电路",
+            "硬科技"
+          ]
+        },
+        {
+          "source": "legacy_theme",
+          "label": "硬科技电子/半导体",
+          "score": 15.3029,
+          "matched_keywords": [
+            "元件",
+            "半导体",
+            "电子",
+            "硬科技",
+            "芯片",
+            "集成电路"
+          ]
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.0,
+      "legacy_market_score": 18.4034,
+      "legacy_evidence_score": 18.4034,
+      "policy_score": 0.0,
+      "market_score": 18.4034,
+      "stage": "证据不足",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 22
+    },
+    {
+      "theme_id": "nuclear_fusion",
+      "theme_name": "可控核聚变",
+      "parent_id": "new_energy",
+      "parent_name": "新能源",
+      "priority": 230,
+      "combined_score": 12.475,
+      "policy_mainline_score": 0.2171,
+      "policy_score_100": 10.2817,
+      "market_heat_score": 19.8085,
+      "legacy_policy_score": 21.7056,
+      "theme_score_v5": 0.3568,
+      "confidence_label": "低",
+      "confidence_score": 35,
+      "confidence_reason": "仅从旧粗主题继承或暂无直接证据",
+      "is_backfilled": true,
+      "source_legacy_theme_ids": [
+        "new_energy_power_equipment",
+        "high_end_manufacturing_robotics_defense"
+      ],
+      "source_legacy_themes": [
+        "新能源/电力设备",
+        "高端制造/机器人/军工"
+      ],
+      "component_scores": {
+        "sw": 17.5677,
+        "ths": 17.6649,
+        "etf": 20.3082,
+        "limit": 22.4,
+        "flow": 28.0
+      },
+      "matched_keywords": {
+        "sw": [],
+        "ths": [],
+        "etf": [],
+        "limit": [],
+        "flow": [],
+        "policy": [],
+        "legacy": [],
+        "legacy_fields": {}
+      },
+      "evidence_sources": [
+        {
+          "source": "legacy_theme",
+          "label": "新能源/电力设备",
+          "score": 68.7008,
+          "matched_keywords": []
+        },
+        {
+          "source": "legacy_theme",
+          "label": "高端制造/机器人/军工",
+          "score": 38.5732,
+          "matched_keywords": []
+        }
+      ],
+      "default_score_field": "policy_mainline_score",
+      "mainline_score_v6": 0.2171,
+      "legacy_market_score": 19.8085,
+      "legacy_evidence_score": 19.8085,
+      "policy_score": 21.7056,
+      "market_score": 19.8085,
+      "stage": "证据不足",
+      "basis_date": "2026-11-03",
+      "generated_at": "2026-11-04 13:11:25 CST",
+      "report_id": "mainline_review_2026-11-04_131125",
+      "rank": 23
+    }
+  ],
+  "parent_groups": [
+    {
+      "parent_id": "tmt_ai",
+      "parent_name": "TMT/AI",
+      "theme_count": 3,
+      "active_theme_count": 3,
+      "top_theme_id": "communication_satellite",
+      "top_theme_name": "通信/卫星互联网",
+      "top_combined_score": 59.2672
+    },
+    {
+      "parent_id": "consumption",
+      "parent_name": "大消费",
+      "theme_count": 1,
+      "active_theme_count": 1,
+      "top_theme_id": "core_consumption",
+      "top_theme_name": "消费/家电/服务",
+      "top_combined_score": 58.2321
+    },
+    {
+      "parent_id": "new_energy",
+      "parent_name": "新能源",
+      "theme_count": 4,
+      "active_theme_count": 4,
+      "top_theme_id": "photovoltaic_wind_storage",
+      "top_theme_name": "光伏/风电/储能",
+      "top_combined_score": 54.3213
+    },
+    {
+      "parent_id": "finance_property",
+      "parent_name": "金融地产",
+      "theme_count": 2,
+      "active_theme_count": 2,
+      "top_theme_id": "real_estate_chain",
+      "top_theme_name": "地产链/家居建材",
+      "top_combined_score": 48.0212
+    },
+    {
+      "parent_id": "advanced_manufacturing",
+      "parent_name": "高端制造",
+      "theme_count": 5,
+      "active_theme_count": 5,
+      "top_theme_id": "low_altitude_space",
+      "top_theme_name": "低空经济/商业航天",
+      "top_combined_score": 38.1907
+    },
+    {
+      "parent_id": "resources",
+      "parent_name": "资源周期",
+      "theme_count": 3,
+      "active_theme_count": 3,
+      "top_theme_id": "resources_energy",
+      "top_theme_name": "煤炭/油气",
+      "top_combined_score": 37.3736
+    },
+    {
+      "parent_id": "infrastructure",
+      "parent_name": "稳增长",
+      "theme_count": 1,
+      "active_theme_count": 1,
+      "top_theme_id": "infrastructure_materials",
+      "top_theme_name": "基建/建材/稳增长",
+      "top_combined_score": 36.7585
+    },
+    {
+      "parent_id": "medicine",
+      "parent_name": "医药健康",
+      "theme_count": 1,
+      "active_theme_count": 1,
+      "top_theme_id": "innovative_medicine",
+      "top_theme_name": "创新药/医药",
+      "top_combined_score": 35.4688
+    },
+    {
+      "parent_id": "agriculture",
+      "parent_name": "农业周期",
+      "theme_count": 1,
+      "active_theme_count": 1,
+      "top_theme_id": "agriculture_hog_cycle",
+      "top_theme_name": "农业/养殖/猪周期",
+      "top_combined_score": 32.4012
+    },
+    {
+      "parent_id": "hard_tech",
+      "parent_name": "硬科技",
+      "theme_count": 2,
+      "active_theme_count": 2,
+      "top_theme_id": "quantum_tech",
+      "top_theme_name": "量子科技/量子计算",
+      "top_combined_score": 16.5871
+    }
+  ],
+  "theme_count": 23
+}

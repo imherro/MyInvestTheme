@@ -1,8 +1,10 @@
 {
   "version": "policy_scan_status_v1",
-  "last_scan_started_at": "2026-10-22T22:05:00+08:00",
-  "last_scan_completed_at": "2026-10-22T22:05:00+08:00",
+  "last_scan_started_at": "2026-11-04T13:09:35+08:00",
+  "last_scan_completed_at": "2026-11-04T13:10:55+08:00",
   "last_scan_status": "success",
-  "sources_checked": 14,
-  "candidates_discovered": 2
+  "sources_checked": 2,
+  "candidates_discovered": 2,
+  "audit_path": "research/policy/policy_scan_2026-11-04.json",
+  "scope": "Targeted official-source review; not an exhaustive policy census. Two newly discovered candidates await point-in-time admission after today's close."
 }
